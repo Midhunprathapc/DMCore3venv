@@ -1,0 +1,134 @@
+{% extends "head_base.html" %}
+
+{% block title %}DigitalMarketing Head Dashboard{% endblock %}
+
+
+
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<style>
+  
+    /* Dark Form Inputs */
+    .form-control-dark,
+    .form-select-dark {
+        background-color: #1e1e1e !important;
+        color: #fff !important;
+        border: 1px solid #444 !important;
+    }
+
+    .form-control-dark:focus,
+    .form-select-dark:focus {
+        background-color: #1e1e1e !important;
+        color: #fff !important;
+        border-color: #666 !important;
+        box-shadow: none !important;
+    }
+
+    /* Make placeholder text light */
+    .form-control-dark::placeholder {
+        color: #bbb !important;
+    }
+
+</style>
+
+{% if messages %}
+    <script>
+        {% for message in messages %}
+            Swal.fire({
+                icon: "{{ message.tags }}",
+                title: "{{ message.tags|title }}",
+                text: "{{ message }}",
+                timer: 2000,
+                showConfirmButton: false
+            });
+        {% endfor %}
+    </script>
+{% endif %}
+
+
+<div class="container mt-4">
+      <!-- Breadcrumb -->
+   <nav aria-label="breadcrumb">
+    <ol class="breadcrumb breadcrumb-custom bg-transparent p-0 mb-3">
+        <li class="breadcrumb-item">
+            <a href="{% url 'head_dashboard' %}" class="text-secondary fw-bold" style="text-decoration: none">Dashboard</a>
+        </li>
+        <li class="breadcrumb-item active text-secondary" aria-current="page">
+            /
+        </li>
+        <li class="breadcrumb-item active text-secondary" aria-current="page">
+            Edit Action Taken
+        </li>
+    </ol>
+</nav>
+
+    <h4 class="text-light mb-3">Edit Action Taken</h4>
+
+    <form method="post" action="{% url 'edit_actionTaken' action.id %}" enctype="multipart/form-data" class="p-3 bg-dark rounded">
+        {% csrf_token %}
+
+        <div class="row g-3">
+
+            <div class="col-md-6">
+                <label class="form-label text-secondary">Select Employee</label>
+                <select name="editActionEmployee" id="edit_action_employee" class="form-control form-select-dark">
+                    {% for emp in employees %}
+                        <option value="{{ emp.id }}" {% if emp.id == action.act_emp_id.id %}selected{% endif %}>
+                            {{ emp.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label text-secondary">Date*</label>
+                <input type="date" 
+                       class="form-control form-control-dark" 
+                       id="editActionDate" 
+                       name="edit_action_date" 
+                       value="{{ action.action_date|date:'Y-m-d' }}" 
+                       required>
+            </div>
+
+        </div>
+
+        <div class="mt-3">
+            <label class="form-label text-secondary">Reason</label>
+            <input type="text" 
+                   name="edit_action_reason" 
+                   id="editActionReason" 
+                   class="form-control form-control-dark" 
+                   value="{{ action.act_reason }}">
+        </div>
+
+        <div class="mt-3">
+            <label class="form-label text-secondary">Reason for action?</label>
+            <textarea class="form-control form-control-dark" 
+                      id="editReasonForAction" 
+                      name="edit_reason_forAction" 
+                      rows="4"
+                      required>{{ action.act_head }}</textarea>
+        </div>
+
+        <div class="mt-3">
+            <label class="form-label text-secondary">What action Taken?</label>
+            <textarea class="form-control form-control-dark" 
+                      id="editWhatActionTaken" 
+                      name="edit_what_actionTaken" 
+                      rows="4"
+                      required>{{ action.act_content }}</textarea>
+        </div>
+
+        <div class="text-center mt-4">
+
+            <button type="submit" class="btn btn-outline-primary btn-sm">
+                <i class="fas fa-check-circle me-1"></i> Edit
+            </button>
+        </div>
+
+    </form>
+
+</div>
+
+
+{% endblock %}

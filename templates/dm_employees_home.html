@@ -1,0 +1,101 @@
+{% extends "head_base.html" %}
+
+{% block title %}DigitalMarketing Head Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <h3 class="fw-bold mb-4">Employee Management</h3>
+
+    <div class="row g-4">
+
+        <!-- View Employees -->
+        <div class="col-md-4">
+            <a href="{% url 'head_view_employees' %}" class="text-decoration-none">
+                <div class="dashboard-card text-center" style="cursor:pointer;">
+                    <i class="fas fa-user-group card-icon" style="color:#17a2b8;"></i>
+                    <h5 class="card-title mt-2">View Employees</h5>
+                    <p class="card-description">See all employees under your department</p>
+                </div>
+            </a>
+        </div>
+
+        <!-- Allocate Employees -->
+        <div class="col-md-4">
+            <a href="{% url 'head_allocate_employees' %}" class="text-decoration-none">
+                <div class="dashboard-card text-center" style="cursor:pointer;">
+                    <i class="fas fa-share-from-square card-icon" style="color:#ffc107;"></i>
+                    <h5 class="card-title mt-2">Allocate Employees</h5>
+                    <p class="card-description">Assign employees to team leads</p>
+                </div>
+            </a>
+        </div>
+
+        <!-- Allocated List -->
+        <div class="col-md-4">
+            <a href="{% url 'head_allocated_list' %}" class="text-decoration-none">
+                <div class="dashboard-card text-center" style="cursor:pointer;">
+                    <i class="fas fa-list-check card-icon" style="color:#28a745;"></i>
+                    <h5 class="card-title mt-2">Allocated List</h5>
+                    <p class="card-description">View and manage allocations</p>
+                </div>
+            </a>
+        </div>
+
+    </div>
+
+     <div class="row g-4 mt-2">
+
+        <!-- Leaves -->
+        <div class="col-md-4">
+            <a href="{% url 'head_view_leaves' %}" class="text-decoration-none">
+                <div class="dashboard-card text-center" style="cursor:pointer;">
+                    <i class="fas fa-calendar-times card-icon" style="color: red;"></i>
+
+                    <h5 class="card-title mt-2">Leaves</h5>
+                    <p class="card-description">The lists of all employee's leave details</p>
+                </div>
+            </a>
+        </div>
+        <!-- Action TAken -->
+        <div class="col-md-4">
+            <a href="{% url 'head_view_actionTaken' %}" class="text-decoration-none">
+                <div class="dashboard-card text-center" style="cursor:pointer;">
+                    <i class="fas fa-check-circle card-icon" style="color:#22c55e;"></i>
+                    <h5 class="card-title mt-2">Action Taken</h5>
+                    <p class="card-description">The lists of all employee's schedules</p>
+                </div>
+            </a>
+        </div>
+         <!-- View Shedules -->
+        <div class="col-md-4">
+            <a href="{% url 'view_employee_schedules' %}" class="text-decoration-none">
+                <div class="dashboard-card text-center" style="cursor:pointer;">
+                     <i class="fas fa-solid fa-calendar card-icon text-warning"></i>
+                    <h5 class="card-title mt-2">Shedules</h5>
+                    <p class="card-description">View employee's schedules</p>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-4">
+            <a href="{% url 'view_employee_feedback' %}" class="text-decoration-none">
+                <div class="dashboard-card text-center" style="cursor:pointer;">
+                    <i class="fas fa-solid fa-message card-icon text-success"></i>
+                    <h5 class="card-title mt-2">Feedback</h5>
+                    <p class="card-description">View employee's Feedback</p>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-4">
+            <a href="{% url 'head_view_resigned' %}" class="text-decoration-none">
+                <div class="dashboard-card text-center" style="cursor:pointer;">
+                    <i class="fas fa-solid fa-user-minus card-icon text-danger"></i>
+                    <h5 class="card-title mt-2">Resigned</h5>
+                    <p class="card-description">View employee's Resigned</p>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,455 @@
+{% extends "teamlead_base.html" %}
+
+{% block title %}Leave Management{% endblock %}
+
+{% block content %}
+
+<style>
+.card-dark{
+    background:#1e1f26;
+    border-radius:10px;
+    padding:20px;
+    color:#fff;
+    box-shadow:0 4px 6px rgba(0,0,0,.3);
+    border:1px solid #2a2b33;
+    }
+
+/* ONLY LEFT NAV CARDS */
+.card-nav{
+    transition:.2s;
+    cursor:pointer;
+    }
+.card-nav:hover{
+    transform:translateY(-3px);
+    border-color:#0d6efd;
+    }
+
+
+.hidden{display:none}
+
+.container-fluid,
+.row,
+.col-md-4,
+.col-md-8{
+    position:relative;
+    z-index:1;
+    }
+.form-control-dark {
+        background: #2a2b33;
+        border: 1px solid #3a3b44;
+        color: #fff;
+    }
+    .form-control-dark:focus {
+        background: #2a2b33;
+        border-color: #007bff;
+        color: #fff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+</style>
+
+<div class="container-fluid py-3">
+
+    {% if messages %}
+    <div class="mb-3">
+        {% for message in messages %}
+            <div class="alert 
+                {% if message.tags == 'error' %}alert-danger
+                {% elif message.tags == 'success' %}alert-success
+                {% elif message.tags == 'warning' %}alert-warning
+                {% else %}alert-info{% endif %}
+                alert-dismissible fade show" role="alert">
+
+                    {{ message }}
+
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- BREADCRUMB -->
+    <div class="text-white mb-4">
+        <small>Dashboard / </small>
+        <small class="text-white-50">Leave</small>
+    </div>
+
+    <div class="row g-4">
+        <!-- LEFT COLUMN -->
+        <div class="col-md-4">
+
+            <!-- APPLY LEAVE -->
+            <div class="card-dark card-nav mb-3" onclick="showSection('apply')">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5><i class="fas fa-paper-plane me-2"></i>Apply Leave</h5>
+                        <small class="text-secondary">Request your leave</small>
+                    </div>        
+                </div>
+            </div>
+
+            <!-- MY LEAVES -->
+            <div class="card-dark card-nav mb-3" onclick="showSection('my')">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5><i class="fas fa-user-clock me-2"></i>View My Leaves</h5>
+                        <small class="text-secondary">
+                            Review your leave requests, past and upcoming, all in one place. 
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- EMPLOYEES LEAVE -->
+            <div class="card-dark card-nav" onclick="showSection('employees')">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5><i class="fas fa-users me-2"></i>Employees Leaves</h5>
+                        <small class="text-secondary">
+                            Monitor your team's leave requests, ensuring a smooth workflow.
+                    </small>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div class="col-md-8">
+
+        <!-- APPLY FORM -->
+        <div id="apply" class="card-dark hidden">
+            <h5 class="mb-3">
+                <i class="fas fa-paper-plane me-2"></i>Leave Apply
+            </h5>
+
+            <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+                <div class="row g-3">
+                    <!-- DATE RANGE -->
+                    <div class="col-12 col-md-6">
+                        <label>From Date</label>
+                        <input type="date" id="from_date" name="from_date"
+                            class="form-control form-control-dark" required>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <label>To Date</label>
+                        <input type="date" id="to_date" name="to_date"
+                            class="form-control form-control-dark" required>
+                    </div>
+
+                    <!-- LEAVE TYPE RADIO -->
+                    <div class="col-12">
+                        <label class="mb-2 d-block">Leave Type</label>
+
+                        <div class="d-flex flex-column flex-md-row gap-3 gap-md-4">
+
+                            <div class="form-check">
+                                <input class="form-check-input"
+                                    type="radio" name="leave_type"
+                                    value="Half Day" id="half_day" required>
+                                <label class="form-check-label">Half Day</label>
+                            </div>
+
+                            <div class="form-check">
+                                <input class="form-check-input"
+                                    type="radio" name="leave_type"
+                                    value="Full Day" id="full_day" required>
+                                <label class="form-check-label">Full Day</label>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- REASON -->
+                    <div class="col-12">
+                        <label>Reason</label>
+                        <textarea name="reason" rows="3"
+                            class="form-control form-control-dark"
+                            placeholder="Enter reason for leave..."></textarea>
+                    </div>
+
+                    <!-- FILE UPLOAD -->
+                    <div class="col-12">
+                        <label>File Upload</label>
+                        <input type="file"
+                            name="attachment"
+                            class="form-control form-control-dark">
+                    </div>
+
+                </div>
+
+                <!-- SUBMIT -->
+                <div class="text-center mt-3">
+                    <button class="btn btn-outline-success btn-sm px-4">
+                        Leave Request
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+
+        <!-- MY LEAVES -->
+        <div id="my" class="card-dark hidden">
+            <h5 class="mb-3">
+                <i class="fas fa-user-clock me-2"></i>My Leaves 
+            </h5>
+
+            <!-- FILTER -->
+            <form method="get" class="row g-2 align-items-end mb-3">
+                <input type="hidden" name="section" value="my">
+
+                <div class="col-md-4">
+                    <label class="form-label">From</label>
+                    <input type="date" name="start" class="form-control form-control-dark"
+                        value="{{ request.GET.start }}">
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">To</label>
+                    <input type="date" name="end" class="form-control form-control-dark"
+                        value="{{ request.GET.end }}">
+                </div>
+
+                <div class="col-md-1">
+                    <button class="btn btn-primary  w-100" id="filterBtn">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+
+            </form>
+
+            <!-- TABLE -->
+            <div class="table-responsive">
+                <table class="table table-dark table-bordered table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Leave Type</th>
+                            <th>Reason</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for l in my_leaves %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ l.start_date }}</td>
+                                <td>{{ l.end_date }}</td>
+                                <td>{{ l.leave_type }}</td>
+                                <td>{{ l.leave_reason }}</td>
+                                <td>
+                                    <span class="badge
+                                        {% if l.leave_status == 1 %}bg-success
+                                        {% elif l.leave_status == 2 %}bg-danger
+                                        {% else %}bg-warning text-dark{% endif %}">
+
+                                        {% if l.leave_status == 1 %}
+                                            Approved
+                                        {% elif l.leave_status == 2 %}
+                                            Rejected
+                                        {% else %}
+                                            Pending
+                                        {% endif %}
+                                    </span>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center text-secondary">
+                                    No leave history found
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+
+                </table>
+            </div>
+
+        </div>
+        <!-- EMPLOYEES LEAVE -->
+        <div id="employees" class="card-dark hidden">
+            <h5 class="mb-3">
+                <i class="fas fa-users me-2"></i>Employees Leaves
+            </h5>
+
+            <!-- FILTER BAR -->
+            <form method="get" class="row g-2 align-items-end mb-3">
+
+                <input type="hidden" name="section" value="employees">
+
+                <!-- Employee Dropdown -->
+                <div class="col-md-3">
+                    <label class="form-label">Employee</label>
+                    <select name="employee" class="form-select form-control-dark">
+                        <option value="">All Employees</option>
+                            {% for emp in employees %}
+                        <option value="{{ emp.id }}"
+                            {% if request.GET.employee == emp.id|stringformat:"s" %}selected{% endif %}>
+                                {{ emp.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- From Date -->
+                <div class="col-md-3">
+                    <label class="form-label">From</label>
+                    <input type="date" name="emp_start" class="form-control form-control-dark"
+                        value="{{ request.GET.start }}">
+                </div>
+
+                <!-- To Date -->
+                <div class="col-md-3">
+                    <label class="form-label">To</label>
+                    <input type="date" name="emp_end" class="form-control form-control-dark"
+                        value="{{ request.GET.end }}">
+                </div>
+
+                <!-- Filter Button -->
+                <div class="col-md-1">
+                    <button class="btn btn-primary  w-100" id="filterBtn">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+
+            </form>
+
+            <!-- TABLE -->
+            <div class="table-responsive">
+                <table class="table table-dark table-bordered table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Employee Name</th>
+                            <th>No. of Days</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Leave Type</th>
+                            <th>Reason</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                    {% for e in employees_leaves %}
+                        <tr>                    
+                            <td>{{ forloop.counter }}</td>
+                            <!-- Name -->
+                            <td>{{ e.emp_id.name }}</td>
+                            <!-- Days -->
+                            <td>{{  e.no_of_days }}</td>
+                            <!-- Dates -->
+                            <td>{{ e.start_date}}</td>
+                            <td>{{ e.end_date }}</td>
+                            <!-- Type -->
+                            <td>{{ e.leave_type }}</td>
+                            <!-- Reason -->
+                            <td>{{ e.leave_reason }}</td>
+                            <!-- Status -->
+                            <td>
+                                <span class="badge
+                                    {% if e.leave_status == 1 %}bg-success
+                                    {% elif e.leave_status == 2 %}bg-danger
+                                    {% else %}bg-warning text-dark{% endif %}">
+                                    {% if e.leave_status == 1 %}
+                                        Approved
+                                    {% elif e.leave_status == 2 %}
+                                        Rejected
+                                    {% else %}
+                                        Pending
+                                    {% endif %}
+                                </span>
+                            </td>
+                        </tr>
+
+                    {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center text-secondary">
+                                No employee leave requests found
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+</div>
+
+<script>
+function showSection(section){
+
+    document.querySelectorAll("#apply,#my,#employees")
+    .forEach(el=>{
+        el.classList.add("hidden");
+    });
+
+    document.getElementById(section)
+    .classList.remove("hidden");
+}
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const fromInput = document.getElementById("from_date");
+    const toInput = document.getElementById("to_date");
+    const halfDay = document.getElementById("half_day");
+    const fullDay = document.getElementById("full_day");
+
+    // ---------- Disable past dates ----------
+    const today = new Date().toISOString().split("T")[0];
+    fromInput.min = today;
+    toInput.min = today;
+
+    // ---------- Date difference check ----------
+    function checkDates() {
+
+        if (!fromInput.value || !toInput.value) return;
+
+        let from = new Date(fromInput.value);
+        let to = new Date(toInput.value);
+
+        let diff = (to - from) / (1000 * 60 * 60 * 24);
+
+        if (diff > 0) {
+            halfDay.disabled = true;
+            fullDay.checked = true;
+        } else {
+            halfDay.disabled = false;
+        }
+    }
+
+    fromInput.addEventListener("change", checkDates);
+    toInput.addEventListener("change", checkDates);
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+
+    const params = new URLSearchParams(window.location.search);
+    const section = params.get("section");
+
+    if(section){
+        showSection(section);
+    }
+});
+</script>
+<script>
+window.addEventListener("load", function () {
+
+    if (performance.getEntriesByType("navigation")[0].type === "reload") {
+        window.location.href = window.location.pathname;
+    }
+
+});
+</script>
+{% endblock %}

@@ -1,0 +1,230 @@
+{% extends "telecaller_base.html" %}
+{% block content %}
+
+<style>
+
+.page-wrap{
+    padding:30px;
+    background:#0f172a;
+    min-height:100vh;
+}
+
+.dashboard-grid{
+    display:grid;
+    grid-template-columns:260px 1fr;
+    gap:20px;
+}
+
+@media(max-width:992px){
+    .dashboard-grid{
+        grid-template-columns:200px 1fr;
+    }
+}
+
+@media(max-width:768px){
+    .dashboard-grid{
+        grid-template-columns:1fr;
+    }
+}
+
+.mini-card{
+    background:#111827;
+    border:1px solid #1f2937;
+    border-radius:14px;
+    padding:20px;
+    height:150px;
+    position:relative;
+}
+
+.mini-head{
+    color:white;
+    font-weight:600;
+    font-size:16px;
+}
+
+.mini-text{
+    color:#9ca3af;
+    font-size:13px;
+    margin-top:6px;
+}
+
+.mini-count{
+    position:absolute;
+    right:20px;
+    bottom:20px;
+    background:#16a34a;
+    width:38px;
+    height:38px;
+    border-radius:8px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:white;
+    font-weight:bold;
+}
+
+.action-container{
+    max-width:700px;
+}
+
+.action-card{
+    background:#111827;
+    border-radius:14px;
+    padding:20px;
+    margin-bottom:15px;
+    border:1px solid #1f2937;
+    transition:.3s;
+}
+
+.action-card:hover{
+    transform:translateY(-3px);
+    border-color:#22c55e;
+}
+
+.row-flex{
+    display:flex;
+}
+
+.icon-box{
+    width:38px;
+    height:38px;
+    background:#ef4444;
+    border-radius:8px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:white;
+    font-weight:bold;
+    margin-right:12px;
+}
+
+.action-date{
+    color:#9ca3af;
+    font-size:13px;
+}
+
+.action-head{
+    color:#f9fafb;
+    font-size:16px;
+    font-weight:600;
+}
+
+.action-reason{
+    color:#d1d5db;
+    margin-top:6px;
+}
+
+.action-footer{
+    margin-top:8px;
+    font-size:12px;
+    color:#6b7280;
+}
+
+.no-action-box{
+    background:#111827;
+    border:1px dashed #374151;
+    border-radius:14px;
+    padding:40px;
+    text-align:center;
+    color:#9ca3af;
+    font-size:16px;
+}
+.breadcrumb-item a {
+    position: relative;
+    z-index: 5;  
+    cursor: pointer;
+    text-decoration: underline;
+    color: #2563eb; 
+}
+</style>
+
+
+<div class="page-wrap">
+    <nav aria-label="breadcrumb">
+    <ol class="breadcrumb breadcrumb-custom bg-transparent p-0 mb-3">
+        <li class="breadcrumb-item">
+            <a href="{% url 'telecaller_dashboard' %}" class="text-secondary fw-bold" style="text-decoration: none">Dashboard</a>
+        </li>
+         <li class="breadcrumb-item active text-secondary" aria-current="page">
+            /
+        </li>
+        <li class="breadcrumb-item active text-secondary" aria-current="page">
+            Action Taken
+        </li>
+    </ol>
+</nav>
+<h2 style="color:white;margin-bottom:20px;">Actions Received</h2>
+<div class="dashboard-grid">
+
+
+    <div class="mini-card" onclick="window.location.href='/telecaller_action_taken/'">
+
+    <div class="mini-head">
+        Actions Received
+    </div>
+
+    <div class="mini-text">
+        View actions against you
+    </div>
+
+    <div class="mini-arrow">
+        ↗
+    </div>
+
+</div>
+
+    <div class="action-container">
+
+        
+
+        {% if action_count > 0 %}
+
+            {% for a in actions %}
+
+            <div class="action-card">
+
+                <div class="row-flex">
+
+                    <div class="icon-box">⚠</div>
+
+                    <div>
+
+                        <div class="action-date">
+    <b>Date :</b> {{ a.action_date|date:"d M Y" }}
+</div>
+
+<div class="action-head">
+    <b>Reason :</b> {{ a.act_reason }}
+</div>
+
+<div class="action-reason">
+    <b>Action :</b> {{ a.act_content }}
+</div>
+
+<div class="action-footer">
+    <b>Taken By :</b> {{ a.act_from_name }}
+</div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        {% else %}
+
+            <div class="no-action-box">
+                ✅ No Actions Received
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+</div>
+
+{% endblock %}

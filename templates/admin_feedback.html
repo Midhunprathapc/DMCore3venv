@@ -1,0 +1,89 @@
+{% extends "admin_base.html" %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}" class="text-decoration-none">Dashboard</a></li>
+            <li class="breadcrumb-item active text-secondary" aria-current="page">Employee Section</li>
+            <li class="breadcrumb-item active text-secondary">Employees Feedbacks</li>
+        </ol>
+    </nav>
+
+    <div class="card p-4 mb-4 bg-dark text-white">
+        <h5>Select Employee</h5>
+        <select class="form-select bg-secondary text-white" id="empSelect" onchange="applyFilters()">
+            <option value="">Select</option>
+            {% for emp in employees %}
+                <option value="{{ emp.id }}" {% if selected_emp_id == emp.id|stringformat:"s" %}selected{% endif %}>
+                    {{ emp.name }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    {% if selected_emp_id %}
+    <div class="card p-4 bg-dark text-white">
+        <h5>All Feedbacks</h5>
+        
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <label for="fromDate">From date</label>
+                <input type="date" id="fromDate" class="form-control bg-secondary text-white" 
+                       value="{{ request.GET.from_date }}" onchange="applyFilters()">
+            </div>
+            <div class="col-md-6">
+                <label for="toDate">To date</label>
+                <input type="date" id="toDate" class="form-control bg-secondary text-white" 
+                       value="{{ request.GET.to_date }}" onchange="applyFilters()">
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-dark table-hover">
+                <thead>
+                    <tr>
+                        <th style="width: 70px;">No.</th>
+                        <th>Date</th>
+                        <th>Feedback to</th>
+                        <th>Feedbacks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for fb in feedbacks %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ fb.feedback_date }}</td>
+                        <td>{{ fb.from_name }}</td>
+                        <td>{{ fb.feedback_content }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center text-muted py-4">No feedback found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+
+    function applyFilters() {
+        const baseUrl = window.location.pathname;
+        const params = new URLSearchParams();
+        const uiState = {
+            'employee_id': document.getElementById('empSelect').value,
+            'from_date': document.getElementById('fromDate')?.value || '',
+            'to_date': document.getElementById('toDate')?.value || ''
+        };
+        Object.entries(uiState).forEach(([key, val]) => {
+            if (val) params.append(key, val);
+        });
+
+        window.location.href = `${baseUrl}?${params.toString()}`;
+    }
+</script>
+{% endblock %}

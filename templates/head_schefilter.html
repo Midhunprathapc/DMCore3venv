@@ -1,0 +1,231 @@
+{% extends "head_base.html" %}
+
+{% block title %}DigitalMarketing Head ScheduleFilter{% endblock %}
+
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+    .schedule-container {
+        background: #1e1f26;
+        border-radius: 8px;
+        padding: 20px;
+        color: #fff;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        position: relative;
+        z-index: 1;
+    }
+    .schedule-header {
+        border-bottom: 1px solid #2a2b33;
+        padding-bottom: 15px;
+        margin-bottom: 20px;
+    }
+    .action-btn {
+        border-radius: 20px;
+        padding: 6px 16px;
+        font-size: 14px;
+        border: 1px solid;
+        transition: all 0.3s ease;
+    }
+    .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    .search-input {
+        background: #2a2b33;
+        border: 1px solid #3a3b44;
+        color: #fff;
+        border-radius: 6px;
+    }
+    .search-input:focus {
+        background: #2a2b33;
+        border-color: #007bff;
+        color: #fff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    .modal-dark .modal-content {
+        background: #1e1f26;
+        color: #fff;
+        border: 1px solid #2a2b33;
+    }
+    .modal-dark .modal-header {
+        border-bottom: 1px solid #2a2b33;
+    }
+    .modal-dark .modal-footer {
+        border-top: 1px solid #2a2b33;
+    }
+    .form-control-dark {
+        background: #2a2b33;
+        border: 1px solid #3a3b44;
+        color: #fff;
+    }
+    .form-control-dark:focus {
+        background: #2a2b33;
+        border-color: #007bff;
+        color: #fff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    ::placeholder {
+        color: #999 !important;
+    }
+    .completed-text {
+        color: red !important;
+        text-decoration: line-through !important;
+    }
+</style>
+
+<div class="container-fluid py-3">
+    <div class="text-white mb-4">
+        <small class="">Dashboard / </small>
+        <small class="text-white-50">Schedule Filter</small>
+    </div>
+
+    <div class="schedule-container">
+        <div class="schedule-header">
+            <div class="row align-items-center">
+                <div class="col-md-3">
+                    <i class="fas fa-calendar-alt me-2"></i>Employee Schedule Filter List
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-5 mt-2">
+                <label for="empSelect" class="form-label">Select Employee</label>
+                <select name="" class="form-control form-control-sm search-input" id="empSelect">
+                    <option value="">--- select employee ---</option>
+                    {% for e in empl %}
+                    <option value="{{ e.id }}">{{ e.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3 mt-2">
+                <label for="" class="form-label">From date</label>
+                <input type="date" class="form-control form-control-sm form-control-dark" name="" id="">
+            </div>
+            <div class="col-md-3 mt-2">
+                <label for="" class="form-label">To date</label>
+                <input type="date" class="form-control form-control-sm form-control-dark" name="" id="">
+            </div>
+            <div class="col-md-1">
+                <button class="btn btn-outline-primary btn-sm d-none d-md-inline-block" 
+                        id="filterBtn" 
+                        style="margin-top: 40px;">
+                    <i class="fas fa-search"></i>
+                </button>
+                <button class="btn btn-outline-primary btn-sm d-inline-block d-md-none mt-2"
+                        id="filterBtnMobile">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="schedule-header">
+            <div class="row align-items-center">
+                <div class="col-md-3 mt-3">
+                    <b>Schedules ()</b>
+                </div>
+            </div>
+        </div>
+        <!-- Schedule Table -->
+        <div class="table-responsive">
+            <table class="table table-sm table-dark">
+                <thead>
+                    <tr>
+                        <th> Scheduled Date & Time</th>
+                        <th>Scheduled Task</th>
+                    </tr>
+                </thead>
+                <tbody id="empScheduleFilterTableBody">
+                    {% if emps %}
+                    {% for e in emps %}
+                    <tr>
+                        <td>
+                            <span class="{% if schedule_status == 1 %}completed-text{% endif %}">
+                                {{ e.schedule_date }}
+                            </span><br>
+                            <small class="text-white-50">Time - {{ e.start_time }} to {{ e.end_time }}</small>
+                        </td>
+                        <td>
+                            <span class="{% if schedule_status == 1 %}completed-text{% endif %}">
+                                {{ e.schedule_head }}
+                            </span><br>
+                            <small class="text-white-50">( {{ e.emp_id.name }} )</small><br>
+                            <small class="text-white-50 mt-2">{{ e.todo_content }}</small>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="2" class="text-center text-white py-4">
+                            <i class="fas fa-calendar-times fa-2x mb-2 d-block"></i>
+                            No schedules found for today.
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+document.querySelectorAll("#filterBtn, #filterBtnMobile").forEach(btn => {
+    btn.addEventListener("click", function () {
+
+        let empId = document.getElementById("empSelect").value;
+        let dates = document.querySelectorAll('input[type="date"]');
+
+        let fromDate = dates[0].value;
+        let toDate = dates[1].value;
+
+        let tbody = document.getElementById("empScheduleFilterTableBody");
+        tbody.innerHTML = "<tr><td colspan='2' class='text-center'>Loading...</td></tr>";
+
+        fetch(`/filter_schedules/?emp_id=${empId}&from_date=${fromDate}&to_date=${toDate}`)
+            .then(res => res.json())
+            .then(res => {
+
+                tbody.innerHTML = "";
+
+                if (res.status === "success" && res.data.length > 0) {
+
+                    res.data.forEach(item => {
+
+                        let isCompleted = item.schedule_status === 1;
+                        let completedClass = isCompleted ? "completed-text" : "";
+
+                        let row = `
+                            <tr>
+                                <td>
+                                    <span class="${completedClass}">${item.schedule_date}</span><br>
+                                    <small class="text-white-50">Time - ${item.start_time} to ${item.end_time}</small>
+                                </td>
+                                <td>
+                                    <span class="${completedClass}">${item.schedule_head}</span><br>
+                                    <small class="text-white-50">( ${item.employee_name} )</small><br>
+                                    <small class="text-white-50 mt-2">${item.todo_content}</small>
+                                </td>
+                            </tr>
+                        `;
+                        tbody.innerHTML += row;
+                    });
+
+                } else {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="2" class="text-center text-white-50">No schedules found</td>
+                        </tr>`;
+                }
+
+            })
+            .catch(err => {
+                tbody.innerHTML = `<tr><td colspan="2" class="text-danger text-center">Error loading data</td></tr>`;
+            });
+
+    });
+});
+
+</script>
+
+{% endblock %}

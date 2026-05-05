@@ -1,0 +1,358 @@
+{% extends "teamlead_base.html" %}
+
+{% block title %}Employee Schedule{% endblock %}
+
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+<style>
+.schedule-container{
+    background:#1e1f26;
+    border-radius:8px;
+    padding:20px;
+    color:#fff;
+    box-shadow:0 4px 6px rgba(0,0,0,.3);
+    position:relative;z-index:1
+}
+.schedule-header{
+    border-bottom:1px solid #2a2b33;
+    padding-bottom:15px;
+    margin-bottom:20px
+}
+.form-control-dark{
+    background:#2a2b33;
+    border:1px solid #3a3b44;
+    color:#fff
+}
+.form-control-dark:focus{
+    background:#2a2b33;
+    border-color:#007bff;
+    color:#fff;
+    box-shadow:0 0 0 .2rem rgba(0,123,255,.25)
+}
+.completed-text{
+    color:red!important;
+    text-decoration:line-through!important
+    }
+.table-dark tbody tr{
+        border-color: rgba(255,255,255,0.08) !important;
+    }
+</style>
+
+<div class="container-fluid py-3">
+
+    <div class="text-white mb-4">
+        <small>Dashboard / </small>
+        <small class="text-white-50">Employee Schedule</small>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- ADD SCHEDULE PANEL -->
+    <div id="scheduleSection" style="display:none;" class="mb-4">
+        <div class="schedule-container">
+
+            <div class="schedule-header">
+                <i class="fas fa-calendar-alt me-2"></i>Schedule Employee Day
+            </div>
+
+            <form method="post" id="scheduleForm">
+            {% csrf_token %}
+                <div class="row g-3">
+
+                    <div class="col-6 col-md-6">
+                        <label>Start Time</label>
+                        <input type="time" name="start_time" id="startTime"
+                            class="form-control form-control-dark" required>
+                    </div>
+
+                    <div class="col-6 col-md-6">
+                        <label>End Time</label>
+                        <input type="time" name="end_time" id="endTime"
+                            class="form-control form-control-dark" required>
+                    </div>
+
+                    <div class="col-6">
+                        <input type="text" id="showstartTime"
+                            class="form-control form-control-dark" readonly>
+                    </div>
+
+                    <div class="col-6">
+                        <input type="text" id="showendTime"
+                            class="form-control form-control-dark" readonly>
+                    </div>
+                    <div class="col-12">
+                        <label>Select Employee</label>
+                        <select name="employee" id="employeeSelect" class="form-control form-control-dark" required>
+                            <option value="">-- Select Employee --</option>
+                                {% for emp in employees %}
+                            <option value="{{ emp.id }}">
+                                {{ emp.name }} ({{ emp.employee_code }})
+                            </option>
+                                {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label>Title</label>
+                        <input type="text" name="schedule_head" id="taskTitle"
+                            class="form-control form-control-dark" required>
+                    </div>
+
+                    <div class="col-12">
+                        <label>Description</label>
+                        <textarea name="todo_content" id="taskDescription"
+                            class="form-control form-control-dark" rows="3"></textarea>
+                    </div>
+
+                    <input type="hidden" name="schedule_date" id="scheduleDate">
+                    <input type="hidden" name="schedule_id" id="scheduleId">
+
+                </div>
+
+                <div class="text-center mt-3">
+                    <button class="btn btn-outline-success btn-sm" id="saveScheduleBtn">
+                        Save Schedule
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <div class="row g-4">
+
+    <!-- LEFT CARD -->
+    <div class="col-md-4">
+        <div class="schedule-container h-100">
+
+            <div class="d-flex justify-content-between px-3 pt-3">
+                <span class="fw-semibold">
+                    <i class="fas fa-calendar-day me-2"></i>
+                        Employee Day List
+                </span>
+
+                <button class="btn btn-sm btn-outline-primary" id="addDayBtn">
+                    <i class="fa-solid fa-circle-plus"></i>
+                </button>
+            </div>
+
+            <div class="p-4">
+                <div class="d-flex justify-content-between px-3 py-2 rounded"
+                    style="background:#0d6efd20;border:1px solid #0d6efd50;">
+                    <h5 id="todayDay"></h5>
+                    <span id="todayDate" class="text-secondary"></span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- RIGHT CARD -->
+    <div class="col-md-8">
+        <div class="schedule-container h-100">
+
+            <div class="schedule-header">
+                <i class="fas fa-calendar-alt me-2"></i>
+                    Employee Schedule List
+            </div>
+
+            <div class="p-3">
+                <form method="GET">
+                    <div class="row mb-4 g-3">
+                        <div class="col-12 col-md-3">
+                            <label>Select Employee</label>
+                            <select name="emp" class="form-control form-control-dark form-control-sm">
+                                <option value="">All Employees</option>
+                                        {% for emp in employees %}
+                                <option value="{{ emp.id }}"
+                                        {% if request.GET.emp == emp.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ emp.name }}
+                                </option>
+                                        {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <label>From</label>
+                            <input type="date" name="from_date"
+                                value="{{ request.GET.from_date }}"
+                                class="form-control form-control-dark form-control-sm">
+                        </div>
+
+                        <div class="col-12 col-md-3">
+                            <label>To</label>
+                            <input type="date" name="to_date"
+                                value="{{ request.GET.to_date }}"
+                                class="form-control form-control-dark form-control-sm">
+                        </div>
+
+                        <div class="col-12 col-md-3 d-flex align-items-end">
+                            <button class="btn btn-primary btn-sm w-100">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="table-responsive mt-3">
+                    <table class="table table-dark table-bordered align-middle">
+                        <tbody>
+                            {% for s in schedules %}
+                            <tr class="border-bottom">
+
+                                <!-- LEFT -->
+                                <td style="width:280px;">
+                                    <div class="fw-semibold text-info">
+                                        {{ s.emp_id.name }}
+                                    </div>
+
+                                    <div class="{% if s.schedule_status == 1 %}completed-text{% endif %}">
+                                        {{ s.schedule_date }}
+                                    </div>
+
+                                    <small class="text-secondary">
+                                        {{ s.start_time|time:"h:i a" }} to {{ s.end_time|time:"h:i a" }}
+                                    </small>
+                                </td>
+
+                                <!-- MIDDLE -->
+                                <td>
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <div class="fw-semibold {% if s.schedule_status == 1 %}completed-text{% endif %}">
+                                                {{ s.schedule_head }}
+                                            </div>
+
+                                            <small class="{% if s.schedule_status == 1 %}completed-text{% endif %}">
+                                                {{ s.todo_content }}
+                                            </small>
+                                        </div>        
+                                        <!-- RIGHT -->
+                                        <div class="actions d-flex gap-3 ms-4">
+
+                                            <a href="#"
+                                                class="text-info editBtn"
+                                                data-id="{{ s.id }}"
+                                                data-emp="{{ s.emp_id.id }}"
+                                                data-date="{{ s.schedule_date|date:'Y-m-d' }}"
+                                                data-start="{{ s.start_time|time:'H:i' }}"
+                                                data-end="{{ s.end_time|time:'H:i' }}"
+                                                data-head="{{ s.schedule_head }}"
+                                                data-content="{{ s.todo_content }}">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+
+                                            <a href="{% url 'delete_empschedule' s.id %}" class="text-danger">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </td>
+
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center text-secondary py-4">
+                                    No schedules found
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+</div>
+
+<script>
+const today=new Date();
+todayDay.innerText=today.toLocaleDateString("en-US",{weekday:"long"});
+todayDate.innerText=today.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
+
+const panel=document.getElementById("scheduleSection");
+const btn=document.getElementById("addDayBtn");
+const icon=btn.querySelector("i");
+
+btn.onclick = () => {
+
+    const isHidden = panel.style.display === "none";
+    panel.style.display = isHidden ? "block" : "none";
+
+    icon.classList.toggle("fa-circle-plus");
+    icon.classList.toggle("fa-circle-minus");
+
+    icon.classList.remove(isHidden ? "text-primary" : "text-danger");
+    icon.classList.add(isHidden ? "text-danger" : "text-primary");
+
+    btn.classList.toggle("btn-outline-primary", !isHidden);
+    btn.classList.toggle("btn-outline-danger", isHidden);
+};
+
+function formatAMPM(time){
+    if(!time)return"";
+    let[h,m]=time.split(":");h=parseInt(h);
+    let ap=h>=12?"PM":"AM";h=h%12||12;
+    return`${h}:${m} ${ap}`;
+}
+
+startTime.oninput=()=>showstartTime.value=formatAMPM(startTime.value);
+endTime.oninput=()=>showendTime.value=formatAMPM(endTime.value);
+
+scheduleForm.onsubmit=e=>{
+    if(startTime.value>=endTime.value){
+        e.preventDefault();
+        Swal.fire("Invalid Time","End must be greater","error");
+    }
+};
+
+scheduleDate.value=new Date().toISOString().split("T")[0];
+
+document.querySelectorAll(".toggle-status").forEach(b=>{
+    b.onchange=()=>fetch(`/toggle-schedule/${b.dataset.id}/`)
+    .then(()=>location.reload())
+});
+
+document.querySelectorAll(".editBtn").forEach(btn=>{
+    btn.onclick=e=>{
+        e.preventDefault();
+
+        panel.style.display="block";
+
+        scheduleId.value=btn.dataset.id;
+        scheduleDate.value=btn.dataset.date;
+        startTime.value=btn.dataset.start;
+        endTime.value=btn.dataset.end;
+        taskTitle.value=btn.dataset.head;
+        taskDescription.value=btn.dataset.content;
+        employeeSelect.value=btn.dataset.emp; // ✅ added
+
+        showstartTime.value=formatAMPM(btn.dataset.start);
+        showendTime.value=formatAMPM(btn.dataset.end);
+
+        saveScheduleBtn.innerText="Update Schedule";
+
+        scrollTo({top:0,behavior:"smooth"});
+    };
+});
+</script>
+
+<!-- refresh filter -->
+<!-- <script>
+if (performance.navigation.type === 1) {
+    window.location.href = window.location.pathname;
+}
+</script> -->
+
+{% endblock %}

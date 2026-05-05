@@ -1,0 +1,258 @@
+{% extends 'executive_base.html' %}
+{% block content %}
+
+<style>
+    *,p,hr{
+        margin: 0;
+        padding: 0;
+    }
+    .form-control-dark,.form-control-dark:active,.form-control-dark:hover,.form-control-dark:focus{
+        outline-color: rgba(146, 140, 140, 0.288);
+        border-color: rgba(199, 199, 199, 0.341);
+        background-color: rgba(0, 0, 0, 0.173);
+        color: white;
+    
+    }
+   
+    .form-control-dark::placeholder {
+        color: #888; /* A more suitable light gray for dark backgrounds */
+        opacity: 1; /* For Firefox compatibility */
+    }
+    textarea{
+        height: 8rem;
+        resize: none;
+
+    }
+  .h-full{
+        height: 100%;
+    }
+    
+    .border-right{
+        border-right: 1px solid
+    }
+    .border-bottom{
+        border-bottom: 1px solid
+    }
+    .border{
+        /* border: 1px solid rgba(237, 230, 230, 0.608) !important; */
+        box-shadow: inset 0px 0px 5px .5px rgba(237, 230, 230, 0.608) !important;
+    }
+  .line-h{
+    line-height: 1.2;
+  }
+  
+  
+
+.rel{
+    position: relative;
+}
+
+.alert-success {
+    color: rgb(45, 247, 45);
+     border: rgba(55, 255, 0, 0.985);
+    background-color: #4c4b4bb6;
+}
+.alert-error {
+    color: rgb(247, 27, 27);
+    border: rgba(255, 0, 0, 0.521);
+    background-color: #4c4b4bb6;
+}
+
+.error{
+    position: absolute;
+    top:-10px;
+    right:0px;
+    width: fit-content;
+
+}
+
+.schedule-alert{
+    animation: alertFadeIn 0.35s ease-out;
+    
+}
+
+.hover{
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out;
+}
+
+.hover:hover{
+    transform: translateY(-5px);
+    background-color: #9d9b9b2b !important;
+}
+
+.i{
+    position: absolute;
+    right:20px;
+    font-size: 30px;
+    transform: rotate(-45deg);
+}
+
+@keyframes alertFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+</style>
+
+
+<div class="container-fluid rel">
+
+    <div class=" error">
+    {% if messages %}
+    <div class="row mb-4">
+        <div class="col-12">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible   fade show schedule-alert" role="alert" ">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+     <!--  bread crumbs -->
+      <div class=" text-white mb-4">
+        <small><a href="{% url 'executive_dashboard' %}" class="text-decoration-none text-white-50">Dashboard</a></small> / <small> complaints</small>
+      </div>
+      
+      <div class="row ">
+        <div class="col-sm-4 mb-3">
+            <div class="card bg-dark text-white hover " id="togle_Complaint">
+                <div class="card-header">Add Complaints</div>
+                <div class="card-body text-white-50 rel"><small>Register all your complaints here</small> <i class="fa-solid fa-arrow-right-long i" style="color: rgb(38, 157, 252);"></i></div>
+            </div>
+
+            <div class="card bg-dark text-white mt-3 hover " id="togle_view">
+                <div class="card-header">View Complaints</div>
+                <div class="card-body text-white-50 rel"><small>View your registered complaints status here</small> <i class="fa-solid fa-arrow-right-long i" style="color: rgb(38, 157, 252);"></i></div>
+
+            </div>
+        </div>
+
+
+        <div class="col-sm-8">
+            <!-- Add Complaints -->
+
+            <div class="card bg-dark text-white p-3 {%  if  show_view_complaint %}d-none{% endif %}" id="add_Complaint">
+                <h4>Add Complaint</h4>
+
+                <form action="{% url 'executive_complaints' %}" method="post" class="px-2">
+                    {% csrf_token %}
+
+                    
+                            <div class="form-group mb-2 ">
+                                <label for="" class="px-1">Complaint</label>
+                                <input type="text" name="complaint_head" placeholder="complaint regarding ..." class="form-control form-control-dark  ">
+
+                                </select>
+
+                            </div>
+
+                    <div class="form-group mb-2 ">
+                        <label for="" class="px-1 ">Complaint Details</label>
+                        <textarea name="complaint" class="form-control form-control-dark " rows="5" id="" placeholder="Complaint Details..."></textarea>   
+                        </div>
+                        <div class="d-flex justify-content-center"><input type="submit" value="Complaint register" class="btn btn-outline-primary  "></div>
+                        
+                
+                </form>
+            </div>
+
+            <!-- view Complaints -->
+
+            <div class="card p-3 bg-dark text-white {%  if not show_view_complaint %}d-none{% endif %}" id="view_Complaint">
+                   
+                <h4  class=""> Complaints View</h4>
+                <div class="px-3 mt-2">
+                    <div class="d-none d-sm-block">
+                        <div class="row mb-2 ">
+                        <div class="col-sm-4">
+                            <h6 class="px-2">Date</h6>
+                        </div>
+                        <div class="col-sm-4">
+                            <h6 class="px-3">Complaint</h6>
+                        </div>
+
+                    </div>
+                    </div>
+                    <hr class="mb-3">
+                    {% for i in complaint_details reversed %}
+
+                    <div class="p-3 border rounded border-dark mb-2">
+                       
+                        <div class="row ">
+                            <div class="col-sm-4 border-right align-items-center d-flex">
+                                <p>{{i.complaint_date}}</p>
+                            </div>
+                            <div class="col-sm-8">
+                                <div class=" border-bottom pb-1">
+                                    <p class="text-white-5"><b>{{i.compaint_head}}</b></p>
+                                    <p class="text-white-50 line-h text-justify"><small>{{i.compaint_content}}</small></p>
+                                </div>
+                                {% if i.action  %}
+                                <div class="py-1 text-white-50  text-justify">
+                                    <p class="line-h" ><small>Action : {{i.action}}</small></p>
+                                    <p style="font-size: small;">Action Date: {{i.action_date}}</p>
+                                </div>
+                                {% endif %}
+                                {% if i.status == 0 %}
+                                <p class="py-2 text-warning">Pending</p>
+                                {% elif i.status == 1 %}
+                                <p class="py-2 text-success">Finished</p>
+                                {% else %}
+                                <p class="py-2 text-danger">Rejected</p>
+                                {% endif %}
+                                
+
+                            </div>
+                        </div>
+                        <hr>
+                    </div>
+                    {% endfor %}
+
+                    
+                </div>
+
+            </div>
+        </div>
+      </div>
+
+
+</div>
+
+<script>
+
+
+togle_Complaint.addEventListener("click", function () {
+    add_Complaint.classList.remove("d-none");
+    view_Complaint.classList.add("d-none");
+});
+
+togle_view.addEventListener("click", function () {
+    view_Complaint.classList.remove("d-none");
+    add_Complaint.classList.add("d-none");
+    toggleFeedbackTable();
+});
+
+function autoDismissAlerts() {
+    document.querySelectorAll('.schedule-alert').forEach((alert) => {
+        const delay = alert.classList.contains('alert-success') ? 3000 : 5000;
+
+        setTimeout(() => {
+            if (alert.classList.contains('show')) {
+                bootstrap.Alert.getOrCreateInstance(alert).close();
+            }
+        }, delay);
+    });
+}
+
+autoDismissAlerts();
+</script>
+{% endblock %}

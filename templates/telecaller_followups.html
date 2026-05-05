@@ -1,0 +1,270 @@
+{% extends 'telecaller_base.html' %}
+
+{% block content %}
+
+<style>
+    .container{
+        border-radius: 10px;
+        /* display: flex;
+        align-items: center; */
+    }
+    .relative{
+        position: relative;
+
+    }
+    .absolute{
+        position: absolute;
+        bottom:-40px;
+        right: 0;
+        padding:5px 10px;
+        border: 1px solid #767474;
+        background: black;
+        color: white;
+        display: none;
+
+
+        
+    }
+    .relative input:hover ~ .absolute{
+        display: block;
+
+
+    }
+    .relative select:hover ~ .absolute{
+        display: block;
+
+    }
+
+    .form-details{
+    /* padding: 35px 15px; */
+    margin-bottom: 10px;
+    /* box-shadow: inset 0 0 0 1px #fcfcfc13; */
+    border-radius: 5px;
+    /* background-color: rgba(32, 32, 32, 0.432); */
+    color: rgb(126, 127, 129);
+    input,select,textarea{
+        background-color: rgba(0, 0, 0, 0.373);
+        color: rgb(253, 253, 253);
+
+        &::placeholder{
+            color: rgb(191, 193, 196);
+        }
+        &:focus{
+            outline: none;
+            background-color:rgba(0, 0, 0, 0.373) ;
+            color: rgb(253, 253, 253);
+
+        }
+        &::-webkit-calendar-picker-indicator{
+            filter: invert(1);
+        }
+    }
+    i{
+        margin-right: 15px;;
+    }
+
+
+    
+  }
+  .nowrap{
+    text-wrap: nowrap !important;
+  }
+</style>
+
+<div class="text-white">
+   <a href="{% url 'telecaller_dashboard' %}" class="text-white-50 text-decoration-none">  <small>Dashboard</small></a>  /  <small>Followup Leads</small>
+</div>
+{% for  i in messages %}
+{{i}}
+{% endfor %}
+
+<section class="mt-4">
+     <form action="{% url 'telecaller_followups' %}" method="get" class="form-details" id="filter_form">
+    <div class="container p-3 bg-dark text-white ">
+
+        <div class="row">
+            <div class="col-sm-2 "><h3  style="font-size: x-large;">Followup -  <b class="badge bg-primary rounded p-2">{{ followups_count }}</b></h3></div>
+            <div class="col-sm-10">
+                <div class="d-flex" style="gap: 10px; flex-wrap: wrap;"><select name="pagination" id="" class="px-3 border rounded" >
+                <option value="10" {% if selected_pagination == '10' or not selected_pagination %}selected{% endif %}>10</option>
+                <option value="50" {% if selected_pagination == '50' %}selected{% endif %}>50</option>
+                <option value="100" {% if selected_pagination == '100' %}selected{% endif %}>100</option>
+                <option value="All" {% if selected_pagination == 'All' %}selected{% endif %}>All</option>
+            </select>
+            <div class="form-group relative">
+                
+                <input type="date" class="form-control" name="from" value="{{ selected_from }}">
+                <div class="absolute">From date </div>
+            </div>
+            <div class="form-group relative">
+                <input type="date" class="form-control" name="to" value="{{ selected_to }}">
+                <div class="absolute">To date</div>
+            </div>
+            <div class="form-group relative">
+                <input type="date" class="form-control" name="next" value="{{ selected_next }}">
+                <div class="absolute">Next follow up date</div>
+            </div>
+
+            <div class="form-group relative">
+                <select name="filter_status" id="" class=" px-3 border rounded" style="height: 100%" >
+                <option value="">Status</option>
+                {%  for i in follow_reason %}
+                <option value="{{i.id}}" {% if selected_status == i.id %}selected{% endif %}>{{i.name}}</option>
+                {% endfor %}
+            </select>
+            <div class="absolute">Status</div>
+            
+            </div>
+           <button class="btn btn-outline-primary" type="submit"><i class="fa-solid fa-magnifying-glass" style="color: rgb(177, 151, 252);"></i></button>
+            <button class="btn btn-outline-success" type="reset" id="reset"><i class="fa-solid fa-retweet" style="color: rgb(255, 212, 59);"></i></button>
+
+            
+        </div></div>
+        </div>
+        
+        
+    </div>
+    <div class="container p-3 bg-dark text-white mt-2">
+            <div class="">
+            <input type="text" placeholder="Search" class="form-control" id="search">
+        </div>
+        </div>
+
+       </form>
+
+       <div class="container p-3 bg-dark text-white mt-2">
+        <div class="table-responsive">
+            <table class="table table-dark">
+                <thead>
+                    <tr>
+                        <th>SI NO</th>
+                        <th>Menu</th>
+                        <th class="nowrap">Add Date <button type="button" onclick="sortbydate(event)" class="btn btn-outline-primary btn-sm"><i class="fa-solid fa-arrow-up" style="color: rgb(116, 192, 252);"></i></button></th>
+                        <th class="nowrap">Name <button type="button" onclick="sortbyname(event)" class="btn btn-outline-primary  btn-sm"><i class="fa-solid fa-arrow-up" style="color: rgb(116, 192, 252);"></i></button></th>
+                        <th class="nowrap">Email <button type="button" onclick="sortbymail(event)" class="btn btn-outline-primary  btn-sm"><i class="fa-solid fa-arrow-up" style="color: rgb(116, 192, 252);"></i></button></th>
+                        <th class="nowrap">Contact <button type="button" onclick="sortbycontact(event)" class="btn btn-outline-primary  btn-sm"><i class="fa-solid fa-arrow-up" style="color: rgb(116, 192, 252);"></i></button></th>
+                        <th class="nowrap">Current Response <button type="button" onclick="sortbyresponse(event)" class="btn btn-outline-primary  btn-sm"><i class="fa-solid fa-arrow-up" style="color: rgb(116, 192, 252);"></i></button></th>
+
+                    </tr>
+                </thead>
+                <tbody id="tbody">
+                    {% for i in leads %}
+                    <tr>
+                        <td>{{forloop.counter}}</td>
+                        <td><a href="{% url 'telecaller_followup_updates' i.id %}"><i class="fa-solid fa-phone-volume" style="color: {% if i.is_recall == 0 %} rgb(116, 192, 252); {% else %} rgb(239, 62, 43); {% endif %}"></i></a></td>
+                        <td>{{i.transfer_date|date:"Y-m-d"}}</td>
+                        <td>{{i.full_name}}</td>
+                        <td>{{i.email}}</td>
+                        <td>{{i.contact}}</td>
+                        <td>{% if i.latest_followup_response_name %}{{ i.latest_followup_response_name }}{% elif i.followupupdates_set.last.response %}{{i.followupupdates_set.last.response}}{% else %}<div class=""> No Updations</div>{% endif %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="page d-flex justify-content-end mt-2" style="gap: 10px;">
+        {% if leads.has_previous %}
+        <a class="btn btn-outline-primary" href="?page={{ leads.previous_page_number }}&pagination={{ selected_pagination }}"><i class="fa-solid fa-angle-left"></i></a>
+        {% endif %}
+        <b class="p-3 rounded border" style="cursor: pointer;">{{leads.number}}</b>
+        {% if leads.has_next %}
+        <a class="btn btn-outline-primary d-flex justify-content-center align-items-center" href="?page={{ leads.next_page_number }}&pagination={{ selected_pagination }}"><i class="fa-solid fa-angle-right"></i></a>
+        {% endif %}
+       </div>
+       </div>
+       
+    
+</section>
+
+<script>
+
+    const reset = document.getElementById('reset')
+    const filterform = document.getElementById('filter_form')
+
+    reset.addEventListener('click', function () {
+        window.location.href = filterform.action
+    })
+
+
+    let sortDirections = {
+        2: true,
+        3: true,
+        4: true,
+        5: true,
+        6: true
+    }
+
+    function sorttable(colIndex, button) {
+        const tbody = document.querySelector('table tbody')
+        const rows = [...tbody.querySelectorAll('tr')]
+        const isAscending = sortDirections[colIndex]
+        rows.sort((a, b) => {
+            const aText = a.children[colIndex].textContent.trim().toLowerCase()
+            const bText = b.children[colIndex].textContent.trim().toLowerCase()
+            return isAscending ? aText.localeCompare(bText) : bText.localeCompare(aText)
+        })
+
+        rows.forEach(row => tbody.appendChild(row))
+        sortDirections[colIndex] = !isAscending
+
+        const icon = button.querySelector('i')
+        if (icon) {
+            icon.classList.toggle('fa-arrow-up', !isAscending)
+            icon.classList.toggle('fa-arrow-down', isAscending)
+        }
+    }
+
+    function sortbydate(e) {
+        e.preventDefault()
+        const button = e.target.closest('button')
+        sorttable(2, button)
+    }
+
+    function sortbyname(e) {
+        e.preventDefault()
+        const button = e.target.closest('button')
+        sorttable(3, button)
+    }
+
+    function sortbymail(e) {
+        e.preventDefault()
+        const button = e.target.closest('button')
+        sorttable(4, button)
+    }
+
+    function sortbycontact(e) {
+        e.preventDefault()
+        const button = e.target.closest('button')
+        sorttable(5, button)
+    }
+
+    function sortbyresponse(e) {
+        e.preventDefault()
+        const button = e.target.closest('button')
+        sorttable(6, button)
+    }
+
+    
+    const search = document.getElementById('search')
+    search.addEventListener('keyup', function(event){
+        const data = event.target.value.toLowerCase()
+        const tbody = document.getElementById('tbody')
+        const rows = tbody.getElementsByTagName('tr')
+        for (let i = 0; i < rows.length; i++) {
+            const cells = rows[i].getElementsByTagName('td')
+            let found = false
+            for (let j = 0; j < cells.length; j++) {
+                if (cells[j].textContent.toLowerCase().includes(data)) {
+                    found = true
+                    break
+                } 
+            }
+            if (found) {
+                rows[i].style.display = ''
+            } else {
+                rows[i].style.display = 'none'
+            }
+        }
+    })
+</script>
+{% endblock %}

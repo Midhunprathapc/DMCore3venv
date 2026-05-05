@@ -1,0 +1,654 @@
+{% extends "teamlead_base.html" %}
+{% block title %} Team Lead Work Allocate{% endblock %}
+
+{% block content %}
+
+<style>
+
+.page-container {
+    background: #0f172a;
+    padding: 20px;
+    border-radius: 12px;
+    color: #fff;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.assign-btn {
+    background: #7c3aed;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 6px;
+    color: white;
+    font-size: 14px;
+}
+
+.search-box {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 15px;
+    border-radius: 6px;
+    border: none;
+    background-color: #1e293b;
+    color: white;
+}
+
+.table-container {
+    overflow-x: auto;
+      /* 🔥 important */
+    position: relative;
+}
+
+.custom-table {
+    width: 100%;
+    min-width: 800px;
+    
+}
+
+.custom-table th {
+    text-align: left;
+    font-size: 13px;
+    color: #94a3b8;
+    padding: 10px;
+    border-bottom: 1px solid #1e293b;
+}
+
+.custom-table td {
+    padding: 12px 10px;
+    border-bottom: 1px solid #1e293b;
+    font-size: 14px;
+}
+
+.progress-bar-bg {
+    background: #1e293b;
+    border-radius: 5px;
+    height: 6px;
+    width: 100px;
+}
+
+.progress-bar-fill {
+    background: #3b82f6;
+    height: 100%;
+    border-radius: 5px;
+}
+.allocate-btn {
+    border: 1px solid #3b82f6;
+    background: transparent;
+    color: #3b82f6;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+}
+.status-dotred {
+    width: 12px;
+    height: 12px;
+    background: #ef4444;
+    border-radius: 50%;
+    display: block;          
+    margin: 0;               
+    flex-shrink: 0;         
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.status-dotred:hover {
+    transform: scale(1.3);
+    background: #dc2626;
+}
+.not-allocated-btn {
+    display: inline-block;
+    padding: 5px 12px;
+    background: yellow; 
+    color: black;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: default; 
+    transition: background 0.3s;
+}
+
+.not-allocated-btn:hover {
+    background: black;
+    color: yellow; 
+}
+.breadcrumb-item a {
+    position: relative;
+    z-index: 5;  
+    cursor: pointer;
+    text-decoration: underline;
+    color: #2563eb; 
+}
+
+
+.team-lead-row {
+    display: flex;
+    align-items: center;      
+    justify-content: flex-start;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+.main-content::before {
+    pointer-events: none;
+}
+/* 🔥 Dark inputs inside modal */
+.modal-content input,
+.modal-content select,
+.modal-content textarea {
+    background-color: #1e293b !important;   /* deep black */
+    color: #ffffff !important;
+    border: 1px solid #1e293b !important;
+}
+
+/* Placeholder color */
+.modal-content input::placeholder,
+.modal-content textarea::placeholder {
+    color: #94a3b8 !important;
+}
+
+/* Focus effect */
+.modal-content input:focus,
+.modal-content select:focus,
+.modal-content textarea:focus {
+    background-color: #1e293b !important;
+    color: #ffffff !important;
+    border-color: #3b82f6 !important;
+    box-shadow: none !important;
+}
+
+/* Disabled fields (Task & Lead) */
+.modal-content select:disabled {
+    background-color: #1e293b !important;
+    color: #94a3b8 !important;
+    opacity: 1 !important;
+    cursor: not-allowed;
+}
+.modal-body {
+    
+    max-height: 610px;
+    
+}
+/* 3 dot icon */
+.three-dot {
+    cursor: pointer;
+    font-size: 18px;
+    color: #94a3b8;
+    padding: 5px;
+}
+
+/* dropdown box */
+.dropdown-menu-custom {
+    display: none;
+    position: fixed;
+    top: 100%;     /* directly below icon */
+    left: 0;       /* align from left */
+    
+    background: #1e293b;
+    border-radius: 8px;
+    padding: 5px 0;
+    min-width: 160px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    z-index: 9999;
+}
+
+/* dropdown items */
+.dropdown-menu-custom a {
+    display: block;
+    padding: 8px 12px;
+    color: #fff;
+    text-decoration: none;
+    font-size: 13px;
+}
+
+.dropdown-menu-custom a:hover {
+    background: #334155;
+}
+/* .table-container {
+    position: relative;
+    z-index: 1;
+} */
+
+/* .table-container {
+    overflow: visible !important;
+}  */
+
+/* .custom-table {
+    overflow: visible !important;
+}
+
+.custom-table tr,
+.custom-table td {
+    overflow: visible !important;
+}  */
+.bg-danger { background: #ef4444 !important; }
+.bg-warning { background: #facc15 !important; }
+.bg-success { background: #22c55e !important; } 
+
+
+
+
+</style>
+{% if messages %}
+    <div class="row mb-4">
+        <div class="col-12">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+
+
+           <nav aria-label="breadcrumb">
+    <ol class="breadcrumb breadcrumb-custom bg-transparent p-0 mb-3">
+        <li class="breadcrumb-item">
+            <a href="{% url 'teamlead_dashboard' %}" class="text-secondary fw-bold" style="text-decoration: none">Dashboard</a>
+        </li>
+         <li class="breadcrumb-item active text-secondary" aria-current="page">
+            /
+        </li>
+        <li class="breadcrumb-item active text-secondary" aria-current="page">
+            Pending Works View
+        </li>
+    </ol>
+</nav>
+        
+<div class="container-fluid mt-4">
+    <div class="page-container">
+
+
+        <div class="page-header">
+            <h5>Daily Works Updates</h5>
+            
+        </div>
+
+
+        <input type="text" id="searchBox"  placeholder="Search here..." class="search-box">
+
+
+        <div class="table-container">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        
+                        <th></th>
+                        
+                        <th>Client Name</th>
+                        <th>Employee</th>
+                        <th>Task </th>
+                        <th>Start Date</th>
+                        <th>Due Date</th>
+                        
+                        <th>Progress</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+{% for Task in Tasks %}
+<tr>
+
+    
+   <td style="position:relative;">
+    
+    <!-- 3 Dot Icon -->
+    <div class="three-dot" onclick="toggleMenu(this)">
+        &#8942;
+    </div>
+
+    <!-- Dropdown -->
+    <div class="dropdown-menu-custom">
+        <a href="{% url 'delete_allocation' Task.id %}"
+   onclick="return confirm('Delete this allocation?')">
+   Remove Task
+</a>
+        <a href="#"
+   data-bs-toggle="modal"
+   data-bs-target="#taskModal"
+
+   data-client="{{ Task.work.clientId.client_name }}"
+   
+   data-task="{{ Task.task.task_name }}"
+   data-allocate="{{ Task.allocated_date }}"
+   data-accepted="{{ Task.accepted_date }}"
+   
+   data-description="{{ Task.description }}"
+   data-target="{{ Task.target }}"
+   data-verified-target="{{ Task.total_verified_target }}"
+>
+   Task Details
+</a>
+        <a href="#"
+   data-bs-toggle="modal"
+   data-bs-target="#workModal"
+   data-taskid="{{ Task.id }}"
+
+   data-date="{{ Task.work.work_date|date:"d M Y" }}"
+   data-title="{{ Task.work.title }}"
+   data-description="{{ Task.work.description }}"
+   data-target="{{ Task.work.target  }}"
+   data-file="{% if Task.work.file %}{{ Task.work.file.url }}{% endif %}"
+   
+   data-verified_target="{{ Task.work.verified_target  }}"
+   data-verification="{{ Task.work.verification  }}"
+   
+>
+   Work Details
+</a>
+        <a href="#" onclick="closeWindow()">Close Window</a>
+    </div>
+
+</td>
+    <td style="vertical-align:middle;">
+        <div style="display:flex;align-items:center;gap:10px;">
+            {% if Task.work.clientId.client_profile %}
+                <img src="{{ Task.work.clientId.client_profile.url }}"
+                     style="width:30px;height:30px;border-radius:50%;object-fit:cover;">
+            {% else %}
+                <img src="/static/default-user.png"
+                     style="width:30px;height:30px;border-radius:50%;object-fit:cover;">
+            {% endif %}
+            {{ Task.work.clientId.client_name }}
+        </div>
+    </td>
+
+    <!-- Employee -->
+    <td>{{ Task.assigned_to.name }}</td>
+
+    <!-- Task -->
+    <td>{{ Task.task.task_name }}</td>
+
+    <!-- Dates -->
+    <td>{{ Task.start_date }}</td>
+    <td>{{ Task.end_date }}</td>
+
+    <!-- Progress -->
+    <td>
+    <div class="progress-bar-bg">
+        <div class="progress-bar-fill
+            {% if Task.progress_percent < 40 %}
+                bg-danger
+            {% elif Task.progress_percent < 70 %}
+                bg-warning
+            {% else %}
+                bg-success
+            {% endif %}"
+        style="width: {{ Task.progress_percent }}%;"></div>
+    </div>
+    <small>{{ Task.progress_percent }}%</small>
+</td>
+
+</tr>
+{% endfor %}
+</tbody>
+            </table>
+ <div class="modal fade" id="workModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content" style="background:#0f172a; color:white;">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Work Details</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+        <div style="overflow-x:auto;">
+
+        <table class="table table-dark table-bordered text-center">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Title</th>
+            <th>Description</th>
+            <th>Target</th>
+            <th>File</th>
+            <th>Verified Target</th>
+            <th>Verification</th>
+
+        </tr>
+    </thead>
+    
+       <tbody id="workTableBody">
+</tbody>
+    
+
+        </table>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="taskModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="background:#0f172a;color:white;border-radius:10px;">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Task Details</h5>
+       <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+
+        <!-- Client -->
+        <div class="mb-3">
+          <label class="form-label">Client Name</label>
+          <input type="text" id="modalClient" class="form-control" readonly>
+        </div>
+         <div class="mb-3">
+          <label class="form-label">Task Name</label>
+          <input type="text" id="modaltask" class="form-control" readonly>
+        </div>
+         <div class="mb-3">
+          <label class="form-label">Allocated Date</label>
+          <input type="text" id="modalallocatedate" class="form-control" readonly>
+        </div>
+         <div class="mb-3">
+          <label class="form-label">Task Accepted Date</label>
+          <input type="text" id="modalaccept" class="form-control" readonly>
+        </div>
+         <div class="mb-3">
+          <label class="form-label">Task Description</label>
+          <input type="text" id="modaldescription" class="form-control" readonly>
+        </div>
+         <div class="mb-3">
+          <label class="form-label">Target</label>
+          <input type="text" id="modaltarget" class="form-control" readonly>
+        </div>
+         
+         <div class="mb-3">
+          <label class="form-label">Achived Target</label>
+          <input type="text" id="modalverified" class="form-control readonly">
+        </div>
+        
+    </div>
+
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="verifyModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="background:#0f172a;color:white;border-radius:10px;">
+
+      <form method="POST" action="{% url 'update_verification' %}">
+        {% csrf_token %}
+
+        <div class="modal-header">
+          <h5 class="modal-title">Verification</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body">
+
+          <!-- hidden id -->
+          <input type="hidden" name="work_id" id="verifyId">
+
+          <div class="mb-3">
+  <label class="form-label">Achieved Target</label>
+  <input type="text" name="achieved_target" id="verifyAchieved" class="form-control" readonly>
+</div>
+
+<div class="mb-3">
+  <label class="form-label">Verified Target</label>
+  <input type="text" name="verified_target" id="verifyVerified" class="form-control">
+</div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+</div>
+<script>
+
+
+var taskModal = document.getElementById('taskModal');
+
+taskModal.addEventListener('show.bs.modal', function (event) {
+    var button = event.relatedTarget;
+
+    document.getElementById('modalClient').value = button.getAttribute('data-client');
+    document.getElementById('modaltask').value = button.getAttribute('data-task');
+    document.getElementById('modalallocatedate').value = button.getAttribute('data-allocate');
+    document.getElementById('modalaccept').value = button.getAttribute('data-accepted');
+    document.getElementById('modaldescription').value = button.getAttribute('data-description');
+    document.getElementById('modaltarget').value = button.getAttribute('data-target');
+    
+    document.getElementById('modalverified').value = button.getAttribute('data-verified-target');
+});
+
+    var workModal = document.getElementById('workModal');
+
+workModal.addEventListener('show.bs.modal', function (event) {
+    var button = event.relatedTarget;
+    var taskId = button.getAttribute('data-taskid');
+
+    fetch(`/get-dailyworks/${taskId}/`)
+        .then(response => response.json())
+        .then(data => {
+
+            let tableBody = document.getElementById('workTableBody');
+            tableBody.innerHTML = '';
+
+            data.works.forEach(work => {
+                let row = `
+                    <tr>
+                        <td>${work.date}</td>
+                        <td>${work.title}</td>
+                        <td>${work.description}</td>
+                        
+                        <td>${work.target}</td>
+                        <td>
+    ${work.file 
+      ? `<a href="${work.file}" target="_blank" class="allocate-btn view-btn">View</a>` 
+      : 'No File'}
+</td>
+                        <td>${work.verified_target}</td>
+                        <td>
+<button 
+    class="allocate-btn view-btn"
+    data-bs-toggle="modal"
+    data-bs-target="#verifyModal"
+    data-achieved="${work.target}"
+    data-id="${work.id}"
+    data-verified="${work.verified_target}"
+>
+    ${work.verification}
+</button>
+</td>
+                    </tr>
+                `;
+                tableBody.innerHTML += row;
+            });
+
+        });
+});
+       
+function toggleMenu(element) {
+    const menu = element.nextElementSibling;
+
+    // close all menus
+    document.querySelectorAll('.dropdown-menu-custom').forEach(m => {
+        m.style.display = 'none';
+    });
+
+    const rect = element.getBoundingClientRect();
+
+    menu.style.display = 'block';
+    menu.style.top = rect.bottom + "px";   // below icon
+    menu.style.left = rect.left + "px";    // align left
+}
+// close when clicking outside
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.three-dot')) {
+        document.querySelectorAll('.dropdown-menu-custom').forEach(menu => {
+            menu.style.display = 'none';
+        });
+    }
+});
+
+// close window function
+function closeWindow() {
+    document.querySelectorAll('.dropdown-menu-custom').forEach(menu => {
+        menu.style.display = 'none';
+    });
+}
+document.addEventListener('DOMContentLoaded', function () {
+
+    // 🔍 Search
+    const searchInput = document.getElementById('searchBox');
+    const rows = document.querySelectorAll('.custom-table tbody tr');
+
+    searchInput.addEventListener('keyup', function() {
+        const filter = this.value.toLowerCase();
+
+        rows.forEach(row => {
+            row.style.display = row.textContent.toLowerCase().includes(filter) ? '' : 'none';
+        });
+    });
+    
+    });
+    document.querySelectorAll('[data-bs-toggle="modal"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.dropdown-menu-custom').forEach(menu => {
+            menu.style.display = 'none';
+        });
+    });
+});
+var verifyModal = document.getElementById('verifyModal');
+
+verifyModal.addEventListener('show.bs.modal', function (event) {
+    var button = event.relatedTarget;
+
+    let achieved = button.getAttribute('data-achieved');
+
+    document.getElementById('verifyId').value = button.getAttribute('data-id');
+    document.getElementById('verifyAchieved').value = achieved;
+    document.getElementById('verifyVerified').value = button.getAttribute('data-verified') || '';
+});
+let bars = document.querySelectorAll('.progress-bar-fill');
+bars.forEach(bar => {
+    let percent = parseInt(bar.dataset.percent);
+    if(percent > 100) percent = 100;
+    bar.style.width = percent + '%';
+});
+
+    
+
+    </script>
+
+
+
+{% endblock %}

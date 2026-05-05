@@ -1,0 +1,493 @@
+{% extends "data_manager_base.html" %}
+{% block content %}
+<style>
+    .today-leads-wrapper {
+        background-color: #0b0f1a;
+        min-height: 100vh;
+        padding: 25px;
+        color: #e2e8f0;
+    }
+
+    .breadcrumb-text {
+        color: #64748b;
+        font-size: 0.85rem;
+        margin-bottom: 25px;
+    }
+
+
+    .search-section-card {
+        background: #111624;
+        padding: 25px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border: 1px solid #070b11;
+    }
+
+    .section-title {
+        font-size: 1rem;
+        color: #94a3b8;
+        margin-bottom: 20px;
+        font-weight: 500;
+    }
+
+    .filter-label {
+        font-size: 0.8rem;
+        color: #94a3b8;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .custom-select {
+        background: #0f172a;
+        border: 1px solid #334155;
+        color: white;
+        padding: 10px;
+        border-radius: 5px;
+        width: 100%;
+        font-size: 0.85rem;
+    }
+
+
+    .table-info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 40px;
+        margin-bottom: 20px;
+    }
+
+    .table-title {
+        font-size: 1rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .info-icon {
+        font-size: 0.8rem;
+        color: #64748b;
+    }
+
+    .search-box {
+        background: #0f172a;
+        border: 1px solid #334155;
+        color: white;
+        padding: 8px 15px;
+        border-radius: 4px;
+        width: 250px;
+        font-size: 0.85rem;
+    }
+
+
+    .custom-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.85rem;
+    }
+
+    .custom-table th {
+        color: #64748b;
+        font-weight: 500;
+        text-align: left;
+        padding: 15px;
+        border-bottom: 1px solid #1e293b;
+    }
+
+    .custom-table td {
+        padding: 15px;
+        border-bottom: 1px solid #1e293b;
+        color: #cbd5e1;
+    }
+
+    .status-allocated {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #cbd5e1;
+    }
+
+    .dot-green {
+        width: 8px;
+        height: 8px;
+        background-color: #10b981;
+        border-radius: 50%;
+    }
+
+    .copyright {
+        margin-top: 50px;
+        color: #64748b;
+        font-size: 0.8rem;
+    }
+
+    .custom-dropdown {
+        position: relative;
+        display: inline-block;
+        margin-left: 10px;
+    }
+
+
+    .dropbtn {
+        background: transparent;
+        color: #64748b;
+        border: none;
+        font-size: 0.9rem;
+        cursor: pointer;
+        padding: 5px;
+        transition: color 0.2s;
+    }
+
+    .dropbtn:hover {
+        color: #f1f5f9;
+    }
+
+
+    .dropdown-content {
+        display: none;
+        position: absolute;
+        right: 0;
+        background-color: #161d31;
+        min-width: 120px;
+        box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.5);
+        z-index: 100;
+        border-radius: 6px;
+        border: 1px solid #334155;
+        margin-top: 5px;
+    }
+
+
+    .dropdown-content a {
+        color: #cbd5e1;
+        padding: 10px 15px;
+        text-decoration: none;
+        display: block;
+        font-size: 0.85rem;
+        transition: background 0.2s;
+    }
+
+    .dropdown-content a:hover {
+        background-color: #1e293b;
+    }
+
+    .dropdown-content i {
+        margin-right: 10px;
+        width: 15px;
+        text-align: center;
+    }
+
+
+    .show {
+        display: block;
+    }
+
+
+    .text-primary {
+        color: #3b82f6 !important;
+    }
+
+
+    .text-danger {
+        color: #ef4444 !important;
+    }
+
+
+    .text-light {
+        color: #cbd5e1 !important;
+    }
+
+
+
+    @media (max-width: 768px) {
+        .today-leads-wrapper {
+            padding: 15px;
+        }
+
+        .search-section-card {
+            padding: 15px;
+        }
+
+
+        .table-info-row {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .search-box {
+            width: 100%;
+        }
+
+
+        .custom-table {
+            min-width: 900px;
+        }
+
+        .table-responsive {
+            border: 1px solid #1e293b;
+            border-radius: 8px;
+        }
+    }
+
+    /* Print Styles */
+    @media print {
+        @page {
+            size: landscape;
+            margin: 0; /* Hides browser headers (title, date) and footers (URL) */
+        }
+
+        body {
+            margin: 1.5cm !important; /* Adds margin back to content only */
+            background: white !important;
+        }
+
+        /* Hide all navigation and layout elements */
+        #sidebar, .sidebar, 
+        #navbar, .navbar, 
+        .navbar-toggle, .mobile-toggle, .desktop-toggle, 
+        .profile-section, .custom-dropdown, .search-box,
+        .breadcrumb-custom, .container-fluid:has(.breadcrumb-custom),
+        .search-section-card, .table-info-row, .copyright {
+            display: none !important;
+        }
+
+        /* Reset main content margins and background */
+        .main-content, .today-leads-wrapper {
+            background: white !important;
+            color: black !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+            min-height: auto !important;
+            position: static !important;
+            overflow: visible !important;
+        }
+
+        /* Ensure table takes full width and is visible */
+        .table-responsive {
+            display: block !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: visible !important;
+            border: none !important;
+        }
+
+        .custom-table {
+            width: 100% !important;
+            min-width: initial !important; /* Remove the 900px min-width */
+            border-collapse: collapse !important;
+            color: black !important;
+            background: white !important;
+            font-size: 8.5pt !important; /* Smaller font to fit more columns */
+            table-layout: auto !important;
+        }
+
+        .custom-table th, .custom-table td {
+            border: 1px solid #000 !important;
+            padding: 6px 4px !important; /* Tighter padding */
+            color: black !important;
+            background: white !important;
+            word-wrap: break-word !important;
+            white-space: normal !important; /* Allow wrapping */
+        }
+
+        .custom-table th {
+            background-color: #f0f0f0 !important;
+            font-weight: bold !important;
+            -webkit-print-color-adjust: exact;
+        }
+
+        /* Status indicators in print */
+        .dot-green {
+            background-color: #000 !important;
+            border: 1px solid #000 !important;
+        }
+    }
+</style>
+
+<div class="today-leads-wrapper">
+    <div class="container-fluid no-print-container">
+        <ol class="breadcrumb breadcrumb-custom bg-transparent p-0 mb-3">
+            <li class="breadcrumb-item">
+                <a href="{% url 'data_manager_dashboard' %}" class="text-secondary fw-bold"
+                    style="text-decoration: none">Dashboard</a>
+            </li>
+            <li class="breadcrumb-item active text-secondary" aria-current="page">Today New Leads</li>
+        </ol>
+    </div>
+
+    <div class="search-section-card">
+        <div class="section-title">Search Section -</div>
+        <form method="GET" id="filterForm" class="row g-3">
+            <!-- col-12 makes it full width on mobile, col-md-3 keeps 4-in-a-row on desktop -->
+            <div class="col-12 col-md-3">
+                <label class="filter-label">Clients Name *</label>
+                <select name="client" class="custom-select" onchange="this.form.submit()">
+                    <option value="">Select all clients</option>
+                    {% for c in clients %}
+                    <option value="{{ c.id }}">{{ c.client_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-12 col-md-3">
+                <label class="filter-label">Leads Collected For *</label>
+                <select name="category" class="custom-select" onchange="this.form.submit()">
+                    <option value="">Select Categories</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat }}">{{ cat }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-12 col-md-3">
+                <label class="filter-label">Executives *</label>
+                <select name="executive" class="custom-select" onchange="this.form.submit()">
+                    <option value="">Select Executives</option>
+                    {% for ex in executives %}
+                    <option value="{{ ex.id }}">{{ ex.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-12 col-md-3">
+                <label class="filter-label">Source *</label>
+                <select name="source" class="custom-select" onchange="this.form.submit()">
+                    <option value="">Select Source</option>
+                    {% for p in platforms %}
+                    <option value="{{ p.name }}">{{ p.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
+    </div>
+
+    <div class="table-info-row">
+        <div class="table-title w-100 d-flex align-items-center gap-2 mb-md-0 mb-2">
+            <span>Today New Leads We Have - ( {{ leads_count }} )</span>
+
+            <div class="custom-dropdown">
+                <button type="button" class="dropbtn" onclick="toggleDropdown()">
+                    <i class="fas fa-ellipsis-v"></i>
+                </button>
+                <div id="exportDropdown" class="dropdown-content">
+                    <a href="javascript:void(0)" onclick="window.print()">
+                        <i class="fas fa-print text-primary"></i> Print
+                    </a>
+                    <a href="javascript:void(0)" onclick="exportData('pdf')">
+                        <i class="fas fa-file-pdf text-danger"></i> Pdf
+                    </a>
+                    <a href="javascript:void(0)" onclick="exportData('excel')">
+                        <i class="fas fa-file-excel text-light"></i> Excel
+                    </a>
+                </div>
+            </div>
+        </div>
+        <!-- Wrap search box in w-100 for mobile flex -->
+        <form method="GET" class="w-100">
+            <input type="text" name="q" class="search-box" placeholder="search here.." value="{{ request.GET.q }}">
+        </form>
+    </div>
+
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Status</th>
+                    <th>Added Date</th>
+                    <th>Lead Name</th>
+                    <th>Email</th>
+                    <th>Phone Number</th>
+                    <th>Data Sourse</th>
+                    <th>Client name</th>
+                    <th>Lead Category</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if request.GET.client %}
+                {% for lead in leads %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>
+                        <div class="status-allocated">
+                            <span class="dot-green"></span> {{ lead.status }}
+                        </div>
+                    </td>
+                    <td>{{ lead.created_at|date:"F d, Y" }}</td>
+                    <td>{{ lead.full_name }}</td>
+                    <td>{{ lead.email }}</td>
+                    <td>{{ lead.contact }}</td>
+                    <td>{{ lead.source }}</td>
+                    <td>{{ lead.lead_collection.work_Id.clientId.client_name }}</td>
+                    <td>{{ lead.lead_collection.collection_head }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="text-center py-4 text-muted">No new leads collected today.</td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="9" class="text-center py-4 text-muted">
+                        <i class="fas fa-filter mb-2" style="font-size: 1.5rem; opacity: 0.5;"></i><br>
+                        Please select a Client to view details.
+                    </td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<script>
+
+    function toggleDropdown() {
+        document.getElementById("exportDropdown").classList.toggle("show");
+    }
+
+
+    window.onclick = function (event) {
+        if (!event.target.matches('.dropbtn') && !event.target.matches('.fa-ellipsis-v')) {
+            var dropdowns = document.getElementsByClassName("dropdown-content");
+            for (var i = 0; i < dropdowns.length; i++) {
+                var openDropdown = dropdowns[i];
+                if (openDropdown.classList.contains('show')) {
+                    openDropdown.classList.remove('show');
+                }
+            }
+        }
+    }
+
+
+    function exportData(format) {
+        const params = new URLSearchParams(window.location.search);
+        params.set('export', format);
+        window.location.href = window.location.pathname + '?' + params.toString();
+    }
+
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const urlParams = new URLSearchParams(window.location.search);
+
+        if (urlParams.has('client')) {
+            let el = document.querySelector('select[name="client"]');
+            if (el) el.value = urlParams.get('client');
+        }
+        if (urlParams.has('category')) {
+            let el = document.querySelector('select[name="category"]');
+            if (el) el.value = urlParams.get('category');
+        }
+        if (urlParams.has('executive')) {
+            let el = document.querySelector('select[name="executive"]');
+            if (el) el.value = urlParams.get('executive');
+        }
+        if (urlParams.has('source')) {
+            let el = document.querySelector('select[name="source"]');
+            if (el) el.value = urlParams.get('source');
+        }
+    });
+</script>
+{% endblock %}

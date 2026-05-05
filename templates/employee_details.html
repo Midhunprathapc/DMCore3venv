@@ -1,0 +1,204 @@
+{% extends "data_manager_base.html" %}
+
+{% block title %}Data Manager Hr/Tele callers{% endblock %}
+
+{% block content %}
+
+<style>
+/* Page Background */
+body {
+    background-color: #121212 !important;
+    color: #ffffff !important;
+}
+
+/* Breadcrumb */
+.breadcrumb {
+    background-color: transparent;
+    padding: 0;
+    margin-bottom: 10px;
+}
+
+.breadcrumb a {
+    position: relative;
+    z-index: 9999;
+    pointer-events: auto;
+    color: #00d4ff;
+}
+
+.breadcrumb-item.active {
+    color: #bbbbbb;
+}
+
+/* Card Styling */
+.card {
+    background-color: #1e1e1e !important;
+    color: #ffffff !important;
+    border: 1px solid #333;
+    border-radius: 20px;
+}
+
+/* Text Fix */
+h1, h2, h3, h4, h5, p, span, label, strong {
+    color: #ffffff !important;
+}
+
+/* Muted Text */
+.text-muted {
+    color: #bbbbbb !important;
+}
+
+/* HR Line */
+hr {
+    border-color: #444;
+}
+
+/* Button Fix */
+.btn-primary {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+/* Image Styling */
+.profile-img {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid #444;
+}
+</style>
+
+{% if messages %}
+<div class="row mb-4">
+    <div class="col-12">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<div class="container-fluid mt-4">
+
+    <!-- Breadcrumb -->
+    <div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item text-danger"><a href="{% url 'data_manager_dashboard' %}" class="text-decoration-none">Dashboard</a></li>
+        <li class="breadcrumb-item active text-secondary" aria-current="page">Employee</li>
+        
+    </ol>
+</nav>
+        </div>
+    </div>
+    
+
+    
+    <div style="max-width:700px; margin:auto;"> 
+        <div class="card p-4 mt-3">
+
+    <!-- Profile -->
+    <div style="text-align:center; margin-bottom:20px;">
+        {% if employee.profile_picture %}
+            <img src="{{ employee.profile_picture.url }}" width="120">
+        {% else %}
+            <img src="/static/default.png" width="120">
+        {% endif %}
+
+        <h4>{{ employee.name }}</h4>
+        <p>{{ employee.designation.name }}</p>
+    </div>
+
+    <!-- Details -->
+    <div>
+
+        <div style="display:flex; justify-content:space-between;">
+            <b>Employee Code</b>
+            <span>{{ employee.employee_code }}</span>
+        </div>
+
+        <div style="display:flex; justify-content:space-between;">
+            <b>Email</b>
+            <span>{{ employee.email }}</span>
+        </div>
+
+        <div style="display:flex; justify-content:space-between;">
+            <b>Phone</b>
+            <span>{{ employee.contact_number }}</span>
+        </div>
+
+        <div style="display:flex; justify-content:space-between;">
+            <b>Company</b>
+            <span>{{ employee.company.company_name }}</span>
+        </div>
+
+        <div style="display:flex; justify-content:space-between;">
+            <b>Department</b>
+            <span>{{ employee.department.name }}</span>
+        </div>
+
+        <div style="display:flex; justify-content:space-between;">
+            <b>Designation</b>
+            <span>{{ employee.designation.name }}</span>
+        </div>
+
+        <div style="display:flex; justify-content:space-between;">
+            <b>Address line 1</b>
+            <span>{{ employee.address_line1 }}</span>
+        </div>
+
+        <div style="display:flex; justify-content:space-between;">
+            <b>Address line 2</b>
+            <span>{{ employee.address_line2 }}</span>
+        </div>
+
+        <div style="display:flex; justify-content:space-between;">
+            <b>Address line 3</b>
+            <span>{{ employee.address_line3 }}</span>
+        </div>
+
+        <div style="display:flex; justify-content:space-between;">
+            <b>Pin Code</b>
+            <span>{{ employee.pin }}</span>
+        </div>
+
+        <div style="display:flex; justify-content:space-between;">
+            <b>Location</b>
+            <span>{{ employee.location }}</span>
+        </div>
+
+        <div style="display:flex; justify-content:space-between;">
+            <b>District</b>
+            <span>{{ employee.district }}</span>
+        </div>
+
+        <div style="display:flex; justify-content:space-between;">
+            <b>State</b>
+            <span>{{ employee.state }}</span>
+        </div>
+
+        <div style="display:flex; justify-content:space-between;">
+            <b>Status</b>
+            <span>{{ employee.active_status }}</span>
+        </div>
+
+        <div style="display:flex; justify-content:space-between;">
+            <b>Verification</b>
+            <span>{{ employee.verification_status }}</span>
+        </div>
+
+        <div style="display:flex; justify-content:space-between;">
+            <b>Created Date</b>
+            <span>{{ employee.created_at }}</span>
+        </div>
+
+    </div>
+    </div>
+
+</div>
+{% endblock %}

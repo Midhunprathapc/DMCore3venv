@@ -1,0 +1,260 @@
+{% extends "telecaller_base.html" %}
+{% block content %}
+
+<style>
+
+.main-content::before{
+pointer-events:none !important;
+}
+
+.content-card{
+position:relative;
+z-index:10;
+}
+
+
+.main-grid{
+display:grid;
+grid-template-columns:280px 1fr;
+gap:20px;
+}
+.content-card{
+min-width:0;
+}
+.breadcrumb-item a {
+    position: relative;
+    z-index: 5;  
+    cursor: pointer;
+    text-decoration: underline;
+    color: #2563eb; 
+}
+
+
+@media(max-width:992px){
+
+.main-grid{
+grid-template-columns:1fr;
+}
+
+}
+
+.card{
+background:#111827;
+color:white;
+padding:20px;
+border-radius:10px;
+margin-bottom:15px;
+cursor:pointer;
+transition:.3s;
+}
+
+.card:hover{
+background:#1f2937;
+}
+
+.card.active{
+background:#2563eb;
+}
+
+.content-card{
+background:#111827;
+padding:20px;
+border-radius:10px;
+color:white;
+min-height:400px;
+}
+
+.table-responsive{
+width:100%;
+overflow-x:auto;
+-webkit-overflow-scrolling:touch;
+border-radius:10px;
+}
+
+table{
+width:100%;
+min-width:700px;   
+border-collapse:collapse;
+}
+
+th,td{
+padding:12px;
+white-space:nowrap;   
+border-bottom:1px solid #2d3748;
+text-align:left;
+}
+
+th{
+color:#9ca3af;
+}
+
+select,textarea,button{
+width:100%;
+padding:10px;
+margin-top:10px;
+background:#1f2937;
+border:none;
+color:white;
+border-radius:6px;
+}
+
+button{
+background:#2563eb;
+cursor:pointer;
+}
+
+</style>
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb breadcrumb-custom bg-transparent p-0 mb-3">
+        <li class="breadcrumb-item">
+            <a href="{% url 'telecaller_dashboard' %}" class="text-secondary fw-bold" style="text-decoration: none">Dashboard</a>
+        </li>
+         <li class="breadcrumb-item active text-secondary" aria-current="page">
+            /
+        </li>
+        <li class="breadcrumb-item active text-secondary" aria-current="page">
+            Feedback Page
+        </li>
+    </ol>
+</nav>
+
+<div class="main-grid">
+
+
+<div>
+
+<div class="card active" onclick="showSection(event,'viewSection')">
+<h4>Feedback View</h4>
+<p style="color:#9ca3af;">To view feedbacks</p>
+</div>
+
+<div class="card" onclick="showSection(event,'addSection')">
+<h4>Add Feedback</h4>
+<p style="color:#9ca3af;">To add feedback</p>
+</div>
+
+</div>
+
+<div class="content-card">
+
+<div id="viewSection">
+
+<div style="display:flex;justify-content:space-between;align-items:center;">
+<h3>Feedback List</h3>
+
+<select id="feedbackFilter" onchange="filterFeedback()" style="width:220px;">
+<option value="all">All Feedback</option>
+<option value="given">Feedback Given</option>
+<option value="received">Feedback Received</option>
+</select>
+
+</div>
+<div class="table-responsive">
+<table>
+
+<tr>
+<th>Date</th>
+<th>From</th>
+<th>To</th>
+<th>Feedback</th>
+</tr>
+
+<tbody id="feedbackTable">
+
+{% for f in received_feedback %}
+
+<tr class="receivedRow">
+<td>{{f.feedback_date}}</td>
+<td>{{f.from_name}}</td>
+<td>{{f.feedback_emp_id.name}}</td>
+<td>{{f.feedback_content}}</td>
+</tr>
+{% endfor %}
+
+{% for f in sent_feedback %}
+
+<tr class="givenRow">
+<td>{{f.feedback_date}}</td>
+<td>{{f.from_name}}</td>
+<td>{{f.feedback_emp_id.name}}</td>
+<td>{{f.feedback_content}}</td>
+</tr>
+{% endfor %}
+
+</tbody>
+
+</table>
+</div>
+</div>
+
+<div id="addSection" style="display:none;">
+
+<h3>Add Feedback</h3>
+
+<form method="POST">
+{% csrf_token %}
+<label>Select Employee</label>
+<select name="feedbackToEmployee" required>
+<option value="">Select Employee</option>
+
+{% for emp in employees %}
+
+<option value="{{emp.id}}">
+{{emp.name}} ({{emp.department.name}})
+</option>
+{% endfor %}
+
+</select>
+<label>Enter your Feedback</label>
+<textarea name="feedback_text" placeholder="Enter feedback"></textarea>
+
+<button type="submit">Add Feedback</button>
+
+</form>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+function showSection(event,section){
+
+document.getElementById("viewSection").style.display="none";
+document.getElementById("addSection").style.display="none";
+
+document.getElementById(section).style.display="block";
+
+document.querySelectorAll(".card").forEach(c=>c.classList.remove("active"));
+event.currentTarget.classList.add("active");
+
+}
+
+function filterFeedback(){
+
+let value = document.getElementById("feedbackFilter").value
+
+let given = document.querySelectorAll(".givenRow")
+let received = document.querySelectorAll(".receivedRow")
+
+if(value === "all"){
+given.forEach(r => r.style.display = "")
+received.forEach(r => r.style.display = "")
+}
+
+if(value === "given"){
+given.forEach(r => r.style.display = "")
+received.forEach(r => r.style.display = "none")
+}
+
+if(value === "received"){
+given.forEach(r => r.style.display = "none")
+received.forEach(r => r.style.display = "")
+}
+
+}
+
+</script>
+
+{% endblock %}

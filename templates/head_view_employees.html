@@ -1,0 +1,548 @@
+{% extends "head_base.html" %}
+{% block title %}View Employees{% endblock %}
+
+{% block content %}
+<head>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  
+<style>
+  /* Main Card */
+.dm-card {
+    background: #0f172a;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px rgba(0,0,0,0.45);
+    border: 1px solid #1e293b;
+    color: #e2e8f0;
+}
+
+/* Header */
+.dm-header {
+    border-bottom: 1px solid #1e293b;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.dm-title {
+    margin: 0;
+    color: #f1f5f9;
+}
+
+/* Inputs */
+.dm-input,
+.dm-select {
+    background-color: #1e293b;
+    border: 1px solid #334155;
+    color: #f1f5f9;
+}
+
+.dm-input:focus,
+.dm-select:focus {
+    background-color: #1e293b;
+    border-color: #64748b;
+    color: #fff;
+}
+
+/* Button */
+.dm-btn {
+    background-color: #1e40af;
+    border: none;
+    color: white;
+    padding: 6px 14px;
+    border-radius: 6px;
+}
+
+.dm-btn:hover {
+    background-color: #1e3a8a;
+}
+
+/* Table */
+/* Table */
+.dm-table-wrapper {
+    background: #0f172a;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.dm-table {
+    color: #cbd5e1;
+    font-size: 14px;
+    border-collapse: collapse;   /* IMPORTANT for grid lines */
+    width: 100%;
+}
+
+.dm-table thead {
+    background-color: #1e293b;
+    color: #94a3b8;
+    font: 1.1em sans-serif;
+}
+
+.dm-table thead th {
+    border: 1px solid #525253!important;   /* Header borders */
+    padding: 12px;
+}
+
+/* Grid lines */
+.dm-table tbody td {
+    border: 1px solid #525253!important;   /* Vertical + horizontal lines */
+    padding: 10px;
+}
+
+/* Row hover */
+.dm-table tbody tr:hover td {
+    background-color: #1e293b;
+}
+
+
+/* Icons */
+.dm-icon {
+    margin-right: 6px;
+    color: #64748b;
+}
+
+/* Badges */
+.dm-badge {
+    background: #1e40af;
+    padding: 3px 8px;
+    border-radius: 4px;
+    color: #cbd5e1;
+    font-size: 12px;
+}
+
+/* Pagination */
+.dm-page {
+    background: #1e293b;
+    color: #cbd5e1;
+    border: 1px solid #334155;
+}
+
+.dm-page:hover {
+    background: #334155;
+}
+
+.dm-page-disabled {
+    background: #0f172a;
+    border: 1px solid #334155;
+    color: #475569;
+}
+.dm-pagination .dm-page-btn,
+.dm-pagination .dm-page-number {
+    background: #1e293b;      /* dark box */
+    color: #cbd5e1;           /* gray text */
+    padding: 6px 14px;
+    border-radius: 6px;
+    border: 1px solid #334155;
+    font-size: 14px;
+    margin-left: 6px;
+    min-width: 40px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dm-pagination .dm-page-btn.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.dm-pagination .dm-page-btn:hover:not(.disabled) {
+    background: #334155;
+}
+/* Force dark table background */
+.dm-table,
+.dm-table thead,
+.dm-table tbody,
+.dm-table tr,
+.dm-table td,
+.dm-table th {
+    background-color: #1e293b !important;
+    color: #cbd5e1 !important;
+}
+
+/* Table borders (horizontal + vertical) */
+.dm-table td,
+.dm-table th {
+    border: 1px solid #1f2937!important;
+}
+
+/* Row hover effect */
+.dm-table tbody tr:hover {
+    background-color: #1e293b !important;
+}
+.dm-input::placeholder {
+    color: #ffffff !important;   /* white */
+    opacity: 0.8;                /* slight dim */
+}
+.dm-header {
+    color: #9ca3af !important;
+    font-size: 16px !important;
+    margin-bottom: 10px !important;
+    text-transform: uppercase !important;
+    font-weight: bolder;
+}
+/* RESPONSIVE FIXES */
+@media (max-width: 768px) {
+    /* Card padding reduce */
+    .dm-card {
+        padding: 15px;
+    }
+
+    /* Filter row stack */
+    form.row {
+        flex-direction: column !important;
+        gap: 10px !important;
+    }
+
+    /* Rows per page full width */
+    form .col-auto {
+        width: 100% !important;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    form select.dm-select {
+        width: 100% !important;
+    }
+
+    form .dm-input {
+        width: 100% !important;
+    }
+
+    /* Table scroll */
+    .dm-table-wrapper {
+        overflow-x: auto;
+    }
+
+    /* Designation column fix */
+    td.d-flex {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    /* Page number spacing */
+    .dm-page-number {
+        margin: 0 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Title smaller */
+    .dm-header {
+        font-size: 12px !important;
+    }
+
+    /* Input + button perfect fit */
+    form .dm-input {
+        font-size: 14px;
+    }
+
+    form button.dm-btn {
+        padding: 6px 10px;
+    }
+
+    /* Small pagination buttons */
+    .dm-page-btn {
+        padding: 4px 10px !important;
+        font-size: 12px !important;
+    }
+}
+@media (max-width: 768px) {
+    .dm-pagination {
+        width: 100%;
+        display: flex !important;
+        justify-content: flex-end !important;  /* ⬅ RIGHT ALIGN */
+        margin-top: 10px;
+    }
+}
+
+</style>
+</head>
+<div class="dm-card mt-4">
+    <div class="dm-header" style="color:#9ca3af;font-size:14px;text-transform:uppercase;margin-bottom:10px;">
+        All Employees ({{ business.company_name }})
+    </div>
+
+<form method="get" class="row g-2 align-items-center my-3 justify-content-between">
+
+    <!-- LEFT side: Rows per page -->
+    <div class="col-auto d-flex align-items-center">
+        <select name="per_page" class="form-select dm-select" onchange="this.form.submit()">
+            <option value="10" {% if per_page == 10 %}selected{% endif %}>10</option>
+            <option value="25" {% if per_page == 25 %}selected{% endif %}>25</option>
+            <option value="50" {% if per_page == 50 %}selected{% endif %}>50</option>
+            <option value="100" {% if per_page == 100 %}selected{% endif %}>100</option>
+            <option value="all" {% if per_page == 'all' %}selected{% endif %}>All</option>
+        </select>
+    </div>
+
+    <!-- RIGHT side: Search input + button -->
+    <div class="col-auto d-flex align-items-center">
+        <input name="q" value="{{ q }}" class="form-control dm-input me-2" placeholder="Search ...">
+        <!-- <button class="btn dm-btn" type="submit">Search</button> -->
+         <button class="btn dm-btn d-flex align-items-center justify-content-center" type="submit">
+        <i class="bi bi-search" style="font-size:18px;"></i>
+    </button>
+    </div>
+
+</form>
+
+    <div class="table-responsive dm-table-wrapper">
+        <table class="table dm-table">
+            <thead>
+                <tr>
+                    <!-- <th>Employee Id</th> -->
+                    <th>
+                        <a href="?sort=id&order={% if sort == 'id' and order == 'asc' %}desc{% else %}asc{% endif %}"
+                            class="text-decoration-none text-light">
+
+                            Employee ID
+
+                            {% if sort == 'id' %}
+                                {% if order == 'asc' %}
+                                    <i class="bi bi-caret-up-fill"></i>
+                                {% else %}
+                                    <i class="bi bi-caret-down-fill"></i>
+                                {% endif %}
+                            {% else %}
+                                <i class="bi bi-caret-up-fill"></i>   {# neutral icon #}
+                            {% endif %}
+                        </a>
+                    </th>
+
+                    <!-- <th>Employee Name</th> -->
+                    <th>
+                        <a href="?sort=name&order={% if sort == 'name' and order == 'asc' %}desc{% else %}asc{% endif %}"
+                            class="text-decoration-none text-light">
+
+                            Employee Name
+
+                            {% if sort == 'name' %}
+                                {% if order == 'asc' %}
+                                    <i class="bi bi-caret-up-fill"></i>
+                                {% else %}
+                                    <i class="bi bi-caret-down-fill"></i>
+                                {% endif %}
+                            {% else %}
+                                <i class="bi bi-caret-up-fill"></i>   {# neutral icon #}
+                            {% endif %}
+                        </a>
+                    </th>
+
+                    <!-- <th>Email</th> -->
+                    <th>
+                        <a href="?sort=email&order={% if sort == 'email' and order == 'asc' %}desc{% else %}asc{% endif %}&q={{ q }}&per_page={{ per_page }}"
+                            class="text-decoration-none text-light">
+
+                            Email
+        
+                            {% if sort == 'email' %}
+                                {% if order == 'asc' %}
+                                    <i class="bi bi-caret-up-fill"></i>
+                                {% else %}
+                                    <i class="bi bi-caret-down-fill"></i>
+                                {% endif %}
+                            {% else %}
+                                <i class="bi bi-caret-up-fill"></i>
+                            {% endif %}
+                        </a>
+                    </th>
+
+                    <!-- <th>Department</th> -->
+                    <th>
+                        <a href="?sort=department&order={% if sort == 'department' and order == 'asc' %}desc{% else %}asc{% endif %}&q={{ q }}&per_page={{ per_page }}" 
+                            class="text-decoration-none text-light">
+
+                            Department
+
+                            {% if sort == 'department' %}
+                                {% if order == 'asc' %}
+                                    <i class="bi bi-caret-up-fill"></i>
+                                {% else %}
+                                    <i class="bi bi-caret-down-fill"></i>
+                                {% endif %}
+                            {% else %}       
+                                <i class="bi bi-caret-up-fill"></i>
+                            {% endif %}
+                        </a>
+                    </th>
+
+                    <!-- <th>Designation</th> -->
+                    <th>
+                        <a href="?sort=designation&order={% if sort == 'designation' and order == 'asc' %}desc{% else %}asc{% endif %}&q={{ q }}&per_page={{ per_page }}"
+                            class="text-decoration-none text-light">
+
+                            Designation
+
+                                {% if sort == 'designation' %}
+                                    {% if order == 'asc' %}
+                                        <i class="bi bi-caret-up-fill"></i>
+                                    {% else %}
+                                        <i class="bi bi-caret-down-fill"></i>
+                                    {% endif %}
+                                {% else %}
+                                    <i class="bi bi-caret-up-fill"></i>
+                                {% endif %}
+                        </a>
+                    </th>
+
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for emp in employees_page.object_list %}
+                <tr>
+                    <td>{{ emp.employee_code }}</td>
+                    <td>
+                        <i class="fas fa-user-circle dm-icon"></i>
+                        {{ emp.name }}
+                    </td>
+                    <td>{{ emp.email }}</td>
+                    <td>{{ emp.department.name }}</td>                    
+                    <td class="d-flex align-items-center justify-content-between">
+                      <span id="designation-text-{{ emp.id }}">{{ emp.designation.name }}</span>
+                      <button type="button" class="btn btn-sm dm-btn ms-2"
+                        data-bs-toggle="modal"
+                        data-bs-target="#editDesignationModal"
+                        data-emp-id="{{ emp.id }}"
+                        data-desig-id="{{ emp.designation.dashboard_id }}"
+                        onclick="openDesignationModalFromButton(this)">
+                        <i class="bi bi-pencil"></i>        
+                      </button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-center text-secondary">No employees found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+<div class="d-flex justify-content-between align-items-center mt-3 text-secondary">
+
+    <!-- Left side text -->
+    <div class="small">
+        Showing {{ employees_page.start_index }} to {{ employees_page.end_index }}
+        of {{ employees_page.paginator.count }} entries
+    </div>
+
+    <!-- Right side pagination -->
+    <div class="dm-pagination d-flex align-items-center">
+
+        <!-- Left chevron -->
+        {% if employees_page.has_previous %}
+        <a href="?q={{ q }}&per_page={{ per_page }}&page={{ employees_page.previous_page_number }}" 
+           class="dm-page-btn">
+            <i class="bi bi-chevron-left"></i>
+        </a>
+        {% else %}
+        <span class="dm-page-btn disabled">
+            <i class="bi bi-chevron-left"></i>
+        </span>
+        {% endif %}
+
+        <!-- Page number -->
+        <span class="dm-page-number">{{ employees_page.number }}</span>
+
+        <!-- Right chevron -->
+        {% if employees_page.has_next %}
+        <a href="?q={{ q }}&per_page={{ per_page }}&page={{ employees_page.next_page_number }}" 
+           class="dm-page-btn">
+            <i class="bi bi-chevron-right"></i>
+        </a>
+        {% else %}
+        <span class="dm-page-btn disabled">
+            <i class="bi bi-chevron-right"></i>
+        </span>
+        {% endif %}
+
+    </div>
+</div>
+
+</div>
+
+</div>
+
+<!-- Employee Designation Change Modal -->
+<div class="modal fade" id="editDesignationModal" tabindex="-1" aria-labelledby="editDesignationModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content dm-card">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editDesignationModalLabel">Employee Designation Change</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="designationForm">
+            <input type="hidden" id="empId">
+            <div class="mb-3">
+                <label for="designationSelect" class="form-label">Select Designation</label>
+                <!-- <select id="designationSelect" class="form-select dm-select">
+                    {% for desig in designations %}
+                        <option value="{{ desig.id }}">{{ desig.name }}</option>
+                    {% endfor %}
+                </select> -->
+                <select class="form-select dm-select" id="designationSelect" name="designationSelect" required>
+                    <option value="" selected disabled>Select Designation</option>
+                    <option value="Digital_Marketing_Head">Digital Marketing Head</option>
+                    <option value="Team_Lead">Team Lead</option>
+                    <option value="Executive">Executive</option>
+                    <option value="Data_Manager">Data Manager</option>
+                    <option value="Telecaller">Telecaller</option>
+                </select>
+            </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn dm-btn" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn dm-btn" onclick="saveDesignation()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+function openDesignationModal(empId, desigId) {
+    document.getElementById('empId').value = empId;
+    document.getElementById('designationSelect').value = desigId;
+}
+function openDesignationModalFromButton(button) {
+    const empId = button.getAttribute('data-emp-id');
+    const desigId = button.getAttribute('data-desig-id');
+
+    document.getElementById('empId').value = empId;
+    document.getElementById('designationSelect').value = desigId;
+}
+
+function saveDesignation() {
+    const empId = document.getElementById('empId').value;
+    const select = document.getElementById('designationSelect');
+    const desigId = select.value;
+    const desigText = select.selectedOptions[0].text;
+
+    // Update table text immediately
+    document.getElementById(`designation-text-${empId}`).innerText = desigText;
+
+    // AJAX call to update designation in backend
+    fetch("{% url 'update_employee_designation' %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({ emp_id: empId, designation_name: desigId })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            alert('Designation updated successfully!');
+            // Close modal
+            const modalEl = document.getElementById('editDesignationModal');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            modal.hide();
+        } else {
+            alert('Error updating designation');
+        }
+    });
+}
+</script>
+
+{% endblock %}

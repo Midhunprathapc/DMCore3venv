@@ -1,0 +1,1006 @@
+{% extends "head_base.html" %}
+{% load static %}
+{% block title %}DigitalMarketing Head Dashboard{% endblock %}
+
+{% block content %}
+<head>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+
+</head>
+<style>
+    .card.bg-dark table {
+        color: white;
+        border: rgb(90, 89, 89);
+    }
+
+    .card.bg-dark table tbody tr td {
+        background-color: #222;
+        color: white;
+        text-align: center;
+    }
+
+    .card.bg-dark table thead th {
+        background-color: #222 !important;
+        color: white;
+        text-align: center;
+    }
+
+    #liveSearch::placeholder {
+        color: #b1b1b1;
+        opacity: 1; /* Optional for consistent opacity across browsers */
+    }
+
+    a.btn:hover {
+        color: rgb(38, 158, 8) !important;
+    }
+
+    .modal-dialog-scrollable .modal-body {
+        max-height: 70vh; /* 70% of viewport height */
+        overflow-y: auto;
+    }
+
+    .form-control-dark {
+        background-color: #343a40;
+        color: #fff;
+        border: 1px solid #555;
+    }
+    .form-control-dark::placeholder {
+        color: #b1b1b1;
+    }
+    .form-control-dark:focus {
+        background-color: #343a40;
+        color: #fff;
+        border-color: #007bff;
+        box-shadow: none;
+    }
+    .required::after {
+        content: " *";
+        color: red;
+        font-weight: bold;
+    }
+    .error-text {
+        color: red;
+        font-size: 12px;
+        display: none;
+    }
+    #editClientModal .form-control {
+        border: 1px solid #414141;  /* light gray border */
+        background-color: #343a40;   /* keep dark background */
+        color: #ffffff;              /* text color */
+    }
+
+    #editClientModal .form-control:focus {
+        border-color: #5b5b5b;       /* slightly lighter on focus */
+        box-shadow: none;            /* remove default Bootstrap glow */
+        background-color: #343a40;   /* keep background consistent */
+        color: #ffffff;
+    }
+
+
+    #createWorkModal .form-control {
+        border: 1px solid #787878;      /* Light gray border */
+        border-radius: 4px;          /* Optional: rounded corners */
+    }
+
+    #createWorkModal .form-control:focus {
+        border-color: #ff6666;       /* Border color when focused */
+        box-shadow: 0 0 0 0.2rem rgba(255, 102, 102, 0.25);  /* Optional glow */
+    }
+    #taskContainer input::placeholder {
+        color: #b1b1b1;
+        opacity: 1;
+    }
+
+    @media (max-width: 575.98px) {
+        .table td, .table th {
+            font-size: 0.75rem;
+            padding: 0.35rem;
+        }
+        .table img {
+            width: 30px !important;
+            height: 30px !important;
+        }
+        .create-work-btn {
+            font-size: 0.7rem;
+            padding: 0.25rem 0.4rem;
+        }
+    }
+</style>
+
+
+<div class="container-fluid">
+    <div class="col-12">
+        <div class="card p-3 bg-dark text-white">
+
+            <!-- Header: Title + Search + Register Button -->
+            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-3 gap-2">
+                <h5 class="m-0">Registered Clients</h5>
+
+                <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-2">
+                    <input type="text" id="liveSearch" class="form-control"
+                        placeholder="Search here..."
+                        style="max-width: 200px; background-color: #343a40; color:white; border:1px solid #555;">
+
+                    <a href="#" class="btn border-warning text-warning bg-dark" data-bs-toggle="modal" data-bs-target="#registerClientModal">
+                        <i class="fa fa-user-plus"></i> Register Client
+                    </a>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-bordered mt-2 text-center align-middle">
+                    <thead>
+                        <tr>
+                            <th>Edit/Remove</th>
+                            <th>Client Name</th>
+                            <th>Business Name</th>
+                            <th>Reg.Date \ Business Website</th>
+                            <th>Work Register</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for client in clients %}
+                        <tr>
+                            <td class="text-center align-middle">
+                                <a href="#"
+                                class="edit-client"
+                                data-id="{{ client.id }}"
+                                data-name="{{ client.client_name }}">
+                                    <i class="fas fa-pencil-alt" style="color: #0059ff;"></i></a>
+
+                                <a href="#" class="delete-client" data-id="{{ client.id }}">
+                                    <i class="fas fa-trash-alt" style="color: #ff0000; margin-left: 8px;"></i>
+                                </a>
+                            </td>
+
+                            <td class="text-center align-middle">
+                                <div class="d-flex align-items-center justify-content-center">
+                                    {% if client.client_profile %}
+                                        <img src="{{ client.client_profile.url }}" 
+                                            alt="Profile" 
+                                            style="width:40px; height:40px; object-fit:cover; border-radius:50%; margin-right:10px;">
+                                    {% else %}
+                                        <img src="" 
+                                            alt="Profile" 
+                                            style="width:40px; height:40px; object-fit:cover; border-radius:50%; margin-right:10px;">
+                                    {% endif %}
+
+                                    <div class="d-flex flex-column justify-content-center">
+                                        <span style="font-weight:500; color:white;">{{ client.client_name }}</span>
+                                        <span style="font-size:0.85rem; color:#b1b1b1;">{{ client.client_email_primary }}</span>
+                                        <span style="font-size:0.85rem; color:#b1b1b1;">{{ client.client_phone }}</span>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td class="text-center align-middle">
+                                <div class="d-flex align-items-center justify-content-center">
+                                    {% if client.bussiness_logo %}
+                                        <img src="{{ client.bussiness_logo.url }}" 
+                                            alt="Logo" 
+                                            style="width:40px; height:40px; object-fit:cover; border-radius:50%; margin-right:10px;">
+                                    {% else %}
+                                        <img src="" 
+                                            alt="Logo" 
+                                            style="width:40px; height:40px; object-fit:cover; border-radius:50%; margin-right:10px;">
+                                    {% endif %}
+
+                                    <div class="d-flex flex-column justify-content-center">
+                                        <span style="font-weight:500; color:white;">{{ client.client_bussiness_name }}</span>
+                                        <span style="font-size:0.85rem; color:#b1b1b1;">{{ client.client_bussiness_email_primary }}</span>
+                                        <span style="font-size:0.85rem; color:#b1b1b1;">{{ client.client_bussiness_phone }}</span>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td class="text-center align-middle">
+                                {{ client.client_reg_date }} \<br>
+                                <a href="{{ client.client_bussiness_website }}" target="_blank">
+                                    {{ client.client_bussiness_website }}
+                                </a>
+                            </td>
+
+                            <td class="text-center align-middle">
+                                {% if client.work_reg_status == 1 %}
+                                    <a href="{% url 'registered_work' %}" class="btn btn-sm btn-success">
+                                        <i class="fa fa-check"></i> Work Registered
+                                    </a>
+                                {% else %}
+                                    <button class="btn btn-warning create-work-btn"
+                                        data-id="{{ client.id }}"
+                                        data-comp="{{ client.compId.id }}"
+                                        data-url="{% url 'create_work' client.id %}"
+                                        data-name="{{ client.client_name }}"
+                                        data-bus="{{ client.client_bussiness_name }}"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#createWorkModal">
+                                        <i class="fa fa-plus"></i> Create Work
+                                    </button>
+
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center">No clients registered yet</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Client register Modal -->
+<div class="modal fade" id="registerClientModal" tabindex="-1" aria-labelledby="registerClientModalLabel">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content bg-dark text-white">
+        <div class="modal-header bg-dark text-white">
+            <h5 class="modal-title" id="registerClientModalLabel"><i class="fa fa-user-plus"></i> Register Client</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data" action="{% url 'add_client' %}">
+            {% csrf_token %}
+            <div class="modal-body">
+
+                <!-- Basic Info -->
+                <h6 style="font-size: large;">Basic Information</h6>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label for="client_name" class="form-label required">Client Name</label>
+                        <input id="client_name" type="text" name="client_name" class="form-control bg-dark text-white border-secondary" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="client_email_primary" class="form-label required">Email</label>
+                        <input id="client_email_primary" type="email" name="client_email_primary" class="form-control bg-dark text-white border-secondary" required>
+                        <span class="error-text text-danger"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="client_email_alter" class="form-label">Alternative Email</label>
+                        <input id="client_email_alter" type="email" name="client_email_alter" class="form-control bg-dark text-white border-secondary">
+                        <span class="error-text text-danger"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="client_phone" class="form-label required">Phone</label>
+                        <input id="client_phone" type="text" name="client_phone" class="form-control bg-dark text-white border-secondary" required>
+                        <span class="error-text text-danger"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="client_phone_alter" class="form-label">Alternative Phone</label>
+                        <input id="client_phone_alter" type="text" name="client_phone_alter" class="form-control bg-dark text-white border-secondary">
+                        <span class="error-text text-danger"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="client_profile" class="form-label">Profile</label>
+                        <input id="client_profile" type="file" name="client_profile" class="form-control bg-dark text-white border-secondary">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="client_address1" class="form-label">Address Line 1</label>
+                        <input id="client_address1" type="text" name="client_address1" class="form-control bg-dark text-white border-secondary">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="client_address2" class="form-label">Address Line 2</label>
+                        <input id="client_address2" type="text" name="client_address2" class="form-control bg-dark text-white border-secondary">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="client_address3" class="form-label">Address Line 3</label>
+                        <input id="client_address3" type="text" name="client_address3" class="form-control bg-dark text-white border-secondary">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="client_place" class="form-label">Place</label>
+                        <input id="client_place" type="text" name="client_place" class="form-control bg-dark text-white border-secondary">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="client_district" class="form-label">District</label>
+                        <input id="client_district" type="text" name="client_district" class="form-control bg-dark text-white border-secondary">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="client_state" class="form-label">State</label>
+                        <input id="client_state" type="text" name="client_state" class="form-control bg-dark text-white border-secondary">
+                    </div>
+
+                    <!-- Checkbox -->
+                    <div class="col-md-12 d-flex align-items-center">
+                        <input id="copyAddress" type="checkbox" class="form-check-input me-2">
+                        <label for="copyAddress" class="form-check-label text-white">
+                            Check if address is same as business
+                        </label>
+                    </div>
+                </div>
+
+                <hr class="bg-secondary">
+
+                <!-- Business Info -->
+                <h6 style="font-size: large;">Business Information</h6>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label for="business_name" class="form-label required">Business Name</label>
+                        <input id="business_name" type="text" name="client_bussiness_name" class="form-control bg-dark text-white border-secondary" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="business_email_primary" class="form-label required">Business Email</label>
+                        <input id="business_email_primary" type="email" name="client_bussiness_email_primary" class="form-control bg-dark text-white border-secondary">
+                        <span class="error-text text-danger"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="business_email_alter" class="form-label">Alternative Email</label>
+                        <input id="business_email_alter" type="email" name="client_bussiness_email_alter" class="form-control bg-dark text-white border-secondary">
+                        <span class="error-text text-danger"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="business_website" class="form-label">Website URL</label>
+                        <input id="business_website" type="text" name="client_bussiness_website" class="form-control bg-dark text-white border-secondary">
+                        <span class="error-text text-danger"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="business_phone" class="form-label ">Phone</label>
+                        <input id="business_phone" type="text" name="client_bussiness_phone" class="form-control bg-dark text-white border-secondary">
+                        <span class="error-text text-danger"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="business_phone_alter" class="form-label">Alternative Phone</label>
+                        <input id="business_phone_alter" type="text" name="client_bussiness_phone_alter" class="form-control bg-dark text-white border-secondary">
+                        <span class="error-text text-danger"></span>
+                    </div>
+
+                    <!-- Business Address -->
+                    <div class="col-md-4">
+                        <label for="business_address1" class="form-label">Address Line 1</label>
+                        <input id="business_address1" type="text" name="client_bussiness_address1" class="form-control bg-dark text-white border-secondary">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="business_address2" class="form-label">Address Line 2</label>
+                        <input id="business_address2" type="text" name="client_bussiness_address2" class="form-control bg-dark text-white border-secondary">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="business_address3" class="form-label">Address Line 3</label>
+                        <input id="business_address3" type="text" name="client_bussiness_address3" class="form-control bg-dark text-white border-secondary">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="business_place" class="form-label">Place</label>
+                        <input id="business_place" type="text" name="client_bussiness_place" class="form-control bg-dark text-white border-secondary">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="business_district" class="form-label">District</label>
+                        <input id="business_district" type="text" name="client_bussiness_district" class="form-control bg-dark text-white border-secondary">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="business_state" class="form-label">State</label>
+                        <input id="business_state" type="text" name="client_bussiness_state" class="form-control bg-dark text-white border-secondary">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="business_logo" class="form-label">Logo</label>
+                        <input id="business_logo" type="file" name="bussiness_logo" class="form-control bg-dark text-white border-secondary">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="business_files" class="form-label">File</label>
+                        <input id="business_files" type="file" name="client_bussiness_files" class="form-control bg-dark text-white border-secondary">
+                    </div>
+                    <div class="col-md-12">
+                        <label for="business_more" class="form-label">More About</label>
+                        <textarea id="business_more" name="more_description" class="form-control bg-dark text-white border-secondary" rows="3"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Buttons -->
+            <div class="modal-footer justify-content-center">
+                <button type="button" id="clearBtn" class="btn btn-secondary me-2">
+                    <i class="fa fa-eraser"></i> Clear
+                </button>
+                <button type="submit" class="btn btn-success me-2">
+                    <i class="fa fa-check"></i> Register
+                </button>
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
+                    <i class="fa fa-times"></i> Close
+                </button>
+            </div>
+        </form>
+    </div>
+  </div>
+</div>
+
+<!-- edit client -->
+<div class="modal fade" id="editClientModal" tabindex="-1">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content bg-dark text-white">
+
+        <div class="modal-header">
+            <h5 class="modal-title">Edit Client</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+
+        <form id="editClientForm" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="modal-body">
+
+                <div class="row">
+                    <!-- BASIC INFO -->
+                    <div class="col-md-6">
+                        <h6 class="border-bottom pb-2">Basic Information</h6>
+
+                        <div class="row g-2">
+                            <div class="col-md-12 text-center mb-2">
+                                <img id="edit_client_profile_preview" src="" alt="Client Profile" 
+                                    style="width:80px; height:80px; object-fit:cover; border-radius:50%;">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="edit_client_name" class="form-label required">Client Name</label>
+                                <input id="edit_client_name" name="client_name" type="text" class="form-control bg-dark text-white required">
+                                <input type="hidden" id="edit_client_id" name="client_id">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="edit_client_email" class="form-label required">Client Email</label>
+                                <input id="edit_client_email" name="client_email" type="email" class="form-control bg-dark text-white required">
+                                <span class="error-text text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="edit_client_alt_email">Alternative Email</label>
+                                <input id="edit_client_alt_email" name="client_alt_email" type="email" class="form-control bg-dark text-white">
+                                <span class="error-text text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="edit_client_phone" class="form-label required">Phone</label>
+                                <input id="edit_client_phone" name="client_phone" type="text" class="form-control bg-dark text-white required">
+                                <span class="error-text text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="edit_client_alt_phone">Alternative Phone</label>
+                                <input id="edit_client_alt_phone" name="client_alt_phone" type="text" class="form-control bg-dark text-white">
+                                <span class="error-text text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="edit_client_profile">Profile</label>
+                                <input id="edit_client_profile" name="client_profile" type="file" class="form-control bg-dark text-white">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="edit_client_address1">Address Line 1</label>
+                                <input id="edit_client_address1" name="client_address1" type="text" class="form-control bg-dark text-white">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="edit_client_address2">Address Line 2</label>
+                                <input id="edit_client_address2" name="client_address2" type="text" class="form-control bg-dark text-white">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="edit_client_address3">Address Line 3</label>
+                                <input id="edit_client_address3" name="client_address3" type="text" class="form-control bg-dark text-white">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="edit_client_place">Place</label>
+                                <input id="edit_client_place" name="client_place" type="text" class="form-control bg-dark text-white">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="edit_client_district">District</label>
+                                <input id="edit_client_district" name="client_district" type="text" class="form-control bg-dark text-white">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="edit_client_state">State</label>
+                                <input id="edit_client_state" name="client_state" type="text" class="form-control bg-dark text-white">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- BUSINESS INFO -->
+                    <div class="col-md-6">
+                    <h6 class="border-bottom pb-2">Business Information</h6>
+
+                    <div class="row g-2">
+                        <!-- BUSINESS LOGO PREVIEW -->
+                        <div class="col-md-12 text-center mb-2">
+                            <img id="edit_business_logo_preview" src="" alt="Business Logo" 
+                                style="width:80px; height:80px; object-fit:cover; border-radius:4px;">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="edit_business_name" class="form-label required">Business Name</label>
+                            <input id="edit_business_name" name="business_name" type="text" class="form-control bg-dark text-white required">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="edit_business_email" class="form-label required">Business Email</label>
+                            <input id="edit_business_email" name="business_email" type="email" class="form-control bg-dark text-white required">
+                            <span class="error-text text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="edit_business_alt_email">Alternative Email</label>
+                            <input id="edit_business_alt_email" name="business_alt_email" type="email" class="form-control bg-dark text-white">
+                            <span class="error-text text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="edit_business_phone">Phone</label>
+                            <input id="edit_business_phone" name="business_phone" type="text" class="form-control bg-dark text-white">
+                            <span class="error-text text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="edit_business_alt_phone">Alternative Phone</label>
+                            <input id="edit_business_alt_phone" name="business_alt_phone" type="text" class="form-control bg-dark text-white">
+                            <span class="error-text text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="edit_business_website">Website</label>
+                            <input id="edit_business_website" name="business_website" type="text" class="form-control bg-dark text-white">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="edit_business_address1">Address Line 1</label>
+                            <input id="edit_business_address1" name="business_address1" type="text" class="form-control bg-dark text-white">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="edit_business_address2">Address Line 2</label>
+                            <input id="edit_business_address2" name="business_address2" type="text" class="form-control bg-dark text-white">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="edit_business_address3">Address Line 3</label>
+                            <input id="edit_business_address3" name="business_address3" type="text" class="form-control bg-dark text-white">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="edit_business_place">Place</label>
+                            <input id="edit_business_place" name="business_place" type="text" class="form-control bg-dark text-white">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="edit_business_district">District</label>
+                            <input id="edit_business_district" name="business_district" type="text" class="form-control bg-dark text-white">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="edit_business_state">State</label>
+                            <input id="edit_business_state" name="business_state" type="text" class="form-control bg-dark text-white">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="edit_business_logo">Logo</label>
+                            <input id="edit_business_logo" name="business_logo" type="file" class="form-control form-control-sm bg-dark text-white">
+                        </div>
+
+                        <div class="col-md-6 d-flex align-items-center">
+                            <div class="flex-grow-1 me-2">
+                                <label for="edit_business_files">File</label>
+                                <input id="edit_business_files" name="bussiness_files" type="file" class="form-control form-control-sm bg-dark text-white border-secondary">
+                            </div>
+                            <div class="align-self-end">
+                                <!-- Download icon for existing file -->
+                                <a href="#" id="download_business_file" target="_blank" class="btn btn-danger btn-sm" style="margin-top:28px;">
+                                    <i class="fas fa-download"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FULL WIDTH FIELD -->
+                <div class="mt-3">
+                    <label for="edit_more_about">More About Client</label>
+                    <textarea id="edit_more_about" name="more_about" class="form-control bg-dark text-white" rows="3"></textarea>
+                </div>
+
+            </div>
+
+            <div class="modal-footer justify-content-center">
+                <button type="submit" class="btn btn-success"><i class="fa fa-check"></i> Update</button>
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal"><i class="fa fa-times"></i> Close</button>
+            </div>
+        </form>
+    </div>
+  </div>
+</div>
+
+
+<!-- Create Work Modal -->
+<div class="modal fade" id="createWorkModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content bg-dark text-white">
+            <form id="createWorkForm" method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <input type="hidden" name="client_id">
+                <input type="hidden" name="comp_id">
+
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title"><i class="fa fa-briefcase"></i> Create Work</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <!-- Client Info -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label required"><b>Client Name</b></label>
+                            <input type="text" id="client_name_display" class="form-control bg-dark text-white" disabled required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label required"><b>Business Name</b></label>
+                            <input type="text" id="business_name_display" class="form-control bg-dark text-white" disabled required>
+                        </div>
+                    </div>
+
+                    <!-- Dates -->
+                    <div class="row mt-2">
+                        <div class="col-md-6">
+                            <label class="form-label required">Start Date</label>
+                            <input type="date" name="work_create_date" class="form-control bg-dark text-white" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label required">Due Date</label>
+                            <input type="date" name="work_end_date" class="form-control bg-dark text-white" required>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- Requirements -->
+                    <label><b>Check Client Requirements</b></label>
+                    <div class="mb-2">
+                        {% for task in tasks %}
+                        <div class="form-check form-check-inline">
+                            <input type="checkbox" class="form-check-input" name="task_name" value="{{ task.task_name }}">
+                            <label class="form-check-label">{{ task.task_name }}</label>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div id="taskContainer"></div>
+                    <div class="d-flex align-items-center mt-2">
+                        <small class="text-light" style="color: #ccc;">
+                            *Note: If you want to add any additional task click on
+                        </small>
+                        <button type="button" class="btn btn-outline-danger btn-sm ms-2" id="addTask">
+                            <i class="fa fa-plus"></i>
+                        </button>
+                    </div>
+
+                    <hr>
+
+                    <!-- File Upload -->
+                    <label>Attach File</label>
+                    <input type="file" name="work_file" class="form-control mb-2 bg-dark text-white">
+
+                    <label>More About Work</label>
+                    <textarea name="work_description" class="form-control bg-dark text-white" rows="3"></textarea>
+                </div>
+
+                <div class="modal-footer justify-content-center">
+                    <button type="reset" class="btn btn-secondary">Clear</button>
+                    <button type="submit" class="btn btn-success">Create</button>
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<!-- live search -->
+<script>
+document.getElementById("liveSearch").addEventListener("keyup", function () {
+    let value = this.value.toLowerCase();
+    document.querySelectorAll("table tbody tr").forEach(function (row) {
+        row.style.display = row.textContent.toLowerCase().includes(value) ? "" : "none";
+    });
+});
+</script>
+
+<!-- form buttons -->
+<script>
+    // Get the form and clear button
+    const clientForm = document.querySelector("#registerClientModal form");
+    const clearBtn = document.getElementById("clearBtn");
+
+    clearBtn.addEventListener("click", function () {
+        // Reset all form inputs
+        clientForm.reset();
+
+        // Optional: clear file inputs manually if needed
+        clientForm.querySelectorAll('input[type="file"]').forEach(input => input.value = '');
+    });
+</script>
+
+<!-- ajax add client -->
+<script>
+$('#registerClientModal form').on('submit', function(e){
+    e.preventDefault();  // prevent default form submit
+    var formData = new FormData(this);
+
+    $.ajax({
+        url: "{% url 'add_client' %}",
+        type: "POST",
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(resp) {
+            alert("Client registered!");
+            $('#registerClientModal').modal('hide');
+            location.reload();  // reload table
+        },
+        error: function() {
+            alert("Something went wrong");
+        }
+    });
+});
+</script>
+
+<!-- copy basic address to business address -->
+<script>
+    document.getElementById("copyAddress").addEventListener("change", function () {
+        if (this.checked) {
+            // Copy values from Basic Address to Business Address
+            document.getElementById("business_address1").value = document.getElementById("client_address1").value;
+            document.getElementById("business_address2").value = document.getElementById("client_address2").value;
+            document.getElementById("business_address3").value = document.getElementById("client_address3").value;
+            document.getElementById("business_place").value = document.getElementById("client_place").value;
+            document.getElementById("business_district").value = document.getElementById("client_district").value;
+            document.getElementById("business_state").value = document.getElementById("client_state").value;
+        } else {
+            // Clear if unchecked
+            document.getElementById("business_address1").value = "";
+            document.getElementById("business_address2").value = "";
+            document.getElementById("business_address3").value = "";
+            document.getElementById("business_place").value = "";
+            document.getElementById("business_district").value = "";
+            document.getElementById("business_state").value = "";
+        }
+    });
+</script>
+
+<!-- edit prefill and update -->
+<script>
+$(document).on("click", ".edit-client", function (e) {
+    e.preventDefault();
+    let clientId = $(this).data("id");
+
+    $.ajax({
+        url: `/get-client-data/${clientId}/`,
+        method: "GET",
+        success: function (data) {
+
+            $("#edit_client_id").val(clientId); // hidden input to use later
+
+            $("#edit_client_name").val(data.client_name);
+            $("#edit_client_email").val(data.client_email);
+            $("#edit_client_alt_email").val(data.client_alt_email);
+            $("#edit_client_phone").val(data.client_phone);
+            $("#edit_client_alt_phone").val(data.client_alt_phone);
+
+            $("#edit_client_address1").val(data.client_address1);
+            $("#edit_client_address2").val(data.client_address2);
+            $("#edit_client_address3").val(data.client_address3);
+            $("#edit_client_place").val(data.client_place);
+            $("#edit_client_district").val(data.client_district);
+            $("#edit_client_state").val(data.client_state);
+
+            // Set client profile preview
+            if (data.client_profile) {
+                $("#edit_client_profile_preview").attr("src", data.client_profile);
+            } else {
+                $("#edit_client_profile_preview").attr("src", "");
+            }
+
+            $("#edit_business_name").val(data.business_name);
+            $("#edit_business_email").val(data.business_email);
+            $("#edit_business_alt_email").val(data.business_alt_email);
+            $("#edit_business_phone").val(data.business_phone);
+            $("#edit_business_alt_phone").val(data.business_alt_phone);
+            $("#edit_business_website").val(data.business_website);
+            $("#edit_business_address1").val(data.business_address1);
+            $("#edit_business_address2").val(data.business_address2);
+            $("#edit_business_address3").val(data.business_address3);
+            $("#edit_business_place").val(data.business_place);
+            $("#edit_business_district").val(data.business_district);
+            $("#edit_business_state").val(data.business_state);
+
+            // Set business logo preview
+            if (data.business_logo) {
+                $("#edit_business_logo_preview").attr("src", data.business_logo);
+            } else {
+                $("#edit_business_logo_preview").attr("src", "");
+            }
+
+            // Set business file download link
+            if (data.business_file) {
+                $("#download_business_file").attr("href", data.business_file).show();
+            } else {
+                $("#download_business_file").hide();
+            }
+
+            $("#edit_more_about").val(data.more_about);
+
+            $("#editClientModal").modal("show");
+        }
+    });
+});
+
+$("#editClientForm").on("submit", function (e) {
+    e.preventDefault(); // Prevent normal form submit
+
+    let clientId = $("#edit_client_id").val();
+    let formData = new FormData(this);  // to include files also
+
+    $.ajax({
+        url: `/update-client/${clientId}/`,
+        method: "POST",
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(response) {
+            if (response.status === "success") {
+                alert("Client updated successfully!");
+                $("#editClientModal").modal("hide");
+                location.reload();  // optional, remove if you want to just update table dynamically
+            } else {
+                alert("Failed to update client.");
+            }
+        },
+        error: function() {
+            alert("Error occurred while updating client.");
+        }
+    });
+});
+</script>
+
+<!-- live validation for Register and Edit Client -->
+<script>
+$(document).ready(function() {
+
+    function validateEmail(email) {
+        return /^[a-zA-Z0-9._%+-]+@(gmail\.com|googlemail\.com)$/.test(email);
+    }
+
+
+    function validatePhone(phone) {
+        return /^\d{10}$/.test(phone);  // 10-digit phone numbers
+    }
+
+    function validateWebsite(url) {
+        return /^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w- ./?%&=]*)?$/.test(url);
+    }
+
+    function setupValidation(selector, type) {
+        $(selector).on('keyup change', function() {
+            var field = $(this);
+            var value = field.val().trim();
+            var errorSpan = field.next(".error-text");
+            var client_id = $('#edit_client_id').val() || ''; // only for edit modal
+
+            if(!value){
+                errorSpan.hide();
+                return;
+            }
+
+            // Local format validation
+            if(type === 'email' && !validateEmail(value)){
+                errorSpan.text("Invalid email format").show();
+                return;
+            }
+            if(type === 'phone' && !validatePhone(value)){
+                errorSpan.text("Invalid phone number").show();
+                return;
+            }
+            if(type === 'website' && !validateWebsite(value)){
+                errorSpan.text("Invalid website URL").show();
+                return;
+            }
+
+            // AJAX uniqueness check
+            $.ajax({
+                url: "{% url 'check_client_field' %}",
+                data: {'value': value, 'type': type, 'client_id': client_id},
+                success: function(resp){
+                    if(resp.exists){
+                        errorSpan.text(type.charAt(0).toUpperCase() + type.slice(1) + " already exists").show();
+                    } else {
+                        errorSpan.hide();
+                    }
+                }
+            });
+        });
+    }
+
+    // Emails
+    setupValidation('input[type="email"]', 'email');
+
+    // Phones
+    setupValidation('input[name*="phone"]', 'phone');
+
+    // Website
+    setupValidation('#business_website, #edit_business_website', 'website');
+
+});
+</script>
+
+<!-- delete client -->
+<script>
+$(document).on("click", ".delete-client", function(e) {
+    e.preventDefault();
+    let clientId = $(this).data("id");
+
+    if (confirm("Are you sure you want to delete this client?")) {
+        $.ajax({
+            url: `/delete-client/${clientId}/`,
+            type: "POST",
+            headers: {'X-CSRFToken': '{{ csrf_token }}'},  // CSRF token
+            success: function(response) {
+                if (response.status === "success") {
+                    // Remove the row from table
+                    $(`a.delete-client[data-id='${clientId}']`).closest("tr").remove();
+                } else {
+                    alert("Failed to delete client");
+                }
+            },
+            error: function() {
+                alert("Error occurred while deleting");
+            }
+        });
+    }
+});
+</script>
+
+<!-- create work -->
+<script>
+// Load client data into modal
+$(document).on("click", ".create-work-btn", function() {
+    $("#createWorkForm").attr("data-url", $(this).data("url"));
+    $("#createWorkForm input[name='client_id']").val($(this).data("id"));
+    $("#createWorkForm input[name='comp_id']").val($(this).data("comp"));
+    $("#client_name_display").val($(this).data("name"));
+    $("#business_name_display").val($(this).data("bus"));
+});
+
+// Add dynamic task input
+$("#addTask").click(function() {
+    $("#taskContainer").append(`
+        <div class="input-group mb-2">
+            <input type="text" name="task_name" class="form-control bg-dark text-white" placeholder="Enter extra task">
+            <button type="button" class="btn btn-danger removeTask"><i class="fa fa-trash"></i></button>
+        </div>
+    `);
+});
+
+// Remove extra task
+$(document).on("click", ".removeTask", function() {
+    $(this).closest('.input-group').remove();
+});
+
+// Submit work using AJAX
+$("#createWorkForm").on("submit", function(e) {
+    e.preventDefault();
+    let ajaxUrl = $(this).attr("data-url");
+    let formData = new FormData(this);
+
+    $.ajax({
+        url: ajaxUrl,  // Use Django’s absolute URL
+        method: "POST",
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function (response) {
+            alert("Work Created Successfully!");
+            $("#createWorkModal").modal("hide");
+            location.reload();
+        },
+        error: function () {
+            alert("Failed to create work!");
+        }
+    });
+});
+</script>
+
+
+
+{% endblock %}

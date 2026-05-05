@@ -1,0 +1,119 @@
+{% extends "data_manager_base.html" %}
+{% load static %}
+
+{% block title %}Platform Management{% endblock %}
+
+{% block content %}
+
+<div class="modal fade" id="addPlatformModal" tabindex="-1" aria-labelledby="addPlatformModalLabel" aria-hidden="true" style="z-index: 9999;">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background-color: #1a1d26; color: white; ">
+            <form method="POST">
+                {% csrf_token %}
+                <div class="modal-header" style="border-bottom: 1px solid #2a2a2a; padding: 15px 20px;">
+                    <h5 class="modal-title" id="addPlatformModalLabel">Add Data Platforms</h5>
+                    <button type="button" style="background-color: #ef4444; color: white; border: none; border-radius: 4px; width: 26px; height: 26px;" data-bs-dismiss="modal" aria-label="Close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label text-muted small mb-2">Platform Name</label>
+                        <input type="text" name="platform_name" id="platform_input" class="form-control" 
+                               style="background-color: #0a0b11; color: white; padding: 10px;" 
+                               placeholder="platform name" required>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid #2a2a2a; padding: 15px 20px;">
+                    <button type="button" class="btn btn-outline-danger btn-sm" id="clearInputBtn">Clear</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary btn-sm px-4">Save Platform</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .platform-container { padding: 10px; position: relative; z-index: 1; }
+    .breadcrumb-text { color: #adb5bd; font-size: 0.9rem; margin-bottom: 20px; }
+
+    .platform-card {
+        background-color: #040814;
+        border-radius: 8px;
+        padding: 20px;
+        border-top: 1px solid #2a2a2a;
+        border-right: 1px solid #2a2a2a;
+        border-bottom: 1px solid #2a2a2a;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+
+   
+
+    .lead-count { color: #22c55e; font-weight: bold; }
+    .plat-desc { color: #94a3b8; font-size: 0.85rem; margin-top: 10px; }
+</style>
+
+<div class="platform-container">
+   <div class="container-fluid">
+        <ol class="breadcrumb breadcrumb-custom bg-transparent p-0 mb-3">
+            <li class="breadcrumb-item">
+                <a href="{% url 'data_manager_dashboard' %}" class="text-secondary fw-bold" style="text-decoration: none">Dashboard</a>
+            </li>
+            <li class="breadcrumb-item active text-secondary" aria-current="page">Platform Management</li>
+        </ol>
+    </div>
+
+    <div class="d-flex justify-content-end gap-2 mb-4">
+        <a href="{% url 'platform_reports' %}" class="btn btn-danger btn-sm">
+            <i class="fas fa-file-alt"></i> Report
+        </a>
+        
+        <button type="button" class="btn btn-primary btn-sm px-3" id="manualModalBtn">
+            <i class="fas fa-plus me-1"></i> Add Platforms
+        </button>
+    </div>
+
+    <div class="row g-4">
+        {% for plat in platforms %}
+        <div class="col-md-4">
+            <div class="platform-card" onclick="window.location.href='{% url 'platform_leads_view' %}?source={{ plat.name }}'">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="m-0" style="color:#f8f9fa;">{{ plat.name }} - <span class="lead-count">{{ plat.total_leads|default:0 }}</span></h5>
+                    <i class="fas fa-database text-primary opacity-50"></i>
+                </div>
+                <p class="plat-desc">Click to view all leads collected from the {{ plat.name }} platform.</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var myButton = document.getElementById('manualModalBtn');
+        var myModal = new bootstrap.Modal(document.getElementById('addPlatformModal'));
+        var clearBtn = document.getElementById('clearInputBtn');
+        var platformInput = document.getElementById('platform_input');
+
+        
+        myButton.addEventListener('click', function() {
+            myModal.show();
+        });
+
+        
+        document.getElementById('addPlatformModal').addEventListener('shown.bs.modal', function () {
+            platformInput.focus();
+        });
+
+       
+        clearBtn.addEventListener('click', function() {
+            platformInput.value = '';
+            platformInput.focus(); 
+        });
+    });
+</script>
+
+{% endblock %}

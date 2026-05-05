@@ -1,0 +1,495 @@
+{% extends 'executive_base.html' %}
+
+
+{% block content %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+<style>
+    *{
+        scrollbar-width: none;
+    }
+    .form-control-dark,.form-control-dark:active,.form-control-dark:hover,.form-control-dark:focus{
+        outline-color: rgba(146, 140, 140, 0.288);
+        border-color: rgba(199, 199, 199, 0.341);
+        background-color: rgba(0, 0, 0, 0.173);
+        color: white;
+        
+
+    }
+    .row,.col-sm-6,.col-sm-5,.col-sm-1{
+        padding:0 3px 0 7px ;
+    }
+    .form-control-dark::placeholder {
+        color: #888; /* A more suitable light gray for dark backgrounds */
+        opacity: 1; /* For Firefox compatibility */
+    }
+    textarea{
+        height: 8rem;
+        resize: none;
+
+    }
+    .add-schedule{
+        position: relative;
+
+
+        button{
+            position: absolute;
+            /* min-width: 70px; */
+            inset: 40% 10% 20% 70%  ;
+
+        }
+    }
+    .hfull{
+        height: 100%;
+        min-height: 100px;
+    }
+    #schedule_form{
+        transition: max-height 0.5s ease-in-out;
+        /* transition-timing-function: linear(0, 0.013 0.5%, 0.05 1%, 0.122 1.6%, 0.221 2.2%, 0.429 3.2%, 1.042 5.8%, 1.306 7.2%, 1.401 7.9%, 1.461 8.5%, 1.499 9.1%, 1.516 9.7%, 1.515 10.2%, 1.497 10.8%, 1.463 11.4%, 1.414 12%, 1.297 13.1%, 0.969 15.8%, 0.835 17.2%, 0.762 18.4%, 0.742 19%, 0.733 19.6%, 0.742 20.7%, 0.785 21.9%, 0.845 23%, 1.015 25.7%, 1.085 27.1%, 1.123 28.3%, 1.138 29.5%, 1.134 30.6%, 1.112 31.8%, 0.992 35.6%, 0.956 37%, 0.937 38.2%, 0.928 39.4%, 0.939 41.4%, 1.018 46.5%, 1.037 49.3%, 1.032 51.3%, 0.991 56.4%, 0.981 59.1%, 1.01 69%, 0.995 78.7%, 1.003 88.6%, 1); */
+    }
+    .border-r{
+        border-right: 1px solid rgba(199, 199, 199, 0.341);
+
+
+    }
+    .border-b{
+        border-bottom: 1px solid rgba(199, 199, 199, 0.341);
+
+
+    }
+    .inline{
+        display: inline;;
+    }
+    
+
+    .text-12{
+        font-size: 12px;
+    }
+    .cross{
+        position: relative;
+        /* display: flex;
+        align-items: center;
+        width:fit-content;*/
+        color:#888; 
+        text-decoration: line-through red;
+    }
+
+    /* .cross::after{
+        content: '';
+
+        position:absolute;
+        left:0;
+        width:100%;
+        height: 1px;
+        background-color: red;
+        
+
+    } */
+.inset-shadow{
+        box-shadow: inset 0px 0px 5px .5px rgba(237, 230, 230, 0.608) !important;
+        border-radius: 5px;
+}
+
+.text-big{
+    font-size: 14px !important;
+}
+
+
+
+.rel{
+    position: relative;
+}
+
+.alert-success {
+    color: rgb(45, 247, 45);
+     border: rgba(55, 255, 0, 0.985);
+    background-color: #4c4b4bb6;
+}
+.alert-error {
+    color: rgb(247, 27, 27);
+    border: rgba(255, 0, 0, 0.521);
+    background-color: #4c4b4bb6;
+}
+
+.error{
+    position: absolute;
+    top:-10px;
+    right:0px;
+    width: fit-content;
+
+}
+@media(width < 500px){
+    .error{
+        top:20px;
+        z-index: 10;
+        font-size: small;
+
+    }
+    .row,.col-sm-6,.col-sm-5,.col-sm-1{
+        padding:0 7px 0 7px ;
+    }
+}
+
+.schedule-alert{
+    animation: alertFadeIn 0.35s ease-out;
+    
+}
+
+
+
+.hover:hover{
+    background-color: #9d9b9b2b !important;
+}
+
+.i{
+    position: absolute;
+    right:20px;
+    font-size: 30px;
+    transform: rotate(-45deg);
+}
+
+.movedown{
+    transform: translateY(4px);
+}
+@keyframes alertFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+</style>
+
+
+<div class="container-fluid rel">
+
+<div class=" error">
+    {% if messages %}
+    <div class="row mb-4">
+        <div class="col-12">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible   fade show schedule-alert" role="alert" ">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+    <!--  bread crumbs -->
+      <div class=" text-white mb-4">
+        <small><a href="{% url 'executive_dashboard' %}" class="text-decoration-none text-white-50">Dashboard</a></small> / <small>Executive Schedule</small>
+      </div>
+
+      <!-- Schedule form -->
+      
+
+      <div class="" id="schedule_form" style=" overflow: hidden; max-height: 0px;">
+        <div class="p-3 border rounded border-dark">
+            <h4>Schedule your day</h4>
+            <form action="{% url 'register_executive_schedule' %}" method="post">
+                {% csrf_token %}
+                <input type="text" hidden id="schedule_id" name="schedule_id">
+                <div class="form-group mb-3">
+                        <label for="date">Date</label>
+                        <input type="date" class="form-control  bg-dark  form-control-dark" name="date" id="date" required>
+                        <small id="dateerror"></small>
+                </div>
+                <div class="row">
+                    <div class="col-sm-6 mb-3">
+                        <div class="form-group">
+                            <label for="start_time">Start time</label>
+                            <input type="time" class="form-control  bg-dark  form-control-dark" name="start_time" id="start_time" required>
+                        </div>
+                    </div>
+                    <div class="col-sm-5 mb-3">
+                        <div class="form-group">
+                            <label for="end_time">End time</label>
+                            <input type="time" class="form-control  bg-dark form-control-dark " name="end_time" id="end_time" required>
+                        </div>
+                    </div>
+                    <div class="col-sm-1  d-sm-flex d-none"><input type="submit" value="Add" class=" btn btn-primary  my-auto w-100 movedown" id="submit"></div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-6 mb-3">
+                        <div class="form-group">
+                            <input type="text" class="form-control bg-dark  form-control-dark " disabled id="from_time_display" required>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 mb-3">
+                        <div class="form-group">
+                            <input type="text" class="form-control bg-dark  form-control-dark " disabled id="to_time_display" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="task_head">Task heading</label>
+                    <input type="text" name="task_head" id="task_head" class=" form-control form-control-dark  " placeholder="Task head.." required>
+                </div>
+
+                <div class="form-group">
+                    <label for="task"> Task description</label>
+                    <textarea name="task" id="task" class=" form-control form-control-dark" placeholder="Task description .." required></textarea>
+
+                </div>
+                <div class="col-sm-1 mt-2 d-flex d-sm-none"><input type="submit" value="Add" class=" btn btn-primary  my-auto w-100" id="submit"></div>
+
+                
+
+
+            </form>
+        </div>
+
+      </div>
+      <!-- cards -->
+
+      <div class="cards mt-4">
+        <div class="row">
+
+            <div class="col-sm-4 mb-3 mb-sm-0">
+                <div class="card bg-dark text-white p-2 add-schedule hover" style="height: 100px;">
+                    <h6 class="border-bottom pb-1 mb-2" >My Days List</h6>
+                    <button class="btn btn-outline-primary ml-auto " id="open_form" >+</button>
+                    <button class="btn btn-outline-danger" id="close_form" style="display: none;">-</button>
+                    <strong class="text-white-5">{{day}}</strong>
+                    <p style="font-size: 12px;" class="text-white-5">{{date}}</p>
+
+                </div>
+            </div>
+            <div class="col-sm-8">
+                <div class="card hfull bg-dark text-white p-2">
+                    <div class="">
+                        <h4>My Schedule List</h4>
+                        {% for i in schedules %}
+                        <div class="mb-1 inset-shadow">
+                            
+                            <div class="row p-3">
+                                <div class="col-sm-4 border-r ">
+                                
+                              <div class="">
+                                  <p style="font-size: 12px;" id="check_date" class="my-1 {% if i.schedule_status == 1 %} cross{% endif %}" >{{date}}</p>
+                                  <div class="d-flex">
+                                    <form action="{% url 'exclusive_schedule_finished' %}" method="post" id="change_status_form{{i.id}}">
+                                        {% csrf_token %}
+                                    <input type="checkbox" class="mark_completed" data-id="{{i.id}}" name="change_status"    {% if i.schedule_status == 1 %} checked{% endif %}    onchange="complete(this)">  
+                                    <input type="submit" id="checkSubmit" hidden>
+                                    <input type="text" name="id" hidden value="{{i.id}}"> 
+                                    <input type="hidden" name="checked_or_not" id="checked_or_not{{i.id}}" value="{% if i.schedule_status == 1 %}1{% else %}0{% endif %}">
+                                    
+                                    </form>
+                                    <p style=" font-size: 12px;" id="check_time" class="m-0  ">Time -{{i.start_time}} to {{i.end_time}}.</p>
+                                  </div>
+                                
+                              </div>
+                            </div>
+                            <div class="col-sm-8 ">
+                                <div class="">
+                                    <div class="" ><div class="inline"><p style="font-size: 12px;" id="head{{i.id}}" class="inline text-big {% if i.schedule_status == 1 %} cross{% endif %}">{{i.schedule_head}}</p> </div> {%  if i.schedule_status == 0 %}<button  class="edit-schedule" onclick="edit(this)" editid="{{i.id}}" style="background-color: transparent; border: none;"><i class="fa-regular fa-pen-to-square" style="color: rgb(177, 151, 252); background-color: transparent;"></i></button>
+                                    <a href="#" data-bs-toggle="modal" data-bs-target="#myModal{{i.id}}"><i class="fa-solid fa-trash" style="color: rgb(241, 33, 33);"></i></a> {% endif %}</div>
+                                    <div class="text-12 {% if i.schedule_status == 1 %} cross{% endif %}" id="task{{i.id}}">{{i.todo_content}}</div>
+                                    
+                                </div>
+
+                            </div>
+                            </div>
+                            
+                        </div>
+                        {% endfor %}
+                        
+                    </div>
+
+                </div>
+            </div>
+
+
+        </div>
+      </div>
+</div>
+ {% for i in schedules %}
+   <div class="modal fade" id="myModal{{i.id}}" tabindex="-1" aria-labelledby="myModalLabel{{i.id}}" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+      
+        <!-- Modal Header -->
+        <div class="modal-header bg-danger">
+          <h4 class="modal-title" id="myModalLabel{{i.id}}">Confirm</h4>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        
+        <!-- Modal body -->
+        <div class="modal-body bg-dark text-white">
+         Do you want to Delete the schedule ?
+        </div>
+        
+        <!-- Modal footer -->
+        <div class="modal-footer bg-dark">
+          <button type="button" class="btn btn-success" data-bs-dismiss="modal">Close</button>
+          <a href="{%  url 'delete_executive_schedule' i.id %}" class="btn btn-danger">Delete</a>
+        </div>
+        
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+<script>
+    const fromTimeInput = document.getElementById('start_time');
+    const toTimeInput = document.getElementById('end_time');
+    const fromTimeDisplay = document.getElementById('from_time_display');
+    const toTimeDisplay = document.getElementById('to_time_display');
+
+    function formatToAMPM(time) {
+        if (!time) return "";
+        let [h, m] = time.split(':');
+        h = parseInt(h);
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        h = h % 12 || 12;
+        return `${h}:${m} ${ampm}`;
+    }
+
+    fromTimeInput.addEventListener('input', function() {
+        fromTimeDisplay.value = formatToAMPM(this.value);
+        // fromTimeDisplay.value = this.value;
+    });
+
+    toTimeInput.addEventListener('input', function() {
+        toTimeDisplay.value = formatToAMPM(this.value);  
+        // toTimeDisplay.value = this.value;
+
+    });
+
+   
+let today = new Date().toISOString().split("T")[0];
+date=document.getElementById("date")
+date.setAttribute("min", today);
+
+date.addEventListener("input",function(){
+if (date.value < today){
+    dateerror.style.color="red"
+    dateerror.innerHTML="date should not be less than today"
+    submit.setAttribute("disabled",true)
+}
+else{
+    dateerror.innerHTML=""
+    submit.removeAttribute("disabled")
+    
+    
+
+}
+})
+
+open_form.addEventListener("click",openform)
+
+close_form.addEventListener("click",closeform)
+
+function openform(){
+
+    const mediaQuery = window.matchMedia("(max-width: 768px)");
+
+    function handleTabletChange(e) {
+        if (e.matches) {
+            schedule_form.style.maxHeight="750px"
+            open_form.style.display="none"
+            close_form.style.display="block"
+        } else {
+            schedule_form.style.maxHeight="550px"
+            open_form.style.display="none"
+            close_form.style.display="block"
+        }
+        }
+    
+    open_form.style.display="none"
+    close_form.style.display="block"
+
+    handleTabletChange(mediaQuery);
+    mediaQuery.addEventListener("change", handleTabletChange);
+   
+}
+function closeform(){
+    schedule_form.style.maxHeight="0px"
+    open_form.style.display="block"
+    close_form.style.display="none"
+    $('#task_head').val('');
+    $('#task').val('');
+    $('#start_time').val('');
+    $('#end_time').val('');
+    $('#scheduleid').val('');
+}
+
+function complete(el){
+    const checkbox = $(el);
+    const isChecked = checkbox.is(':checked');
+    const form = checkbox.closest('form');
+    const hiddenInput = form.find('input[name="checked_or_not"]');
+
+    hiddenInput.val(isChecked ? 1 : 0);
+    form.trigger('submit');
+}
+
+function autoDismissAlerts() {
+    document.querySelectorAll('.schedule-alert').forEach((alert) => {
+        const delay = alert.classList.contains('alert-success') ? 3000 : 5000;
+
+        setTimeout(() => {
+            if (alert.classList.contains('show')) {
+                bootstrap.Alert.getOrCreateInstance(alert).close();
+            }
+        }, delay);
+    });
+}
+
+autoDismissAlerts();
+
+function edit(task){
+    const editid = task.getAttribute('editid');
+    console.log(editid);
+
+    $.ajax({
+        type:'GET',
+        url:`{% url 'exclusive_schedule_edit' %}?id=${editid}`,
+        success:function(data){
+            console.log(data);
+            if(data.id){
+                $('#task_head').val(data.schedule_head);
+                $('#task').val(data.todo_content);
+                $('#start_time').val(data.start_time);
+                $('#end_time').val(data.end_time);
+                $('#schedule_id').val(data.id);
+                
+                
+                
+                if (data.date) {
+                    $('#date').val(data.date);
+                }
+
+                $('#from_time_display').val(formatToAMPM(data.start_time));
+                $('#to_time_display').val(formatToAMPM(data.end_time));
+
+                openform()
+
+
+            }
+            else{
+                $('#task_head').val('');
+                $('#task').val('');
+                $('#start_time').val('');
+                $('#end_time').val('');
+                $('#schedule_id').val('');
+                $('#date').val('');
+
+            }
+        }
+    })
+
+
+}
+
+</script>
+{% endblock %}

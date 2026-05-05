@@ -1,0 +1,153 @@
+{% extends "head_base.html" %}
+{% block title %}View Employees{% endblock %}
+
+{% block content %}
+<head>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<style>
+    .form-control-dark,
+.form-select.form-control-dark {
+    background-color: #1e1e1e !important;
+    color: #fff !important;
+    border: 1px solid #444 !important;
+}
+
+.form-select.form-control-dark:focus {
+    background-color: #1e1e1e !important;
+    color: #fff !important;
+    border-color: #666 !important;
+    box-shadow: none !important;
+}
+
+.table-dark th,
+.table-dark td {
+    color: #adb5bd !important; /* Bootstrap text-secondary color */
+}
+
+</style>
+</head>
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb breadcrumb-custom bg-transparent p-0 mb-3">
+        <li class="breadcrumb-item">
+            <a href="{% url 'head_dashboard' %}" class="text-secondary fw-bold" style="text-decoration: none">Dashboard</a>
+        </li>
+         <li class="breadcrumb-item active text-secondary" aria-current="page">
+            /
+        </li>
+        <li class="breadcrumb-item active text-secondary" aria-current="page">
+            Employees Leave
+        </li>
+    </ol>
+</nav>
+
+<div class="card bg-dark text-light p-4 h-100">
+    <!-- HEADING -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold mb-0">Leaves</h5>
+    </div>
+
+    <!-- FILTER ROW -->
+    <form method="get" class="mb-4">
+        <div class="row gx-2 align-items-end w-100">
+
+    <!-- Employee -->
+    <div class="col-md-4">
+        <label class="form-label text-secondary">Employee</label>
+        <select name="employee" class="form-select form-control-dark">
+            <option value="">All Employees</option>
+            {% for emp in employees %}
+                <option value="{{ emp.id }}">{{ emp.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- From Date -->
+    <div class="col-md-3">
+        <label class="form-label text-secondary">From Date</label>
+        <input type="date"
+               name="from_date"
+               class="form-control form-control-dark">
+    </div>
+
+    <!-- To Date -->
+    <div class="col-md-3">
+        <label class="form-label text-secondary">To Date</label>
+        <input type="date"
+               name="to_date"
+               class="form-control form-control-dark">
+    </div>
+
+    <!-- Search Icon Button -->
+    <div class="col-md-2 d-flex">
+        <button type="submit"
+                class="btn btn-outline-primary mt-auto"
+                title="Search">
+            <i class="bi bi-search"></i>
+        </button>
+    </div>
+
+</div>
+
+    </form>
+
+    <!-- LEAVES TABLE -->
+    <div class="table-responsive">
+        <table class="table table-dark table-bordered text-secondary">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Designation</th>
+                    <th>Days</th>
+                    <th>From Date</th>
+                    <th>To Date</th>
+                    <th>Leave Type</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for leave in leaves %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ leave.emp_id.employee_code }}</td>
+                    <td>{{ leave.emp_id.name }}</td>
+                    <td>{{ leave.emp_id.designation }}</td>
+                    <td> <span class="btn btn-outline-danger btn-sm py-0 px-2">{{ leave.no_of_days }}</span></td>
+                    <td>{{ leave.start_date|date:"M d, Y" }}</td>
+                    <td>{{ leave.end_date|date:"M d, Y" }}</td>
+                    <td>{{ leave.leave_type }}</td>
+                    <td>
+                      {% if leave.leave_status == 1 %}
+                        <button class="btn btn-outline-success btn-sm" disabled>
+                            Approved
+                        </button>
+                    {% elif leave.leave_status == 0 %}
+                        <button class="btn btn-outline-warning btn-sm" disabled>
+                            Pending
+                        </button>
+                    {% elif leave.leave_status == 2 %}
+                        <button class="btn btn-outline-danger btn-sm" disabled>
+                            Rejected
+                        </button>
+                    {% endif %}
+
+
+
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="text-center text-muted">
+                        No leave records found
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+{% endblock %}

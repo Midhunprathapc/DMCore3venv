@@ -1,0 +1,176 @@
+{% extends "head_base.html" %}
+{% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb breadcrumb-custom bg-transparent p-0 mb-3">
+        <li class="breadcrumb-item">
+            <a href="{% url 'head_dashboard' %}" class="text-secondary fw-bold" style="text-decoration: none">Dashboard</a>
+        </li>
+         <li class="breadcrumb-item active text-secondary" aria-current="page">
+            /
+        </li>
+        <li class="breadcrumb-item active text-secondary" aria-current="page">
+         Work Section
+        </li>
+    </ol>
+</nav>
+<div class="row mb-4 align-items-stretch">
+
+
+  <div class="col-md-4">
+    <div class="client-box">
+      <h6>Client Details</h6>
+
+      <p><b>Name:</b> {{ client.client_name }}</p>
+      <p><b>Email:</b> {{ client.client_email_primary }}</p>
+      <p><b>Phone:</b> {{ client.client_phone }}</p>
+      <p><b>Business:</b> {{ client.client_bussiness_name }}</p>
+    </div>
+  </div>
+
+
+  <div class="col-md-4 text-center">
+    <div class="client-box">
+      <h6>Work Progress</h6>
+
+      <div class="progress-circle">
+        {{ progress }}%
+      </div>
+
+      {% if work %}
+        <p>Start Date: {{ work.work_create_date }}</p>
+        <p>Due Date: {{ work.work_end_date }}</p>
+      {% else %}
+        <p>No work available</p>
+      {% endif %}
+    </div>
+  </div>
+
+
+  <div class="col-md-4">
+    <div class="client-box">
+      <h6>Task Details</h6>
+
+      <ul class="task-list">
+        {% for task in tasks %}
+          <li>✔ {{ task.task_name }}</li>
+        {% empty %}
+          <li>No tasks available</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+{% if is_allocated %}
+<div class="client-box">
+
+<div class="table-responsive">
+
+  <table class="table table-dark table-hover align-middle">
+
+    <thead>
+      <tr>
+        <th>No</th>
+        <th>Task Name</th>
+        <th>Description</th>
+        <th>File</th>
+        <th>Progress</th>
+        <th>Details</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {% for task in tasks %}
+      <tr>
+        <td>{{ forloop.counter }}</td>
+
+        <td>{{ task.task_name }}</td>
+
+        <td>
+          {{ task.task_description|default:"No description" }}
+        </td>
+
+        <td>
+  {% if task.task_file %}
+    <a href="{{ task.task_file.url }}" download class="btn btn-sm btn-success">
+      ⬇ Download
+    </a>
+  {% else %}
+    <span class="no-file">❌</span>
+  {% endif %}
+</td>
+
+        <td>
+          <span class="progress-badge">
+            {{ task.task_total_progress }}%
+          </span>
+        </td>
+
+        <td>
+          <a href="#" class="btn btn-sm btn-primary">View Details</a>
+        </td>
+
+      </tr>
+      {% endfor %}
+    </tbody>
+
+  </table>
+</div>
+</div>
+{% else %}
+<div class="client-box text-center">
+    🚫 No allocated work available
+</div>
+{% endif %}
+
+<style>
+
+
+.breadcrumb-item a {
+    position: relative;
+    z-index: 5;  
+    cursor: pointer;
+    text-decoration: underline;
+    color: #2563eb; 
+}
+.client-box {
+    background: #111827;
+    border-radius: 12px;
+    padding: 18px;
+    color: #cbd5e1;
+    border: 1px solid #1f2937;
+
+    height: 100%;        
+    display: flex;
+    flex-direction: column;   
+}
+.progress-circle {
+    width: 80px;
+    height: 80px;
+    border: 5px solid red;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 10px auto;
+    font-weight: bold;
+}
+.task-list {
+    list-style: none;
+    padding-left: 0;
+}
+
+.task-list li {
+    margin-bottom: 6px;
+}
+
+.progress-badge {
+    border: 2px solid red;
+    padding: 5px 10px;
+    border-radius: 50%;
+}
+
+</style>
+
+{% endblock %}

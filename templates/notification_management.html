@@ -1,0 +1,179 @@
+{% extends "data_manager_base.html" %}
+{% load static %}
+
+{% block title %}Notification Management{% endblock %}
+
+{% block content %}
+<style>
+    .notif-wrapper {
+        background-color: #0b0f1a;
+        min-height: 100vh;
+        padding: 30px;
+        color: #e2e8f0;
+    }
+
+    .breadcrumb-text {
+        color: #64748b;
+        font-size: 0.85rem;
+        margin-bottom: 30px;
+    }
+
+    .notif-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+    }
+
+    .notif-card {
+        background: #090c16;
+        border-radius: 8px;
+        padding: 25px;
+        position: relative;
+        cursor: pointer;
+        transition: transform 0.2s ease;
+        border: 1px solid transparent;
+    }
+
+    .notif-card:hover {
+        transform: translateY(-5px);
+        border-color: #02060a;
+    }
+
+    .card-content {
+        padding-right: 50px;
+    }
+
+    .card-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 15px;
+        color: #f1f5f9;
+    }
+
+    .card-desc {
+        font-size: 0.8rem;
+        color: #64748b;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+
+    .card-icon-box {
+        position: absolute;
+        top: 25px;
+        right: 25px;
+        width: 40px;
+        height: 40px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .icon-new {
+        color: #94a3b8;
+    }
+
+
+    .icon-alloc {
+        color: #3b82f6;
+    }
+
+    .icon-follow {
+        color: #f59e0b;
+    }
+
+
+    .footer-text {
+        margin-top: auto;
+        padding-top: 50px;
+        color: #64748b;
+        font-size: 0.8rem;
+    }
+
+
+
+    @media (max-width: 768px) {
+        .notif-wrapper {
+            padding: 20px 15px;
+            /* Slightly less padding for smaller screens */
+        }
+
+        .notif-grid {
+            /* Forces the grid to a single column on mobile */
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        .notif-card {
+            padding: 20px;
+        }
+
+        .card-content {
+            padding-right: 45px;
+            /* Keep space for the icon */
+        }
+
+        .card-title {
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+
+        .card-icon-box {
+            top: 20px;
+            right: 20px;
+            width: 35px;
+            height: 35px;
+        }
+    }
+</style>
+
+<div class="notif-wrapper">
+    <div class="container-fluid">
+        <ol class="breadcrumb breadcrumb-custom bg-transparent p-0 mb-3">
+            <li class="breadcrumb-item">
+                <a href="{% url 'data_manager_dashboard' %}" class="text-secondary fw-bold"
+                    style="text-decoration: none">Dashboard</a>
+            </li>
+            <li class="breadcrumb-item active text-secondary" aria-current="page">Notification Management</li>
+        </ol>
+    </div>
+
+    <div class="notif-grid">
+        <div class="notif-card" onclick="location.href='{% url 'today_new_leads_view' %}'">
+            <div class="card-content">
+                <div class="card-title">Today New Lead - {{ today_new_leads }}</div>
+                <p class="card-desc">Data Bank, providing you with real-time insights and seamless information
+                    retrieval.</p>
+            </div>
+            <div class="card-icon-box">
+                <i class="fas fa-database icon-new"></i>
+            </div>
+        </div>
+
+        <div class="notif-card" onclick="location.href='{% url 'today_allocations_view' %}'">
+            <div class="card-content">
+                <div class="card-title">Today Allocation - {{ today_allocations }}</div>
+                <p class="card-desc">Data Bank, providing you with real-time insights and seamless information
+                    retrieval.</p>
+            </div>
+            <div class="card-icon-box">
+                <i class="fas fa-user-check icon-alloc"></i>
+            </div>
+        </div>
+        <div class="notif-card" onclick="location.href='#'">
+            <div class="card-content">
+                <div class="card-title">Follow Up Leads - {{ follow_up_leads }}</div>
+                <p class="card-desc">Data Bank, providing you with real-time insights and seamless information
+                    retrieval.</p>
+            </div>
+            <div class="card-icon-box">
+                <i class="fas fa-tasks icon-follow"></i>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+{% endblock %}

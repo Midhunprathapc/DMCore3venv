@@ -1,0 +1,319 @@
+{% extends 'telecaller_base.html' %}
+{% block content %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<style>
+    .icons i{
+        font-size: small;
+
+    }
+    .inp::placeholder{
+        color: white;
+    }
+    @media print {
+        *{
+            color: black !important;
+            -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                background-color: white !important;
+        }
+        #navbar,#sidebar,#date-block{
+            display: none;
+        }
+        .main-content::before{
+            display: none;
+        }
+        .main-content{
+            background: white !important;
+            color: black !important
+        }
+        .bread,.db-parent,.button-row{
+            display: none;
+
+            
+
+        }
+        .bg-dark,.table-dark{
+                background-color: white !important;
+                background: white !important;
+                color: black !important;
+            }
+        .col-sm-8{
+            padding: 0;
+            margin: 0;
+            width: 100%;
+
+            
+        }
+
+        
+    }
+
+    .pdf-wrapper .table-dark{
+        background-color: white !important;
+        background-color: white !important;
+        color: black !important
+
+    }
+
+    .pdf-wrapper{
+        *{
+            color: black !important;
+            background-color: white;
+            background: white !important;
+
+        }
+    }
+    .buttons{
+        button:hover{
+            i{
+                color: white !important;
+            }
+        }
+    }
+    .nowrap{
+        text-wrap: nowrap !important;
+    }
+
+    
+</style>
+<div class="text-white bread">
+   <a href="{% url 'telecaller_dashboard' %}" class="text-white-50 text-decoration-none">  <small>Dashboard</small></a>  /  <small>Followup Details</small>
+</div>
+
+<section class="mt-4">
+    <div class="row">
+        <div class="col-sm-4 p-3 db-parent">
+            <div class="container p-3 bg-dark text-white rounded  " id="date-block">
+                
+                <h4>Lead Allocated By Date</h4>
+                {% for i in distinct_dates %}
+                <div class="data mb-2 border rounded p-3" role="button" tabindex="0" data-date="{{ i.date }}">
+                    <div class="date">
+                        {{ i.label }}
+                    </div>
+                    <div>Leads - <p class="badge bg-primary rounded p-2" style="background-color:;">{{ i.count }}</p></div>
+                </div>
+                {% endfor %}
+
+            </div>
+        </div>
+        <div class="col-sm-8 ">
+           <div class="container p-3 bg-dark text-white rounded" id="lead-results">
+            <div class="row">
+                     <div class="col-sm-6 ">
+                        <h4>Allocated Leads - <b class="badge bg-primary rounded p-2" id="count">0</b></h4>
+                        
+                    </div>
+                    <div class="col-sm-6 button-row">
+                        <div class="mb-2 buttons">
+                            <button class="btn btn-outline-success"><i class="fa-regular fa-file-excel" style="color: rgb(62, 241, 74);" onclick="toexel()"></i></button>
+                             <button class="btn btn-outline-primary"><i class="fa-solid fa-print" style="color: rgb(116, 192, 252);" onclick="printtable()"></i></button> 
+                             <button class="btn btn-outline-warning"><i class="fa-solid fa-file-pdf" style="color: rgb(206, 246, 48);" onclick="generatepdf()"></i></button></div>
+                        <input type="text" placeholder="Search.." id="search" class="form-control bg-dark text-white inp" >
+                    </div>
+                </div>
+                
+               
+                <div class="text-white-50" style="min-height: 300px;" id="table_box">
+                    <div class="table-responsive" >
+                        <table class="table table-dark" id="table">
+
+                            <thead>
+                                <tr>
+                                    <th>SI NO</th>
+                                    <th class="nowrap">Assigned Date</th>
+                                    <th class="nowrap">Lead Name | Email | Contact</th>
+                                    <th>Status</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody">
+                                <tr>
+                                    <td>0</td>
+                                    <td><i class="fa-solid fa-calendar-days" style="color: rgb(63, 64, 64);"></i></td>
+                                    <td><div class="grid">
+                                        <div class=""><i class="fa-solid fa-circle-user" style="color: rgb(66, 67, 67);"></i></div>
+                                        <div class=""><i class="fa-solid fa-envelope" style="color: rgb(70, 71, 71);"></i> </div>
+                                        <div class=""><i class="fa-solid fa-phone" style="color: rgb(86, 87, 87);"></i> </div>
+                                    </div></td>
+                                    <td><i class="fa-solid fa-star" style="color: rgb(102, 103, 104);"></i></td>
+                                    <td><a href="" class="btn btn-outline-danger"><i class="fa-solid fa-file" style="color: rgb(116, 192, 252);"></i></a></td>
+                                </tr>
+
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+           </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    const item = document.getElementById('date-block')
+    const reportDetailsurl = "{% url 'telecaller_report_details' 1 %}".replace("1/", "")
+    item.addEventListener('click', function(event){
+        const block = event.target.closest('.data')
+        if(block){
+            const date = block.dataset.date
+            console.log(date)
+            filteredLeads(date)
+        }
+    })
+
+   
+
+    function filteredLeads(date) {
+        fetch("{% url 'telecaller_reportLeads' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({date: date}),
+           
+            
+        }
+    )
+        .then(res => res.json())
+        .then(data => {
+            console.log(data);
+
+            const tbody = document.getElementById('tbody')
+            if (data.status == 'success') {
+                tbody.innerHTML = ''
+                data.data.forEach((i, index) => {
+                    const row =`
+                    <tr>
+                                    <td>${index + 1}</td>
+                                    <td><i class="fa-solid fa-calendar" style="color: rgb(102, 103, 104);"></i> ${i.transfer_date}</td>
+                    <td><div class="grid icons">
+                                        <div class="full-name"><i class="fa-solid fa-circle-user" style="color: rgb(102, 103, 104);"></i> ${i.full_name}</div>
+                                        <div class="email-ex"><i class="fa-solid fa-envelope" style="color: rgb(102, 103, 104);"></i> ${i.email}</div>
+                                        <div class="contact-ex"><i class="fa-solid fa-phone" style="color: rgb(102, 103, 104);"></i> ${i.contact}</div>
+                                    </div></td>
+                                    <td><i class="fa-solid fa-star" style="color: rgb(102, 103, 104);"></i> ${i.status}</td>
+                                    <td><a href="${reportDetailsurl}${i.id}/" class="btn btn-outline-danger"><i class="fa-solid fa-file" style="color: rgb(116, 192, 252);"></i></a></td>
+                                </tr>
+                    `
+                    tbody.innerHTML += row
+
+                })
+                document.getElementById('count').innerHTML = data.count
+            }
+            
+        })
+    }
+    const search = document.getElementById('search')
+    search.addEventListener('keyup', function(event){
+        const data = event.target.value.toLowerCase()
+        const tbody = document.getElementById('tbody')
+        const rows = tbody.getElementsByTagName('tr')
+        for (let i = 0; i < rows.length; i++) {
+            const cells = rows[i].getElementsByTagName('td')
+            let found = false
+            for (let j = 0; j < cells.length; j++) {
+                if (cells[j].textContent.toLowerCase().includes(data)) {
+                    found = true
+                    break
+                } 
+            }
+            if (found) {
+                rows[i].style.display = ''
+            } else {
+                rows[i].style.display = 'none'
+            }
+        }
+    })
+
+    function printtable() {
+        document.body.classList.add('print')
+        setTimeout(()=>{
+            window.print()
+            
+        },150)
+       
+    }
+    window.onafterprint = function () {
+    document.body.classList.remove("print");
+};
+
+function addpdfwrapper(){
+    content=document.getElementById('table_box')
+    wrapper=document.createElement('div')
+    newcontent=content.cloneNode(true)
+    wrapper.appendChild(newcontent)
+    newcontent.classList.add('pdf-wrapper')
+    newcontainer=document.body.appendChild(wrapper)
+    return newcontainer
+
+
+}
+    function generatepdf() {
+        const content= addpdfwrapper()
+        const opt={
+            margin:1,
+            filename: 'joint_report_' + Date.now() + '.pdf',
+            image:{
+                type:'jpeg',
+                quality:0.98
+            },
+            html2canvas:{
+                scale:2,
+                letterRendering:true
+            },
+            jsPDF:{
+                unit:'in',
+                format:'letter',
+                orientation:'portrait'
+            }
+
+        }
+        
+        html2pdf().set(opt).from(content).save().then(()=>{
+            content.remove()
+        }).catch(err=>{
+            content.remove()
+        })
+
+    }
+
+    function toexel(){
+        const table = document.getElementById('table')
+        const workbookData = [['SI NO', 'Assigned Date', 'Lead Name', 'Email', 'Contact', 'Status', '']]
+        const rows = table.querySelectorAll('tbody tr')
+        function getText(element) {
+            return element?.textContent?.trim() || ''
+        }
+        rows.forEach((row) => {
+            const cells = row.querySelectorAll('td')
+            if (cells.length < 5) {
+                return
+            }
+            const leadCell = cells[2]
+            const leadName = getText(leadCell?.querySelector('.full-name'))
+            const leadEmail = getText(leadCell?.querySelector('.email-ex'))
+            const leadContact = getText(leadCell?.querySelector('.contact-ex'))
+            workbookData.push([
+                getText(cells[0]),
+                getText(cells[1]),
+                leadName,
+                leadEmail,
+                leadContact,
+                getText(cells[3]),
+                getText(cells[4]),
+            ])
+        })
+
+        const sheet = XLSX.utils.aoa_to_sheet(workbookData)
+        const workbook = XLSX.utils.book_new()
+        XLSX.utils.book_append_sheet(workbook, sheet, 'Allocated Leads')
+        XLSX.writeFile(workbook, 'joint_report_' + Date.now() + '.xlsx')
+    }
+</script>
+
+{% endblock %}

@@ -1,0 +1,603 @@
+{% extends "data_manager_base.html" %}
+
+{% block title %}Follow Up Leads{% endblock %}
+
+{% block content %}
+
+<style>
+.content-container { margin-top: 35px; }
+
+.card-dark {
+    background: #1e1f26;
+    border: 1px solid #2a2b33;
+    border-radius: 10px;
+    padding: 15px;
+    color: #fff;
+    overflow: visible !important;
+}
+
+.form-control-dark {
+    background: #2a2b33;
+    border: 1px solid #3a3b44;
+    color: #fff;
+}
+
+.table-dark td, .table-dark th { vertical-align: middle; }
+
+.clickable-row { cursor: pointer; }
+
+/* Dropdown menu styling */
+.dropdown-menu {
+    background-color: #1e1f26 !important;
+    border: 1px solid #2a2b33 !important;
+    padding: 5px 0;
+    /* z-index: 9999 !important; */
+    z-index: 1055 !important;
+    
+
+}
+
+.dropdown-menu .dropdown-item {
+    background-color: transparent !important;
+    color: #fff !important;
+    font-size: 13px;
+}
+
+.dropdown-menu .dropdown-item:hover,
+.dropdown-menu .dropdown-item:focus {
+    background-color: #2a2b33 !important;
+    color: #fff !important;
+}
+
+.dropdown-menu .dropdown-item:active {
+    background-color: #0d6efd !important;
+    color: #fff !important;
+}
+
+.dropdown-menu .dropdown-item.text-danger {
+    color: #ff6b6b !important;
+}
+
+.dropdown-divider {
+    border-color: #3a3b44 !important;
+}
+
+#leadTable {
+    min-width: 1100px;
+}
+
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    display: block;
+    -webkit-overflow-scrolling: touch;
+}
+.main-content::before {
+    pointer-events: none !important;
+    content: none !important;
+    display: none !important;
+}
+
+.main-content {
+    position: relative;
+   
+}
+.card-dark .dropdown {
+    position: relative;
+}
+
+th {
+    cursor: pointer;
+    user-select: none;
+}
+.pagination .page-link {
+    background-color: #1e1f26 !important;
+    border: 1px solid #2a2b33 !important;
+    color: #fff !important;
+}
+
+.pagination .page-link:hover {
+    background-color: #2a2b33 !important;
+    color: #fff !important;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #0d6efd !important;
+    border-color: #0d6efd !important;
+    color: #fff !important;
+}
+
+.pagination .page-item.disabled .page-link {
+    background-color: #1e1f26 !important;
+    color: #6c757d !important;
+    border-color: #2a2b33 !important;
+}
+
+</style>
+
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb breadcrumb-custom bg-transparent p-0 mb-3">
+        <li class="breadcrumb-item">
+            <a href="{% url 'data_manager_dashboard' %}" class="text-secondary fw-bold" style="text-decoration: none">Dashboard</a>
+        </li>
+        <li class="breadcrumb-item active text-secondary" aria-current="page">/</li>
+        <li class="breadcrumb-item active text-secondary" aria-current="page">Follow up leads</li>
+    </ol>
+</nav>
+
+<div class="container-fluid content-container">
+
+    <!-- Heading Row -->
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h4 class="mb-0">
+            FollowUp Leads <span class="text-secondary">({{ leads|length }})</span>
+        </h4>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="card-dark mb-3">
+        <div class="d-flex flex-wrap align-items-center gap-2">
+
+            <!-- Create -->
+            <button class="btn btn-outline-info btn-sm"  onclick="openFollowUpModal()">
+                <i class="fa fa-plus"></i>
+            </button>
+
+            <!-- Delete -->
+            <button class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#bulkDeleteModal">
+                <i class="fa fa-trash"></i>
+            </button>
+
+            <!-- Page Size -->
+            <div class="dropdown">
+                <button class="btn btn-dark dropdown-toggle" data-bs-toggle="dropdown" id="pageSizeDropdown">
+                    {{ page_size|default:"20" }}
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item page-size-item" href="#" data-value="20">20</a></li>
+                    <li><a class="dropdown-item page-size-item" href="#" data-value="50">50</a></li>
+                    <li><a class="dropdown-item page-size-item" href="#" data-value="100">100</a></li>
+                </ul>
+            </div>
+
+            <!-- Start Date -->
+            <input type="date" id="startDate" class="form-control form-control-dark" style="width:150px; min-width:150px;">
+
+            <!-- End Date -->
+            <input type="date" id="endDate" class="form-control form-control-dark" style="width:150px; min-width:150px;">
+
+            <!-- Status -->
+            <div class="dropdown">
+                <button class="btn btn-dark dropdown-toggle" data-bs-toggle="dropdown" id="statusDropdown" data-value="">
+                    Status
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item status-item" href="#" data-value="Allocated">Allocated</a></li>
+                    <li><a class="dropdown-item status-item" href="#" data-value="Closed">Closed</a></li>
+                    <li><a class="dropdown-item status-item" href="#" data-value="Opened">Opened</a></li>
+                </ul>
+            </div>
+
+            <!-- HR -->
+            <div class="dropdown">
+                <button class="btn btn-dark dropdown-toggle" data-bs-toggle="dropdown" id="hrDropdown" data-id="">
+                    HR
+                </button>
+                <ul class="dropdown-menu">
+                    {% for t in telecallers %}
+                    <li>
+                        <a class="dropdown-item hr-item" href="#" data-id="{{ t.id }}">{{ t.name }}</a>
+                    </li>
+                    {% empty %}
+                    <li>
+                        <span class="dropdown-item text-danger">No HR Found</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <!-- Apply -->
+            <button class="btn btn-outline-light btn-sm" id="applyFilterBtn">
+                <i class="fas fa-search"></i>
+            </button>
+
+        </div>
+    </div>
+    <!-- /Filter Bar -->
+
+    <!-- Global Search -->
+    <div class="card-dark mb-2">
+        <div class="input-group" style="max-width:300px;">
+            <input type="text" id="globalSearch" class="form-control form-control-dark" placeholder="Search leads...">
+        </div>
+    </div>
+    <!-- /Global Search -->
+
+    <!-- Table -->
+    <div class="card-dark">
+        <div class="table-responsive">
+            <table class="table table-dark table-hover" id="leadTable">
+                <thead>
+                    <tr>
+                        <th>Action</th>
+                        <th onclick="sortTable(this)">No <i class="fas fa-sort ms-1"></i></th>
+                        <th onclick="sortTable(this)">Assign Date <i class="fas fa-sort ms-1"></i></th>
+                        <th onclick="sortTable(this)">Follow Up By <i class="fas fa-sort ms-1"></i></th>
+                        <th onclick="sortTable(this)">Current Follow Status <i class="fas fa-sort ms-1"></i></th>
+                        <th onclick="sortTable(this)">Name <i class="fas fa-sort ms-1"></i></th>
+                        <th onclick="sortTable(this)">Email <i class="fas fa-sort ms-1"></i></th>
+                        <th onclick="sortTable(this)">Contact <i class="fas fa-sort ms-1"></i></th>
+                        <th onclick="sortTable(this)">Status <i class="fas fa-sort ms-1"></i></th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    {% for lead in leads %}
+                    <tr>
+                        <td onclick="event.stopPropagation(); deleteLead({{ lead.id }})">
+                            <i class="fa fa-trash text-danger" style="cursor:pointer;"></i>
+                        </td>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ lead.created_at|date:"Y-m-d" }}</td>
+                        <td>{{ lead.transferred_to.name }}</td>
+                        <td>No data Available</td>
+                        <td>{{ lead.full_name }}</td>
+                        <td>{{ lead.email }}</td>
+                        <td>{{ lead.contact }}</td>
+                        <td>
+                            {% if lead.status == "Allocated" %}
+                                <span class="badge border border-primary text-primary">{{ lead.status }}</span>
+                            {% else %}
+                                {{ lead.status }}
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                <tr>
+                    <td colspan="9" class="text-center text-secondary">No data available</td>
+                </tr>
+                    
+                    {% endfor %}
+
+                    
+                </tbody>
+            </table>
+        </div>
+
+         <div class="d-flex justify-content-between align-items-center mt-3">
+    <small class="text-secondary">
+        Showing {{ leads.start_index }} to {{ leads.end_index }} of {{ leads.paginator.count }} entries
+    </small>
+
+   <nav>
+    <ul class="pagination pagination-sm mb-0 align-items-center">
+
+        <!-- Previous -->
+        {% if leads.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ leads.previous_page_number }}&page_size={{ page_size }}&client={{ request.GET.client }}&category={{ request.GET.category }}&hr={{ request.GET.hr }}&status={{ request.GET.status }}&start={{ request.GET.start }}&end={{ request.GET.end }}">
+                &lt;
+            </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <span class="page-link">&lt;</span>
+        </li>
+        {% endif %}
+
+        <!-- Page Numbers -->
+        {% for num in leads.paginator.page_range %}
+            {% if leads.number == num %}
+                <li class="page-item active">
+                    <span class="page-link">{{ num }}</span>
+                </li>
+            {% elif num >= leads.number|add:-2 and num <= leads.number|add:2 %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ num }}&page_size={{ page_size }}&client={{ request.GET.client }}&category={{ request.GET.category }}&hr={{ request.GET.hr }}&status={{ request.GET.status }}&start={{ request.GET.start }}&end={{ request.GET.end }}">
+                        {{ num }}
+                    </a>
+                </li>
+            {% endif %}
+        {% endfor %}
+
+        <!-- Next -->
+        {% if leads.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ leads.next_page_number }}&page_size={{ page_size }}&client={{ request.GET.client }}&category={{ request.GET.category }}&hr={{ request.GET.hr }}&status={{ request.GET.status }}&start={{ request.GET.start }}&end={{ request.GET.end }}">
+                &gt;
+            </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <span class="page-link">&gt;</span>
+        </li>
+        {% endif %}
+
+    </ul>
+</nav>
+</div>
+
+
+    </div>
+    <!-- /Table -->
+
+</div>
+<!-- /container-fluid -->
+
+
+<!-- Bulk Delete Modal -->
+<div class="modal fade" id="bulkDeleteModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content bg-dark text-white">
+            <div class="modal-header">
+                <h5 class="modal-title">Remove Lead Allocation</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-2">
+                    <input type="checkbox" id="selectAll"> Select All
+                </div>
+                <div style="max-height: 300px; overflow-y: auto;">
+                    <table class="table table-dark table-hover">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Contact</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for lead in leads %}
+                            {% if lead.transferred_to %}
+                            <tr>
+                                <td><input type="checkbox" class="lead-checkbox" value="{{ lead.id }}"></td>
+                                <td>{{ lead.full_name }}</td>
+                                <td>{{ lead.email }}</td>
+                                <td>{{ lead.contact }}</td>
+                            </tr>
+                            {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="clearSelection()">Clear</button>
+                <button class="btn btn-danger" onclick="removeSelectedLeads()">Remove</button>
+                <button class="btn btn-light" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Follow Up Status Modal -->
+<div class="modal fade" id="followUpModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark text-white">
+            <div class="modal-header">
+                <h5 class="modal-title">Follow-up Status</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Type Follow-up Status</label>
+                    <input type="text" id="followStatusInput" class="form-control form-control-dark">
+                </div>
+                <div style="max-height:200px; overflow-y:auto;">
+                    <table class="table table-dark table-hover">
+                        <thead>
+                            <tr>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="statusListBody">
+                            {% for s in followup_statuses %}
+                            <tr id="row-{{ s.id }}">
+                                <td>{{ s.name }}</td>
+                                <td>
+                                    <i class="fa fa-trash text-danger" style="cursor:pointer;" onclick="deleteStatus({{ s.id }})"></i>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="clearStatus()">Clear</button>
+                <button class="btn btn-success" onclick="saveStatus()">Save</button>
+                <button class="btn btn-light" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+let sortDirection = {};
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    // Select All checkbox in bulk delete modal
+    const selectAll = document.getElementById("selectAll");
+    if (selectAll) {
+        selectAll.addEventListener("change", function () {
+            document.querySelectorAll(".lead-checkbox").forEach(cb => {
+                cb.checked = selectAll.checked;
+            });
+        });
+    }
+
+    //  FIX: Initialize Bootstrap dropdowns with strategy:'fixed'
+    // so Popper.js positions them relative to viewport,
+    // bypassing every overflow:hidden in the parent chain.
+    document.querySelectorAll('[data-bs-toggle="dropdown"]').forEach(el => {
+        new bootstrap.Dropdown(el, {
+            popperConfig: {
+                strategy: 'fixed'
+            }
+        });
+    });
+
+    // Page size
+    document.querySelectorAll(".page-size-item").forEach(item => {
+        item.addEventListener("click", function (e) {
+            e.preventDefault();
+            let size = this.dataset.value;
+            let btn = document.getElementById("pageSizeDropdown");
+            btn.innerText = size;
+            btn.dataset.value = size;
+            let url = new URL(window.location.href);
+            url.searchParams.set("page_size", size);
+            url.searchParams.set("page", 1);
+            window.location.href = url.toString();
+        });
+    });
+
+    // Status dropdown selection
+    document.querySelectorAll(".status-item").forEach(item => {
+        item.addEventListener("click", function (e) {
+            e.preventDefault();
+            let btn = document.getElementById("statusDropdown");
+            btn.textContent = this.textContent.trim();
+            btn.dataset.value = this.dataset.value;
+        });
+    });
+
+    // HR dropdown selection
+    document.querySelectorAll(".hr-item").forEach(item => {
+        item.addEventListener("click", function (e) {
+            e.preventDefault();
+            let btn = document.getElementById("hrDropdown");
+            btn.textContent = this.textContent.trim();
+            btn.dataset.id = this.dataset.id;
+        });
+    });
+
+    // Global search
+    document.getElementById("globalSearch").addEventListener("keyup", function () {
+        let value = this.value.toLowerCase();
+        document.querySelectorAll("#tableBody tr").forEach(row => {
+            row.style.display = row.innerText.toLowerCase().includes(value) ? "" : "none";
+        });
+    });
+
+    // Apply filter button
+    document.getElementById("applyFilterBtn").addEventListener("click", function () {
+        let status = document.getElementById("statusDropdown").dataset.value || "";
+        let hr = document.getElementById("hrDropdown").dataset.id || "";
+        let start = document.getElementById("startDate").value;
+        let end = document.getElementById("endDate").value;
+        let url = new URL(window.location.href);
+        url.searchParams.set("status", status);
+        url.searchParams.set("hr", hr);
+        url.searchParams.set("start", start);
+        url.searchParams.set("end", end);
+        window.location.href = url.toString();
+    });
+
+});
+
+
+//  Sort — uses cellIndex so index is always correct
+function sortTable(thEl) {
+    const colIndex = thEl.cellIndex;
+    const tbody = document.querySelector("#leadTable tbody");
+    const rows = Array.from(tbody.querySelectorAll("tr"));
+
+    sortDirection[colIndex] = !sortDirection[colIndex];
+    let asc = sortDirection[colIndex];
+
+    rows.sort((a, b) => {
+        let A = a.cells[colIndex]?.innerText.trim().toLowerCase() || "";
+        let B = b.cells[colIndex]?.innerText.trim().toLowerCase() || "";
+        if (!A && !B) return 0;
+        if (!isNaN(Date.parse(A)) && !isNaN(Date.parse(B)))
+            return asc ? new Date(A) - new Date(B) : new Date(B) - new Date(A);
+        if (!isNaN(A) && !isNaN(B))
+            return asc ? Number(A) - Number(B) : Number(B) - Number(A);
+        return asc ? A.localeCompare(B) : B.localeCompare(A);
+    });
+
+    tbody.innerHTML = "";
+    rows.forEach(row => tbody.appendChild(row));
+}
+
+
+function clearSelection() {
+    document.querySelectorAll(".lead-checkbox").forEach(cb => cb.checked = false);
+    const selectAll = document.getElementById("selectAll");
+    if (selectAll) selectAll.checked = false;
+}
+
+function removeSelectedLeads() {
+    const selected = Array.from(document.querySelectorAll(".lead-checkbox:checked")).map(cb => cb.value);
+    if (selected.length === 0) { alert("Please select at least one lead"); return; }
+    if (!confirm("Remove allocation for selected leads?")) return;
+    fetch("/bulk-unassign-leads/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-CSRFToken": getCSRFToken() },
+        body: JSON.stringify({ ids: selected })
+    }).then(res => res.json()).then(data => { if (data.success) location.reload(); });
+}
+
+function deleteLead(id) {
+    if (!confirm("Remove allocation for this lead?")) return;
+    fetch(`/unassign-lead/${id}/`, {
+        method: "POST",
+        headers: { "X-CSRFToken": getCSRFToken(), "Content-Type": "application/json" }
+    }).then(res => res.json()).then(data => { if (data.success) location.reload(); });
+}
+
+function clearStatus() {
+    document.getElementById("followStatusInput").value = "";
+}
+
+function saveStatus() {
+    let name = document.getElementById("followStatusInput").value.trim();
+    if (!name) { alert("Enter status"); return; }
+    fetch("/add-followup-status/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-CSRFToken": getCSRFToken() },
+        body: JSON.stringify({ name: name })
+    }).then(res => res.json()).then(data => { if (data.success) location.reload(); });
+}
+
+function deleteStatus(id) {
+    if (!confirm("Delete this status?")) return;
+    fetch(`/delete-followup-status/${id}/`, {
+        method: "POST",
+        headers: { "X-CSRFToken": getCSRFToken() }
+    }).then(res => res.json()).then(data => { if (data.success) document.getElementById(`row-${id}`).remove(); });
+}
+
+function openFollowUpModal() {
+    const modalEl = document.getElementById('followUpModal');
+    const modal = new bootstrap.Modal(modalEl, {
+        backdrop: true,
+        keyboard: true
+    });
+    console.log(modal)
+    modal.show();
+}
+
+
+function getCSRFToken() {
+    let name = 'csrftoken';
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        document.cookie.split(';').forEach(cookie => {
+            cookie = cookie.trim();
+            if (cookie.startsWith(name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            }
+        });
+    }
+    return cookieValue;
+}
+</script>
+
+{% endblock %}

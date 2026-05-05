@@ -1,0 +1,524 @@
+{% extends "teamlead_base.html" %}
+{% block title %} Team Lead Work Allocate{% endblock %}
+
+{% block content %}
+
+<style>
+
+.page-container {
+    background: #0f172a;
+    padding: 20px;
+    border-radius: 12px;
+    color: #fff;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.assign-btn {
+    background: #7c3aed;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 6px;
+    color: white;
+    font-size: 14px;
+}
+
+.search-box {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 15px;
+    border-radius: 6px;
+    border: none;
+    background-color: #1e293b;
+    color: white;
+}
+
+.table-container {
+    overflow-x: auto;
+}
+
+.custom-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.custom-table th {
+    text-align: left;
+    font-size: 13px;
+    color: #94a3b8;
+    padding: 10px;
+    border-bottom: 1px solid #1e293b;
+}
+
+.custom-table td {
+    padding: 12px 10px;
+    border-bottom: 1px solid #1e293b;
+    font-size: 14px;
+}
+
+.progress-bar-bg {
+    background: #1e293b;
+    border-radius: 5px;
+    height: 6px;
+    width: 100px;
+}
+
+.progress-bar-fill {
+    background: #3b82f6;
+    height: 100%;
+    border-radius: 5px;
+}
+.allocate-btn {
+    border: 1px solid #3b82f6;
+    background: transparent;
+    color: #3b82f6;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+}
+.status-dotred {
+    width: 12px;
+    height: 12px;
+    background: #ef4444;
+    border-radius: 50%;
+    display: block;          
+    margin: 0;               
+    flex-shrink: 0;         
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.status-dotred:hover {
+    transform: scale(1.3);
+    background: #dc2626;
+}
+.not-allocated-btn {
+    display: inline-block;
+    padding: 5px 12px;
+    background: yellow; 
+    color: black;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: default; 
+    transition: background 0.3s;
+}
+
+.not-allocated-btn:hover {
+    background: black;
+    color: yellow; 
+}
+.breadcrumb-item a {
+    position: relative;
+    z-index: 5;  
+    cursor: pointer;
+    text-decoration: underline;
+    color: #2563eb; 
+}
+
+
+.team-lead-row {
+    display: flex;
+    align-items: center;      
+    justify-content: flex-start;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+.main-content::before {
+    pointer-events: none;
+}
+/* 🔥 Dark inputs inside modal */
+.modal-content input,
+.modal-content select,
+.modal-content textarea {
+    background-color: #1e293b !important;   /* deep black */
+    color: #ffffff !important;
+    border: 1px solid #1e293b !important;
+}
+
+/* Placeholder color */
+.modal-content input::placeholder,
+.modal-content textarea::placeholder {
+    color: #94a3b8 !important;
+}
+
+/* Focus effect */
+.modal-content input:focus,
+.modal-content select:focus,
+.modal-content textarea:focus {
+    background-color: #1e293b !important;
+    color: #ffffff !important;
+    border-color: #3b82f6 !important;
+    box-shadow: none !important;
+}
+
+/* Disabled fields (Task & Lead) */
+.modal-content select:disabled {
+    background-color: #1e293b !important;
+    color: #94a3b8 !important;
+    opacity: 1 !important;
+    cursor: not-allowed;
+}
+.modal-body {
+    max-height: unset !important;
+    overflow-y: visible !important;
+}
+
+
+
+</style>
+{% if messages %}
+    <div class="row mb-4">
+        <div class="col-12">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb breadcrumb-custom bg-transparent p-0 mb-3">
+        <li class="breadcrumb-item">
+            <a href="{% url 'teamlead_dashboard' %}" class="text-secondary fw-bold" style="text-decoration: none">Dashboard</a>
+        </li>
+         <li class="breadcrumb-item active text-secondary" aria-current="page">
+            /
+        </li>
+        <li class="breadcrumb-item active text-secondary" aria-current="page">
+            Task Assign View
+        </li>
+    </ol>
+</nav>
+<div class="container-fluid mt-4">
+    <div class="page-container">
+
+
+        <div class="page-header">
+            <h5>Tasks To Assign</h5>
+            
+        </div>
+
+
+        <input type="text" id="searchBox"  placeholder="Search here..." class="search-box">
+
+
+        <div class="table-container table-responsive">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        
+                        <th>Client Name</th>
+                        <th>Start Date</th>
+                        <th>Due Date</th>
+                        <th>Task Details</th>
+                        <th>Progress</th>
+                        <th>Tasks</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+{% for item in allocations %}
+<tr>
+
+    
+
+    <td style="vertical-align:middle;">
+    <div style="display:flex;align-items:center;gap:10px;">
+        {% if item.work.clientId.client_profile %}
+    <img src="{{ item.work.clientId.client_profile.url }}"
+         style="width:30px;height:30px;border-radius:50%;object-fit:cover;">
+{% else %}
+    <img src="/static/default-user.png"
+         style="width:30px;height:30px;border-radius:50%;object-fit:cover;">
+{% endif %}
+        {{ item.work.clientId.client_name }}
+        </div>
+    </td>
+
+
+    <td>{{ item.start_date|date:"M d, Y" }}</td>
+
+
+    <td>{{ item.end_date|date:"M d, Y" }}</td>
+    <td class="action-column">
+        <button class="allocate-btn view-btn"
+        data-bs-toggle="modal"
+        data-bs-target="#taskModal"
+        data-client="{{ item.work.clientId.client_name }}"
+        data-task="{{ item.task.task_name }} 
+          {{item.display_name}} target:{{item.target}}"
+        data-start="{{ item.allocated_date|date:'M d, Y' }}"
+        data-description="{{ item.description|default_if_none:''|escapejs }}"
+        data-file="{% if item.file %}{{ item.file.url }}{% endif %}">
+    View
+</button>
+   
+       
+</td>
+
+
+    <td>
+        <div class="progress-bar-bg">
+            <div class="progress-bar-fill"
+     style="width: {{ item.work.work_progress|default_if_none:0 }}%;">
+</div>
+        </div>
+        <small>{{ item.work.work_progress }}%</small>
+    </td>
+    <td>{{ item.task.task_name }}</td>
+<td>
+    <button class="allocate-btn open-assign-modal"
+    data-bs-toggle="modal"
+    data-bs-target="#assignModal"
+
+    data-task-id="{{ item.task.id }}"
+    data-task-name="{{ item.task.task_name }}"
+
+    data-lead-id="{{ item.lead_collection.id|default:'' }}"
+    data-lead-name="{{ item.lead_collection.collection_head|default:'' }}"
+    data-work-id="{{ item.work.id }}"
+    data-start-date="{{ item.start_date|date:'Y-m-d' }}"
+    data-end-date="{{ item.end_date|date:'Y-m-d' }}">
+
+    Assign
+</button>
+       
+</td>
+
+</tr>
+{% endfor %}
+</tbody>
+            </table>
+            <!-- Assign Modal -->
+<div class="modal fade" id="assignModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content" style="background:#0f172a;color:white;border-radius:10px;">
+
+      <!-- Header -->
+      <div class="modal-header">
+        <h5 class="modal-title">Assign To Employees</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+
+      <!-- Form -->
+      <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        
+
+        <div class="modal-body">
+            <input type="hidden" name="work_id" id="workIdInput">
+
+          <!-- Task Dropdown -->
+          <div class="mb-3">
+            <label>Task</label>
+<select class="form-control" id="taskSelect" disabled>
+  {% for task in tasks %}
+    <option value="{{ task.id }}">{{ task.task_name }}</option>
+  {% endfor %}
+</select>
+
+<!-- Hidden input (IMPORTANT) -->
+<input type="hidden" name="task" id="taskHidden">
+          </div>
+
+          <!-- Lead Category (Hidden Initially) -->
+          <div class="mb-3" id="leadCategoryBox" style="display:none;">
+           <label>Lead Category</label>
+           <input type="text" class="form-control" id="leadDisplay" readonly>
+</div>
+
+          
+
+          <!-- Employee Selection -->
+          <div class="mb-3">
+            <label>Select Employees</label>
+            <div style="max-height:150px;overflow-y:auto;background:#1e293b;padding:10px;border-radius:6px;">
+              {% for emp in employees %}
+                <div>
+                  <input type="checkbox" name="employees" value="{{ emp.id }}">
+                  {{ emp.name }}
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- Dates -->
+          <div class="row">
+            <div class="col-md-6">
+              <label>Start Date</label>
+              <input type="date" name="start_date" class="form-control" id="start_date"
+                     value="{{ today }}">
+            </div>
+            <div class="col-md-6">
+              <label>Due Date</label>
+              <input type="date" name="end_date" class="form-control" id="endDate"
+                     value="{{ today }}">
+            </div>
+          </div>
+
+          <!-- Social Media -->
+          <!-- Target -->
+          <div class="mt-3">
+            <label>Target</label>
+            <input type="number" name="target" class="form-control">
+          </div>
+
+          <!-- Description -->
+          <div class="mt-3">
+            <label>Description</label>
+            <textarea name="description" class="form-control"></textarea>
+          </div>
+
+          <!-- File Upload -->
+          <div class="mt-3">
+            <label>Upload File</label>
+            <input type="file" name="file" class="form-control">
+          </div>
+          <div class="mt-3">
+
+          <button type="submit" class="btn btn-primary">Assign Task</button>
+          </div>
+
+        </div>
+        
+       
+          
+        
+
+      </form>
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+            <!-- Modal -->
+<div class="modal fade" id="taskModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="background:#0f172a;color:white;border-radius:10px;">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Task Details</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <p><strong>Client: </strong> <span id="modalClient"></span></p>
+        <p><strong>Task: </strong> <span id="modalTask"></span></p>
+        <p><strong>Allocated Date: </strong> <span id="modalallacate"></span></p>
+        <p><strong>Task description: </strong> <span id="modaldescription"></span></p>
+        <p><strong>File: </strong> 
+    <a id="modalFileLink" href="#" target="_blank" class="btn btn-sm btn-success">
+        Download File
+    </a>
+</p>
+        
+      </div>
+
+    </div>
+  </div>
+</div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    // 🔍 Search
+    const searchInput = document.getElementById('searchBox');
+    const rows = document.querySelectorAll('.custom-table tbody tr');
+
+    searchInput.addEventListener('keyup', function() {
+        const filter = this.value.toLowerCase();
+
+        rows.forEach(row => {
+            row.style.display = row.textContent.toLowerCase().includes(filter) ? '' : 'none';
+        });
+    });
+
+    document.querySelectorAll('.open-assign-modal').forEach(btn => {
+    btn.addEventListener('click', function () {
+
+        // TASK
+        const taskId = this.dataset.taskId;
+        document.getElementById('taskSelect').value = taskId;
+        document.getElementById('taskHidden').value = taskId;
+
+        // WORK
+        document.getElementById('workIdInput').value = this.dataset.workId;
+
+       // LEAD
+        const leadId = this.dataset.leadId;
+        const leadName = this.dataset.leadName;
+        const leadBox = document.getElementById('leadCategoryBox');
+        const leadDisplay = document.getElementById('leadDisplay');
+        if (leadId && leadName) {
+        leadBox.style.display = 'block';
+        leadDisplay.value = leadName;
+        } else {
+        leadBox.style.display = 'none';
+        leadDisplay.value = "";
+        }
+
+        // DATES
+        const start = this.dataset.startDate;
+        const end = this.dataset.endDate;
+
+        const startInput = document.getElementById('start_date');
+        const endInput = document.getElementById('endDate');
+
+        startInput.min = start;
+        startInput.max = end;
+        endInput.min = start;
+        endInput.max = end;
+
+        startInput.value = start;
+        endInput.value = end;
+    });
+});
+
+    
+    const taskModal = document.getElementById('taskModal');
+
+    taskModal.addEventListener('show.bs.modal', function (event) {
+
+        const button = event.relatedTarget; // clicked button
+
+        document.getElementById('modalClient').innerText = button.getAttribute('data-client');
+        document.getElementById('modalTask').innerText = button.getAttribute('data-task');
+        document.getElementById('modalallacate').innerText = button.getAttribute('data-start');
+        document.getElementById('modaldescription').innerText = button.getAttribute('data-description');
+
+        const fileLink = document.getElementById('modalFileLink');
+        const file = button.getAttribute('data-file');
+
+        if (file) {
+            fileLink.href = file;
+            fileLink.style.display = 'inline-block';
+        } else {
+            fileLink.style.display = 'none';
+        }
+    });
+
+});
+</script>
+
+
+
+{% endblock %}

@@ -1,0 +1,250 @@
+{% extends 'data_manager_base.html' %}
+{% block content %}
+  <style>
+    .reports-wrapper {
+      background-color: #000000;
+      min-height: 100vh;
+      padding: 30px;
+      color: white;
+    }
+    .breadcrumb-text {
+      color: #64748b;
+      font-size: 0.85rem;
+      margin-bottom: 20px;
+    }
+    
+  
+    .report-filter-card {
+      background: #000000;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+    }
+    .filter-group label {
+      font-size: 0.8rem;
+      color: #94a3b8;
+      margin-bottom: 5px;
+    }
+    .report-filter-card input {
+      background: #05070c;
+      border: 1px solid #334155;
+      color: white;
+      padding: 8px;
+      border-radius: 4px;
+    }
+    .btn-search-blue {
+      background: #3b82f6;
+      border: none;
+      color: white;
+      padding: 8px 15px;
+      border-radius: 4px;
+      margin-top: 20px;
+    }
+    
+  
+    .report-list-container {
+      background: #000000;
+      border-radius: 8px;
+      padding: 30px;
+    }
+    .platform-item {
+      position: relative;
+      padding-left: 30px;
+      margin-bottom: 40px;
+    }
+    
+  
+    .platform-item::before {
+      content: '';
+      position: absolute;
+      left: 6px;
+      top: 10px;
+      bottom: -40px;
+      width: 2px;
+      background: #334155;
+    }
+    .platform-item:last-child::before {
+      display: none;
+    }
+    
+  
+    .platform-dot {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 14px;
+      height: 14px;
+      background: #0b0f1a;
+      border: 2px solid #f1f5f9;
+      border-radius: 50%;
+      z-index: 2;
+    }
+    
+    .plat-header {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 5px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .plat-stats {
+      color: #94a3b8;
+      font-size: 0.85rem;
+      margin-bottom: 15px;
+    }
+    
+  
+    .date-item {
+      position: relative;
+      padding-left: 20px;
+      margin-bottom: 10px;
+      font-size: 0.85rem;
+      color: #cbd5e1;
+    }
+    .date-item::before {
+      content: '';
+      position: absolute;
+      left: -24px;
+      top: 8px;
+      width: 8px;
+      height: 8px;
+      background: #64748b;
+      border-radius: 50%;
+    }
+    
+
+    @media (max-width: 768px) {
+        .reports-wrapper {
+            padding: 15px; 
+        }
+
+        .report-filter-card {
+            flex-direction: column; 
+            align-items: stretch;
+            gap: 15px;
+            padding: 15px;
+        }
+
+        .btn-search-blue {
+            margin-top: 5px;
+            width: 100%; 
+        }
+
+        .report-list-container {
+            padding: 20px 15px;
+        }
+
+        .plat-header {
+            font-size: 1rem;
+        }
+
+        .date-item {
+            font-size: 0.8rem;
+        }
+        
+      
+        .breadcrumb {
+            font-size: 0.75rem;
+        }
+    }
+  </style>
+
+  <div class="reports-wrapper">
+    <div class="container-fluid">
+        <ol class="breadcrumb breadcrumb-custom bg-transparent p-0 mb-3">
+            <li class="breadcrumb-item">
+                <a href="{% url 'data_manager_dashboard' %}" class="text-secondary fw-bold" style="text-decoration: none">Dashboard</a>
+            </li>
+            <li href="{%url 'platform_management' %}" class="breadcrumb-item active text-secondary" aria-current="page">Platform Management</li>
+            <li class="breadcrumb-item active text-secondary" aria-current="page">Platform Reports</li>
+
+        </ol>
+    </div>
+
+    <div class="report-filter-card flex-wrap" style="position: relative; z-index: 1000;">
+      <div class="w-100 d-md-none mb-2">
+          <a href="?" class="btn btn-outline-light btn-sm w-100">All Platform Data</a>
+      </div>
+      <a href="?" class="btn btn-outline-light btn-sm d-none d-md-inline-block">All Platform Data</a>
+      
+      <div class="filter-group flex-grow-1">
+          <label>From date</label>
+          <input type="date" 
+              id="fromDate" class="form-control bg-secondary text-white" 
+              value="{{ from_date }}" 
+              onchange="applyFilters()" 
+              style="cursor: pointer; position: relative; z-index: 1001;">
+      </div>
+
+      <div class="filter-group flex-grow-1">
+          <label>To date</label>
+          <input type="date" class="form-control bg-secondary text-white" 
+              id="toDate" 
+              value="{{ to_date }}" 
+              onchange="applyFilters()" 
+              style="cursor: pointer; position: relative; z-index: 1001;">
+      </div>
+
+      <button type="button" class="btn-search-blue" onclick="applyFilters()">
+          <i class="fas fa-search"></i>
+      </button>
+  </div>
+
+    <div class="report-list-container">
+      <h5 class="mb-4">Platforms - ({{ platforms_count }})</h5>
+
+      {% for plat in report_data %}
+        <div class="platform-item">
+          <div class="platform-dot"></div>
+          <div class="plat-header">
+            <i class="fas fa-caret-right"></i> {{ plat.name }}
+          </div>
+          <div class="plat-stats">Total Leads / Collected Leads : {{ total_company_leads }}/{{ plat.collected_count }}</div>
+
+          <div class="date-list">
+            {% for day in plat.daily_breakdown %}
+              <div class="date-item">
+                {{ day.date|date:'F d, Y' }} &nbsp; <span class="text-white">Data count - {{ day.count }}</span>
+              </div>
+            {% empty %}
+              <div class="date-item text-muted">No leads collected in this range.</div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+ <script>
+    function applyFilters() {
+        try {
+            const baseUrl = window.location.pathname;
+            const params = new URLSearchParams();
+            
+            const fromDateEl = document.getElementById('fromDate');
+            const toDateEl = document.getElementById('toDate');
+
+            if (fromDateEl && fromDateEl.value) {
+                params.append('from_date', fromDateEl.value);
+            }
+            if (toDateEl && toDateEl.value) {
+                params.append('to_date', toDateEl.value);
+            }
+
+            if (params.toString()) {
+                window.location.href = baseUrl + '?' + params.toString();
+            }
+        } catch (e) {
+            console.error("Filter Error: ", e);
+        }
+    }
+</script>
+{% endblock %}

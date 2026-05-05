@@ -1,0 +1,65 @@
+<html>
+<head>
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 1cm;
+        }
+        body {
+            font-family: sans-serif;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: auto;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 5px;
+            text-align: left;
+            font-size: 9px;
+            word-wrap: break-word;
+        }
+        th {
+            background-color: #eeeeee;
+        }
+        h2 {
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <table>
+        <thead>
+            <tr>
+                <th>No</th>
+                <th>Status</th>
+                <th>Added Date</th>
+                <th>Lead Name</th>
+                <th>Email</th>
+                <th>Phone Number</th>
+                <th>Data Sourse</th>
+                <th>Client name</th>
+                <th>Lead Category</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for lead in leads %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ lead.status }}</td>
+                <td>{{ lead.created_at|date:"F d, Y" }}</td>
+                <td>{{ lead.full_name }}</td>
+                <td>{{ lead.email }}</td>
+                <td>{{ lead.contact }}</td>
+                <td>{{ lead.source }}</td>
+                <td>{{ lead.lead_collection.work_Id.clientId.client_name }}</td>
+                <td>{{ lead.lead_collection.collection_head }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+
+</html>

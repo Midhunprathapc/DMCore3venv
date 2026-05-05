@@ -1,0 +1,147 @@
+{% extends "head_base.html" %}
+{% block title %}View Employees Shedules{% endblock %}
+
+{% block content %}
+<head>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<style>
+    .form-control-dark,
+.form-select.form-control-dark {
+    background-color: #1e1e1e !important;
+    color: #fff !important;
+    border: 1px solid #444 !important;
+}
+
+.form-select.form-control-dark:focus {
+    background-color: #1e1e1e !important;
+    color: #fff !important;
+    border-color: #666 !important;
+    box-shadow: none !important;
+}
+
+.table-dark th,
+.table-dark td {
+    color: #adb5bd !important; /* Bootstrap text-secondary color */
+}
+.completed-text {
+    text-decoration: line-through;
+    color: red
+}
+
+
+</style>
+</head>
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb breadcrumb-custom bg-transparent p-0 mb-3">
+        <li class="breadcrumb-item">
+            <a href="{% url 'head_dashboard' %}" class="text-secondary fw-bold" style="text-decoration: none">Dashboard</a>
+        </li>
+         <li class="breadcrumb-item active text-secondary" aria-current="page">
+            /
+        </li>
+        <li class="breadcrumb-item active text-secondary" aria-current="page">
+            Employees shedules
+        </li>
+    </ol>
+</nav>
+
+<div class="card bg-dark text-light p-4 h-100">
+    <!-- HEADING -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold mb-0">View Shedules</h5>
+    </div>
+
+    <!-- FILTER ROW -->
+    <form method="get" class="mb-4">
+        <div class="row gx-2 align-items-end w-100">
+
+    <!-- Employee -->
+    <div class="col-md-4">
+        <label class="form-label text-secondary">Employee</label>
+        <select name="employee" class="form-select form-control-dark">
+            <option value="">All Employees</option>
+            {% for emp in employees %}
+                <option value="{{ emp.id }}">{{ emp.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- From Date -->
+    <div class="col-md-3">
+        <label class="form-label text-secondary">From Date</label>
+        <input type="date"
+               name="from_date"
+               class="form-control form-control-dark">
+    </div>
+
+    <!-- To Date -->
+    <div class="col-md-3">
+        <label class="form-label text-secondary">To Date</label>
+        <input type="date"
+               name="to_date"
+               class="form-control form-control-dark">
+    </div>
+
+    <!-- Search Icon Button -->
+    <div class="col-md-2 d-flex">
+        <button type="submit"
+                class="btn btn-outline-primary mt-auto"
+                title="Search">
+            <i class="bi bi-search"></i>
+        </button>
+    </div>
+
+</div>
+
+    </form>
+
+    <!-- LEAVES TABLE -->
+    <div class="table-responsive">
+        <table class="table table-dark table-bordered text-secondary">
+            <thead>
+                <tr>
+                     <th> Date & Time</th>
+                        <th>Task and description</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for e in emps %}
+                 <tr>
+        <td>
+            <span class="{% if e.schedule_status == 1 %}completed-text{% endif %}">
+                                {{ e.schedule_date }}
+                            </span><br>
+            
+            <small class="text-white-50">
+                Time - {{ e.start_time }} to {{ e.end_time }}
+            </small>
+        </td>
+        <td>
+             <span class="{% if e.schedule_status == 1 %}completed-text{% endif %}">
+                                {{ e.schedule_head }}
+                            </span><br>
+            
+            <small class="text-white-50">
+                ( {{ e.emp_id.name }} )
+            </small><br>
+            <small class="text-white-50 mt-2">
+                {{ e.todo_content }}
+            </small>
+        </td>
+    </tr>
+                    
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="text-center text-muted">
+                        No shedule found
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,97 @@
+{% extends "head_base.html" %}
+
+{% block title %}DigitalMarketing Head Dashboard{% endblock %}
+
+
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row g-4">
+
+        <div class="col-md-4">
+            <a href="{% url 'task_page' %}" style="text-decoration: none; color:white;">
+            <div class="dashboard-card">
+                    <i class="fas fa-tasks card-icon" style="color: #00bcd4;"></i>
+                    <h5 class="card-title">Task We Provide</h5>
+                    <p class="card-description">List of services or assignments that we offer to our clients.</p>
+                </div>
+            </a>
+        </div>
+      
+        <div class="col-md-4">
+            <a href="{% url 'register_client' %}" style="text-decoration: none; color:white;">
+                <div class="dashboard-card">
+                    <i class="fas fa-plus card-icon" style="color: #ff9800;"></i>
+                    <h5 class="card-title">Register Client</h5>
+                    <p class="card-description">To add a new client or customer to our system or platform.</p>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-4">
+            <a href="{% url 'registered_work' %}" style="text-decoration: none; color:white;">
+                <div class="dashboard-card">
+                    <i class="fas fa-briefcase card-icon" style="color: #e91e63"></i>
+                    <h5 class="card-title">Registered Work</h5>
+                    <p class="card-description">Set up a new task, project or piece of work within the system.</p>
+                </div>
+            </a>
+        </div>
+
+        <div class="row g-4 mt-1">
+
+        <div class="col-md-4">
+            <a href="{% url 'dm_work_allocate' %}" style="text-decoration: none; color:white;">
+                <div class="dashboard-card">
+                    <i class="fas fa-user-check card-icon" style="color: #4caf50;"></i>
+                    <h5 class="card-title">Work Allocate</h5>
+                    <p class="card-description">Assign tasks or projects to specific individuals or teams.</p>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-4">
+            <a href="{% url 'pending_works' %}" style="text-decoration: none; color:white;">
+                <div class="dashboard-card">
+                    <i class="fas fa-hourglass-half card-icon" style="color: #ff5722;"></i>
+                    <h5 class="card-title">Pending Works</h5>
+                    <p class="card-description">works that are yet to require further attention within the application.</p>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-4">
+            <a href="{% url 'work_progress' %}" style="text-decoration: none; color:white;">
+                <div class="dashboard-card">
+                    <i class="fas fa-spinner card-icon" style="color: #3f51b5;"></i>
+                    <h5 class="card-title">Work Progress</h5>
+                    <p class="card-description">Track and monitor the ongoing status and development of tasks or works.</p>
+                </div>
+            </a>
+        </div>
+        </div>
+        <div class="col-md-4">
+            <a href="{% url 'head_weekly_progress' %}" style="text-decoration: none; color:white;">
+                <div class="dashboard-card">
+                    <i class="fa-solid fa-chart-bar card-icon" style="color: white;"></i>
+                    <h5 class="card-title">Weekly Progress</h5>
+                    <p class="card-description">To give the verification for the weekly progress</p>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-4">
+            <a href="{% url 'head_monthly_progress' %}" style="text-decoration: none; color:white;">
+                <div class="dashboard-card">
+                    <i class="fa-solid fa-chart-simple card-icon" style="color: blue;"></i>
+                    <h5 class="card-title">Monthly Progress</h5>
+                    <p class="card-description">To give the verification for the monthy  progress</p>
+                </div>
+            </a>
+        </div>
+
+    </div>
+
+    </div>
+</div>
+{% endblock %}

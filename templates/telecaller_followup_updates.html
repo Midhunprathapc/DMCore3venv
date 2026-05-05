@@ -1,0 +1,404 @@
+{% extends 'telecaller_base.html' %}
+
+{% block content %}
+<style>
+    .grid{
+        display: grid;
+        gap: 16px;;
+    }
+    .col2{
+        grid-template-columns: 1fr 1fr;
+
+    }
+    .lead-details{
+        padding: 5px;
+        box-shadow: inset 0 0 0 1px #fcfcfc13;
+        border-radius: 5px;
+        background-color: rgba(32, 32, 32, 0.432);
+        color: rgb(126, 127, 129);
+        i{
+            margin-right: 5px;
+        }
+
+        .items{
+            
+            font-size:medium;
+
+            .lead-name{
+                font-size: large;
+                color: white;
+            }
+        }
+    }
+    .client-details{
+        padding: 5px;
+        margin-block: 15px;
+        text-align: center;
+        color: rgb(126, 127, 129);
+        font-size:medium;
+        margin-left: 15px;
+        
+        
+        i{
+            margin-right: 5px;
+        }
+    }
+    a:hover{
+        i{
+            color: white !important;
+        }
+}
+  .form-details{
+    padding: 35px 15px;
+    margin-bottom: 10px;
+    box-shadow: inset 0 0 0 1px #fcfcfc13;
+    border-radius: 5px;
+    background-color: rgba(32, 32, 32, 0.432);
+    color: rgb(126, 127, 129);
+    input,select,textarea{
+        background-color: rgba(0, 0, 0, 0.373);
+        color: rgb(253, 253, 253);
+
+        &::placeholder{
+            color: rgb(191, 193, 196);
+        }
+        &:focus{
+            outline: none;
+            background-color:rgba(0, 0, 0, 0.373) ;
+            color: rgb(253, 253, 253);
+
+        }
+        &::-webkit-calendar-picker-indicator{
+            filter: invert(1);
+        }
+    }
+    i{
+        margin-right: 15px;;
+    }
+
+
+    
+  }  
+  .main-contents{
+    
+    h5:hover{
+        color: white !important;
+        cursor: pointer;
+}
+
+  }
+  
+  .fullheight{
+    height: auto;
+  }
+  .zeroheight{
+    height: 0px;
+  }
+audio{
+    height:40px;
+}
+  .audio{
+    width: 80%;
+    border-radius: 10px 0 0 10px;
+    overflow: hidden;
+    position: relative;
+
+  }
+  .audio::after{
+    position: absolute;
+    content: '';
+    height: 40px;
+    width: 40px;
+    background-color: rgba(131, 123, 123, 0.501);
+    z-index: 1;
+    top: 0;
+    left: 0;
+    border-radius: 60% 50% 50% 60%;
+    pointer-events: none;
+
+
+  }
+  
+  @media (max-width:500px) {
+    .buttons{
+        gap:10px;
+        font-size: small;
+
+    }
+    .stat_btn{
+        display: grid;
+        flex:1;
+    }
+    .head-date{
+        font-size: small;
+        text-align: end;
+        border-bottom: 1px solid;
+        padding: 0 5px 5px 0;
+  }
+    
+  }
+</style>
+{% for  i in messages %}
+{{i}}
+{% endfor %}
+<div class="text-white">
+   <a href="{% url 'telecaller_followups' %}" class="text-white-50 text-decoration-none">  <small>Followup Leads</small></a> / <small>Followup Updates</small>
+</div>
+<section class="mt-4">
+    <div class="row">
+        <div class="col-sm-4 p-3">
+            <div class="container p-3 bg-dark text-white rounded ">
+                <div class=" lead-details">
+                    <div class="row">
+                        <div class="col-3  d-flex justify-content-center align-items-center " style="font-size: xx-large;"><i class="fa-solid fa-address-card" style="color: rgb(116, 192, 252);"></i></div>
+                        <div class="col-9 items">
+                            <div class="lead-name">{{ lead.full_name}}</div>
+                            <div class=""><i class="fa-regular fa-envelope" style="color: rgb(82, 83, 84);"></i> {{ lead.email}}</div>
+                            <div class=""><i class="fa-solid fa-phone" style="color: rgb(82, 83, 84)"></i> {{ lead.contact}}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="lead-details my-2 p-2">
+                    <div class=" d-flex" style="gap:10px;"><div class=""><i class="fa-solid fa-circle-user" style="color: rgb(82, 83, 84);"></i> Client</div> : <div class="">  {{lead.lead_collection.work_Id.clientId.client_name}}</div></div>
+                    <div class=" d-flex" style="gap:10px;"><div class=""><i class="fa-regular fa-file-lines" style="color: rgb(82, 83, 84);"></i> Lead Collected For</div> : <div class=""> {{lead.lead_collection.collection_head}}</div></div>
+                    <div class=" d-flex" style="gap:10px;"><div class=""><i class="fa-regular fa-calendar" style="color: rgb(82, 83, 84);"></i> Allocated On</div> : <div class="">{{lead.transfer_date|date:"Y-m-d"}}</div></div>
+                </div>
+
+                <div class="lead-details">
+                    <div class="row">
+                        <div class="col-3 d-flex justify-content-center align-items-center " style="font-size: xx-large;"><i class="fa-solid fa-phone" style="color: rgb(116, 192, 252);"></i></div>
+                        <div class="col-9">
+                            <h5 class="text-white">Telecaller - {{telecaller_name}}</h5>
+                            <div class=""><i class="fa-solid fa-comment-dots" style="color: rgb(82, 83, 84);"></i>  {% if last_updates %} {{last_updates.response}} {% else %} Not Available {% endif %}</div>
+                            <div class=""><i class="fa-solid fa-calendar-day" style="color: rgb(82, 83, 84);"></i>  {% if last_updates %} {{last_updates.updated|date:"Y-m-d"}} {% else %} Not Available {% endif %}</div>
+                            <div class=""><i class="fa-regular fa-file-lines" style="color: rgb(82, 83, 84);"></i>  {% if last_updates %} {{last_updates.reason}} {% else %} Not Available {% endif %}</div>
+                            
+                        </div>
+                    </div>
+                </div>
+
+                <div class="my-2 lead-details p-2">
+                    <h5 class="text-center border-bottom py-3 ">{{lead.full_name}} - Collected Details</h5>
+
+                    <div class="px-4 py-3">
+                       {% for i in collections %}
+                       <div class="grid mb-2 col2" style="color: rgb(126, 127, 129);"> <div class="">{{i.field.field_name}}</div><div class="">{{i.value}}</div></div>
+                       {% endfor %}
+                        
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <div class="col-sm-8 ">
+            <div class=" d-flex justify-content-between w-100 border-bottom pb-3 buttons">
+                <a href="{% url 'change_lead_joined' lead.id %}" class="btn btn-outline-success stat_btn"><i class="fa-solid fa-user-check" style="color: rgb(47, 212, 35);"></i> <span>Lead Joined</span></a>
+                <a href=" {% url 'change_lead_close' lead.id %}" class="btn btn-outline-danger stat_btn"><i class="fa-solid fa-user-xmark" style="color: rgb(249, 19, 19);"></i> <span>Close Lead</span></a>
+                <a href="" class="btn btn-outline-warning stat_btn"  data-bs-toggle="modal" data-bs-target="#waste_modal"><i class="fa-solid fa-trash-can-arrow-up" style="color: #e0aa20;"></i><span> Mark As Waste</span></a>
+            </div>
+            <div class="bg-dark text-white rounded p-3 mt-3 text-white-50 main-contents">
+            <div class="d-sm-flex justify-content-between w-100 mb-3 ">
+                <div class="text-white">{{ lead.full_name}}</div>
+                <div class="head-date">Next Followup Date : <div class="d-inline text-white"><i class="fa-solid fa-calendar-day mx-2" style="color: rgb(82, 83, 84);"></i> {% if last_updates %} {{last_updates.next_update_date|date:"Y-m-d"}} {% else %} Not Available {% endif %}</div></div>
+
+            </div>
+            <div class="">
+                <h5 id="form_head">Followup Updates</h3>
+
+                <form action="{% url 'telecaller_followup_updates' lead.id %}" method="post" enctype="multipart/form-data" class="zeroheight " id="followup_form" style="overflow: hidden; transition: height 0.1s ease-in-out;" >
+
+                    {% csrf_token %}
+                    <div class="grid form-details">
+                <div class="form-group">
+                    <label for="">Responce</label>
+                    <select name="response" id="response" required class="d-block w-100 p-2 rounded">
+                        <option value="">Choose Responce</option>
+                        {% for i in follow_reason %}
+                        <option value="{{i.id}}">{{i.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="">Next Update Date</label>
+                    <input type="date" name="next_update_date" id="next_update_date" class="form-control" required>
+
+                </div>
+
+                <div class="form-group">
+                    <label for="">Reason</label>
+                    <textarea name="reason" id="reason" class="form-control" style="resize: none;" rows="5" placeholder="Enter Reason..." required></textarea>
+
+                </div>
+
+                <div class="form-group">
+                    <label for="">If call record is available</label>
+                    <input type="file" name="call_record" id="call_record" class="form-control" accept="audio/*" required>
+
+                </div>
+
+                <div class="d-flex justify-content-center" style="gap: 10px;">
+                <button type="submit" class="btn btn-outline-success">Update</button>
+                <button type="button" class="btn btn-outline-danger">Close</button>
+            </div>
+            </div>
+            </form>
+            </div>
+
+            <h5 id="details_head">Followup Details</h3>
+            <div class="grid zeroheight" id="followup_details" style="overflow: hidden;  transition: height 0.1s ease-in-out;">
+                <div class="form-details" >
+                                    <h6 class="text-white"><i class="fa-solid fa-phone" style="color: rgb(116, 192, 252);"></i> Telecaller - {{telecaller_name}}</h6>
+
+                    {% for i in all_followups %}
+                    {% if i.notes != 'Lead is closed' %}
+                    <div class=" p-2 border-bottom border-top">
+                        <div class=""><i class="fa-solid fa-arrow-rotate-right" style="color: rgb(59, 60, 61);"></i> {{i.response}}</div>
+                        <div class=""><i class="fa-solid fa-calendar-day" style="color: rgb(59, 60, 61);"></i>{{i.updated|date:"Y-m-d"}}</div>
+                        <div class=""><i class="fa-regular fa-file-lines" style="color: rgb(59, 60, 61);"></i> {{i.reason}}</div>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+
+                    </div>
+                </div>
+
+                <h5 id="call_head">Call Recordings</h3>
+                <div class="zeroheight" id="followup_calls" style="overflow: hidden;  transition: height 0.1s ease-in-out;">
+                    <div class="form-details">
+                        {% for i in all_followups %}
+                    {% if i.call_record %}
+                    <div class="border-bottom p-2">
+                        <div class="d-flex mb-2" style="gap: 10px;">
+                        <div class=""><i class="fa-solid fa-calendar-day" style="color: rgb(59, 60, 61);"></i> {{i.updated|date:"Y-m-d"}} </div> 
+                        <div class=""><i class="fa-solid fa-clock" style="color: rgb(59, 60, 61);"></i> {{i.updated|time:"H:i:a"}}</div>
+                        
+                    </div>
+                    <div class="audio"><audio controls>
+                        <source src="{{i.call_record.url}}" type="audio/mp3">
+                    </audio></div>
+                    </div>
+                    {% endif %}
+
+                    {% endfor %}
+                    
+                    </div>
+                </div>
+
+
+                <h5  id="history_head">Followup History</h3>
+                <div class="zeroheight" id="followup_history" style="overflow: hidden; transition: height 0.1s ease-in-out;">
+                    
+                    <div class="form-details" >
+                        <h6><i class="fa-solid fa-phone" style="color: rgb(116, 192, 252);"></i> Telecaller - {{telecaller_name}}</h6>
+                        {% for i in all_followups %}
+                        {% if i.notes != 'Lead is closed' %}
+                        <div class=" border-bottom border-top p-2">
+                            <div class=""><i class="fa-solid fa-arrow-rotate-right" style="color: rgb(59, 60, 61);"></i> {{i.response}}</div>
+                            <div class=""><i class="fa-solid fa-calendar-day" style="color: rgb(59, 60, 61);"></i> {{i.updated|date:"Y-m-d"}}</div>
+                            <div class=""><i class="fa-regular fa-file-lines" style="color: rgb(59, 60, 61);"></i> {{i.notes}}</div>
+                        </div>
+                       
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+
+            </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Button trigger modal -->
+
+
+<!-- Modal -->
+<div class="modal fade" id="waste_modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content bg-dark text-white">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Please clarify the reason for making waste lead !</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form action="{% url 'change_lead_waste' lead.id %}" method="post">
+        {% csrf_token %}
+      <div class="modal-body">
+        <div class="form-group">
+            <label for="">Enter your reason</label>
+            <textarea name="waste_reason" id="" class="form-control" required></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-primary">Update</button>
+      </div>
+      </form>
+    </div>
+  </div>
+</div>
+<script>
+const form_head = document.getElementById('form_head')
+const details_head = document.getElementById('details_head')
+const call_head = document.getElementById('call_head')
+const history_head = document.getElementById('history_head')
+
+const followup_form = document.getElementById('followup_form')
+const followup_details = document.getElementById('followup_details')
+const followup_calls = document.getElementById('followup_calls')
+const followup_history = document.getElementById('followup_history')
+
+form_head.addEventListener('click', function(){
+    heighttoauto(followup_form)
+    heighttozero(followup_details)
+    heighttozero(followup_calls)
+    heighttozero(followup_history)
+
+})
+details_head.addEventListener('click', function(){
+    heighttoauto(followup_details)
+    heighttozero(followup_form)
+    heighttozero(followup_calls)
+    heighttozero(followup_history)
+
+})
+call_head.addEventListener('click', function(){
+    heighttoauto(followup_calls)
+    heighttozero(followup_details)
+    heighttozero(followup_form)
+    heighttozero(followup_history)
+
+})
+history_head.addEventListener('click', function(){
+    heighttoauto(followup_history)
+    heighttozero(followup_details)
+    heighttozero(followup_calls)
+    heighttozero(followup_form)
+
+})
+
+function heighttozero(elem){
+    elem.classList.add('zeroheight')
+
+}
+
+function heighttoauto(elem){
+    elem.classList.toggle('zeroheight')
+}
+
+
+
+document.addEventListener('play', function (e) {
+    const curaudio = e.target
+
+    document.querySelectorAll('audio').forEach(audio => {
+        if (audio !== curaudio) {
+            audio.pause()
+        }
+    })
+}, true)
+
+
+</script>
+
+{% endblock %}

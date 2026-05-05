@@ -1,0 +1,99 @@
+{% extends "admin_base.html" %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item text-danger">
+                    <a href="{% url 'admin_dashboard' %}" class="text-decoration-none">Dashboard</a>
+                </li>
+                <li class="breadcrumb-item active text-secondary" aria-current="page">Employee Section</li>
+                <li class="breadcrumb-item active text-secondary" aria-current="page">Employees Action Taken</li>
+            </ol>
+        </nav>
+    </div>
+
+    <div class="card p-4 mb-4 bg-dark text-white">
+        <h5 class="mb-3">Select Employee</h5>
+        <select class="form-select bg-secondary text-white" id="empSelect" onchange="applyFilters()">
+            <option value="">Select</option>
+            {% for emp in employees %}
+                <option value="{{ emp.id }}" {% if selected_emp_id == emp.id|stringformat:"s" %}selected{% endif %}>
+                    {{ emp.name }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    {% if selected_emp_id %}
+    <div class="card p-4 bg-dark text-white">
+        <h5 class="mb-4">All Actions Taken</h5>
+        
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <label class="form-label" for="fromDate">From date</label>
+                <input type="date" id="fromDate" class="form-control bg-secondary text-white" 
+                       value="{{ request.GET.from_date }}" onchange="applyFilters()">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" for="toDate">To date</label>
+                <input type="date" id="toDate" class="form-control bg-secondary text-white" 
+                       value="{{ request.GET.to_date }}" onchange="applyFilters()">
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-dark table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th style="width: 60px;">No.</th>
+                        <th>Action Date</th>
+                        <th>Action Taken By</th>
+                        <th>Action Regarding</th>
+                        <th>Action Reason</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for action in actions %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ action.action_date }}</td>
+                        <td>{{ action.act_from_name }}</td>
+                        <td>{{ action.act_head }}</td>
+                        <td>{{ action.act_reason }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-3">
+                            No actions found for this employee in the selected period.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+
+    function applyFilters() {
+        const baseUrl = window.location.pathname;
+        const params = new URLSearchParams();
+        const filterMap = {
+            'employee_id': document.getElementById('empSelect').value,
+            'from_date': document.getElementById('fromDate')?.value || '',
+            'to_date': document.getElementById('toDate')?.value || ''
+        };
+
+        Object.entries(filterMap).forEach(([key, value]) => {
+            if (value) params.append(key, value);
+        });
+
+        window.location.href = `${baseUrl}?${params.toString()}`;
+    }
+</script>
+{% endblock %}

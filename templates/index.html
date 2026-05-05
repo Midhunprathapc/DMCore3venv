@@ -1,0 +1,262 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% load static %}
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Transform Your Digital Presence With <span>Results-Driven Marketing</span></h1>
+                <p>We craft customized digital strategies that amplify your online visibility, drive qualified leads, and deliver sustainable revenue growth for your business.</p>
+                <div class="hero-buttons">
+                    <a href="#contact" class="cta-button">Start Your Growth Journey</a>
+                    <a href="#services" class="secondary-button">Explore Solutions</a>
+                </div>
+            </div>
+            <div class="hero-image">
+                <img src="{% static 'image/dm2.PNG' %}" alt="Digital Marketing">
+            </div>
+        </div>
+    </section>
+
+
+
+    <section class="services" id="services">
+        <div class="container">
+            <div class="section-header">
+                <h2>Our <span>Digital Solutions</span></h2>
+                <p>End-to-end marketing services designed to deliver measurable growth and outstanding ROI for your business.</p>
+            </div>
+            <div class="services-grid">
+                <div class="service-card">
+                    <div class="icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <h3>Search Engine Optimization</h3>
+                    <p>Dominate search rankings and attract high-intent organic traffic with our cutting-edge SEO strategies.</p>
+                    <a href="#" class="read-more">Discover How <i class="fas fa-arrow-right"></i></a>
+                </div>
+                <div class="service-card">
+                    <div class="icon">
+                        <i class="fas fa-ad"></i>
+                    </div>
+                    <h3>PPC & Paid Advertising</h3>
+                    <p>Launch high-converting ad campaigns that maximize your budget and deliver immediate, trackable results.</p>
+                    <a href="#" class="read-more">Discover How <i class="fas fa-arrow-right"></i></a>
+                </div>
+                <div class="service-card">
+                    <div class="icon">
+                        <i class="fas fa-share-alt"></i>
+                    </div>
+                    <h3>Social Media Management</h3>
+                    <p>Forge meaningful connections and build brand loyalty through strategic social media engagement.</p>
+                    <a href="#" class="read-more">Discover How <i class="fas fa-arrow-right"></i></a>
+                </div>
+                <div class="service-card">
+                    <div class="icon">
+                        <i class="fas fa-envelope-open-text"></i>
+                    </div>
+                    <h3>Email Marketing</h3>
+                    <p>Convert subscribers into loyal customers with personalized automation and targeted email campaigns.</p>
+                    <a href="#" class="read-more">Discover How <i class="fas fa-arrow-right"></i></a>
+                </div>
+                <div class="service-card">
+                    <div class="icon">
+                        <i class="fas fa-pen-fancy"></i>
+                    </div>
+                    <h3>Content Strategy</h3>
+                    <p>Captivate your audience with compelling, SEO-optimized content that drives engagement and conversions.</p>
+                    <a href="#" class="read-more">Discover How <i class="fas fa-arrow-right"></i></a>
+                </div>
+                <div class="service-card">
+                    <div class="icon">
+                        <i class="fas fa-laptop-code"></i>
+                    </div>
+                    <h3>Web Design & Development</h3>
+                    <p>Create stunning, conversion-focused websites that deliver exceptional user experiences and drive growth.</p>
+                    <a href="#" class="read-more">Discover How <i class="fas fa-arrow-right"></i></a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="about" id="about">
+        <div class="container">
+            <div class="about-image">
+                <img src="{% static 'image/dm1.PNG' %}" alt="About Us">
+            </div>
+            <div class="about-content">
+                <h2>Why Partner With <span>DM Core</span></h2>
+                <p>We're a dedicated team of digital innovators committed to driving your business forward. With 8+ years of expertise, we've empowered countless brands to surpass their marketing objectives.</p>
+                <ul>
+                    <li><i class="fas fa-check-circle"></i> Performance-focused strategies with clear ROI tracking</li>
+                    <li><i class="fas fa-check-circle"></i> Transparent reporting and real-time analytics</li>
+                    <li><i class="fas fa-check-circle"></i> Personalized account management and support</li>
+                    <li><i class="fas fa-check-circle"></i> Tailored solutions for your unique business needs</li>
+                    <li><i class="fas fa-check-circle"></i> Demonstrated history of exceptional results</li>
+                </ul>
+                <div class="stats">
+                    <div class="stat">
+                        <h3>250+</h3>
+                        <p>Successful Clients</p>
+                    </div>
+                    <div class="stat">
+                        <h3>98%</h3>
+                        <p>Client Satisfaction Rate</p>
+                    </div>
+                    <div class="stat">
+                        <h3>5M+</h3>
+                        <p>Leads Delivered</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="portfolio" id="portfolio">
+        <div class="container">
+            <div class="section-header">
+                <h2>Success <span>Stories</span></h2>
+                <p>Explore how we've driven exceptional outcomes for businesses across diverse sectors.</p>
+            </div>
+            <div class="portfolio-grid">
+                <div class="portfolio-item">
+                    <img src="{% static 'image/port1.png' %}" alt="Portfolio Item">
+                    <div class="overlay">
+                        <h3>E-commerce Brand</h3>
+                        <p>Skyrocketed revenue by 320% within 6 months through precision PPC and SEO optimization</p>
+                        <a href="#">See Full Story <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </div>
+                <div class="portfolio-item">
+                    <img src="{% static 'image/port2.webp' %}" alt="Portfolio Item">
+                    <div class="overlay">
+                        <h3>SaaS Platform</h3>
+                        <p>Accelerated qualified lead generation by 450% in 12 months with strategic content marketing</p>
+                        <a href="#">See Full Story <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </div>
+                <div class="portfolio-item">
+                    <img src="{% static 'image/port3.jpeg' %}" alt="Portfolio Item">
+                    <div class="overlay">
+                        <h3>Local Service Business</h3>
+                        <p>Multiplied website traffic 5x in just 3 months using hyper-local SEO techniques</p>
+                        <a href="#">See Full Story <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="center-button">
+                <a href="#" class="cta-button">View All Success Stories</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="testimonials" id="testimonials">
+        <div class="container">
+            <div class="section-header">
+                <h2>Client <span>Success</span> Stories</h2>
+                <p>Hear how we've made a tangible impact on businesses like yours.</p>
+            </div>
+            <div class="testimonials-slider">
+                <div class="testimonial">
+                    <div class="quote">
+                        <i class="fas fa-quote-left"></i>
+                        <p>DM Core revolutionized our digital footprint. We've seen a 300% surge in web traffic and now enjoy a consistent stream of qualified leads. Their expertise and commitment to our success are unmatched in the industry.</p>
+                    </div>
+                    <div class="client">
+                        <div class="client-info">
+                            <h4>Ram</h4>
+                            <p>CEO, RamTech Inc.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial">
+                    <div class="quote">
+                        <i class="fas fa-quote-left"></i>
+                        <p>The DM Core team consistently exceeds expectations. They align perfectly with our business objectives and deliver exceptional ROI. Our marketing performance has transformed since we began our partnership.</p>
+                    </div>
+                    <div class="client">
+                        <div class="client-info">
+                            <h4>Raj</h4>
+                            <p>Marketing Director, RajCo</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial">
+                    <div class="quote">
+                        <i class="fas fa-quote-left"></i>
+                        <p>After evaluating multiple agencies, DM Core stood out as true growth partners. Their strategic digital approach has been transformative for our business, making them invaluable allies in our expansion.</p>
+                    </div>
+                    <div class="client">
+                        <div class="client-info">
+                            <h4>Roberto Carlos</h4>
+                            <p>Founder, RBPlus</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <section class="contact" id="contact">
+        <div class="container">
+            <div class="section-header">
+                <h2>Start Your <span>Journey</span></h2>
+                <p>Let's discuss your vision! Reach out today and we'll craft a custom strategy to achieve your goals.</p>
+            </div>
+            <div class="contact-grid">
+                <div class="contact-form">
+                    <form>
+                        <div class="form-group">
+                            <input type="text" placeholder="Your Name" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" placeholder="Your Email" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="tel" placeholder="Your Phone">
+                        </div>
+                        <div class="form-group">
+                            <select required>
+                                <option value="">Select Your Interest</option>
+                                <option value="seo">SEO Services</option>
+                                <option value="ppc">PPC Advertising</option>
+                                <option value="social">Social Media Marketing</option>
+                                <option value="content">Content Marketing</option>
+                                <option value="web">Web Design</option>
+                                <option value="other">Other Services</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <textarea placeholder="Tell us about your project" rows="5" required></textarea>
+                        </div>
+                        <button type="submit" class="cta-button">Begin Conversation</button>
+                    </form>
+                </div>
+                <div class="contact-info">
+                    <h3>Get In Touch</h3>
+                    <div class="info-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <p>SM Street, Calicut City, PIN: 678761</p>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-phone"></i>
+                        <p>+91 9864567678</p>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-envelope"></i>
+                        <p>info@dmcore.com</p>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-clock"></i>
+                        <p>Monday - Friday: 9am - 6pm</p>
+                    </div>
+                    <div class="map">
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3913.1420491364793!2d75.77668087809259!3d11.250959160380043!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ba6593f100fb8a7%3A0x3faf33837725dced!2sSM%20St%2C%20Palayam%2C%20Kozhikode%2C%20Kerala%20673001!5e0!3m2!1sen!2sin!4v1748862994702!5m2!1sen!2sin" width="100%" height="250" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}

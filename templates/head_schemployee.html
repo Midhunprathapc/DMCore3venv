@@ -1,0 +1,694 @@
+{% extends "head_base.html" %}
+
+{% block title %}DigitalMarketing Head EmployeeSchedule{% endblock %}
+
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+    .schedule-container {
+        background: #1e1f26;
+        border-radius: 8px;
+        padding: 20px;
+        color: #fff;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        position: relative;
+        z-index: 1;
+    }
+    .schedule-header {
+        border-bottom: 1px solid #2a2b33;
+        padding-bottom: 15px;
+        margin-bottom: 20px;
+    }
+    .action-btn {
+        border-radius: 20px;
+        padding: 6px 16px;
+        font-size: 14px;
+        border: 1px solid;
+        transition: all 0.3s ease;
+    }
+    .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    .search-input {
+        background: #2a2b33;
+        border: 1px solid #3a3b44;
+        color: #fff;
+        border-radius: 6px;
+    }
+    .search-input:focus {
+        background: #2a2b33;
+        border-color: #007bff;
+        color: #fff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    .modal-dark .modal-content {
+        background: #1e1f26;
+        color: #fff;
+        border: 1px solid #2a2b33;
+    }
+    .modal-dark .modal-header {
+        border-bottom: 1px solid #2a2b33;
+    }
+    .modal-dark .modal-footer {
+        border-top: 1px solid #2a2b33;
+    }
+    .form-control-dark {
+        background: #2a2b33;
+        border: 1px solid #3a3b44;
+        color: #fff;
+    }
+    .form-control-dark:focus {
+        background: #2a2b33;
+        border-color: #007bff;
+        color: #fff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    ::placeholder {
+        color: #999 !important;
+    }
+    .completed-text {
+        color: red !important;
+        text-decoration: line-through !important;
+    }
+</style>
+
+{% if messages %}
+    <script>
+        {% for message in messages %}
+            Swal.fire({
+                icon: "{{ message.tags }}",
+                title: "{{ message.tags|title }}",
+                text: "{{ message }}",
+                timer: 2000,
+                showConfirmButton: false
+            });
+        {% endfor %}
+    </script>
+{% endif %}
+
+<div class="container-fluid py-3">
+    <div class="text-white mb-4">
+        <small class="">Dashboard / </small>
+        <small class="text-white-50">Employee Day Schedule</small>
+    </div>
+
+    <div class="schedule-container">
+        <div class="schedule-header">
+            <div class="row align-items-center">
+                <div class="col-md-3 mt-2">
+                    <i class="fas fa-calendar-alt me-2"></i>Employee Day Schedule
+                </div>
+                <div class="col-md-2"></div>
+                <div class="col-md-4">
+                    <div class="d-flex gap-2 mt-2">
+                        <button class="btn btn-outline-success action-btn" id="scheduleDayBtn">
+                            <i class="fas fa-calendar-plus me-1"></i> Schedule Employee Day
+                        </button>
+                        <button class="btn btn-outline-primary action-btn" id="todayScheduleBtn">
+                            <i class="fas fa-calendar-day me-1"></i> Today's Schedule
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-3 text-end mt-2">
+                    <input type="text" class="form-control form-control-sm search-input" id="searchfilter" placeholder="Search here...">
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="d-flex gap-2">
+                    <select name="" class="form-control form-control-sm search-input" id="empSelect">
+                        <option value="">--- select employee ---</option>
+                        {% for e in empl %}
+                        <option value="{{ e.id }}">{{ e.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <button class="btn btn-outline-primary btn-sm" id="filterBtn">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Schedule Table -->
+        <div class="table-responsive">
+            <table class="table table-sm table-dark">
+                <thead>
+                    <tr>
+                        <th>Date & Time</th>
+                        <th>Employee Name</th>
+                        <th>Task & Description</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="empscheduleTableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Schedule Modal -->
+<div class="modal fade modal-dark" id="scheduleModal" tabindex="-1" aria-labelledby="scheduleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title" id="scheduleModalLabel">
+                    <i class="fas fa-calendar-plus me-2"></i>Schedule Employee Day
+                </h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="scheduleForm" method="post" action="{% url 'save_employee_schedule' %}">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label class="form-label">Select Employee*</label>
+                            <select name="schedule_emp" id="scheduleEmp" class="form-control form-control-dark" required>
+                                <option value="">--- select employee ---</option>
+                                {% for e in empl %}
+                                <option value="{{ e.id }}">{{ e.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Date*</label>
+                            <input type="date" class="form-control form-control-dark" id="scheduleDate" name="schedule_date" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Start Time*</label>
+                            <input type="time" class="form-control form-control-dark" id="startTime" name="start_time" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">End Time*</label>
+                            <input type="time" class="form-control form-control-dark" id="endTime" name="end_time" required>
+                        </div>
+                        <div class="col-6">
+                            <input type="text" class="form-control form-control-dark" id="showstartTime" readonly>
+                        </div>
+                        <div class="col-6">
+                            <input type="text" class="form-control form-control-dark" id="showendTime" readonly>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">To do?*</label>
+                            <input type="text" class="form-control form-control-dark" id="taskTitle" name="schedule_head" placeholder="Add a new task" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">To do details?</label>
+                            <textarea class="form-control form-control-dark" id="taskDescription" name="todo_content" rows="3" placeholder="Give task description" style="resize: none;"></textarea>
+                        </div>
+                    </div>
+                    <div class="text-center mb-4 mt-3">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" id="clearScheduleBtn">Clear</button>
+                        <button type="submit" class="btn btn-outline-success btn-sm" id="saveScheduleBtn">Add to do</button>
+                        <button type="button" class="btn btn-outline-danger btn-sm" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Schedule Modal -->
+<div class="modal fade modal-dark" id="editScheduleModal" tabindex="-1" aria-labelledby="editScheduleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title" id="editScheduleModalLabel">
+                    <i class="fas fa-calendar-edit me-2"></i>Edit Employee Schedule
+                </h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editScheduleForm" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" id="editScheduleId">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label class="form-label">Select Employee*</label>
+                            <select id="editScheduleEmp" class="form-control form-control-dark" required>
+                                <option value="">--- select employee ---</option>
+                                {% for e in empl %}
+                                <option value="{{ e.id }}">{{ e.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Date*</label>
+                            <input type="date" id="editScheduleDate" class="form-control form-control-dark" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Start Time*</label>
+                            <input type="time" id="editStartTime" class="form-control form-control-dark" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">End Time*</label>
+                            <input type="time" id="editEndTime" class="form-control form-control-dark" required>
+                        </div>
+                        <div class="col-6">
+                            <input type="text" id="showeditStartTime" class="form-control form-control-dark" readonly>
+                        </div>
+                        <div class="col-6">
+                            <input type="text" id="showeditEndTime" class="form-control form-control-dark" readonly>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">To do?*</label>
+                            <input type="text" id="editTaskTitle" class="form-control form-control-dark" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">To do details?</label>
+                            <textarea id="editTaskDescription" class="form-control form-control-dark" rows="3" style="resize:none;"></textarea>
+                        </div>
+                    </div>
+                    <div class="text-center mb-4 mt-3">
+                        <button type="button" class="btn btn-outline-success btn-sm" id="updateScheduleBtn">
+                            Update Schedule
+                        </button>
+
+                        <button type="button" class="btn btn-outline-danger btn-sm" data-bs-dismiss="modal">
+                            Close
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Open Schedule Modal
+    document.getElementById("scheduleDayBtn").addEventListener("click", function () {
+        var modal = new bootstrap.Modal(document.getElementById("scheduleModal"));
+        modal.show();
+    });
+
+    // Convert "2025-01-21" → "January 21, 2025"
+    function formatDateReadable(dateStr) {
+        if (!dateStr) return "";
+        const date = new Date(dateStr);
+        return date.toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric"
+        });
+    }
+
+    // Convert "14:25" → "02:25 PM"
+    function formatTimeAMPM(timeStr) {
+        if (!timeStr) return "";
+        let [h, m] = timeStr.split(":");
+        h = parseInt(h);
+        const ampm = h >= 12 ? "PM" : "AM";
+        h = h % 12 || 12;
+        return `${h.toString().padStart(2, "0")}:${m} ${ampm}`;
+    }
+
+    // Disable past dates + setup field behaviors
+    document.addEventListener("DOMContentLoaded", function () {
+        let today = new Date().toISOString().split("T")[0];
+        document.getElementById("scheduleDate").setAttribute("min", today);
+        document.getElementById("showstartTime").readOnly = true;
+        document.getElementById("showendTime").readOnly = true;
+        document.getElementById("startTime").addEventListener("input", function () {
+            document.getElementById("showstartTime").value = formatTimeAMPM(this.value);
+        });
+        document.getElementById("endTime").addEventListener("input", function () {
+            document.getElementById("showendTime").value = formatTimeAMPM(this.value);
+        });
+    });
+
+    // Clear button → Reset modal form
+    document.getElementById("clearScheduleBtn").addEventListener("click", function () {
+        // Reset form
+        document.getElementById("scheduleForm").reset();
+        // Clear AM/PM fields manually
+        document.getElementById("showstartTime").value = "";
+        document.getElementById("showendTime").value = "";
+        // Reapply today's min-date (because reset() removes it visually)
+        let today = new Date().toISOString().split("T")[0];
+        document.getElementById("scheduleDate").setAttribute("min", today);
+    });
+
+    // Reset modal when closed
+    document.getElementById("scheduleModal").addEventListener("hidden.bs.modal", function () {
+        // Reset the form
+        document.getElementById("scheduleForm").reset();
+        // Clear AM/PM display fields
+        document.getElementById("showstartTime").value = "";
+        document.getElementById("showendTime").value = "";
+        // Reapply today's min date
+        let today = new Date().toISOString().split("T")[0];
+        document.getElementById("scheduleDate").setAttribute("min", today);
+    });
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    loadTodaySchedule();
+});
+
+function loadTodaySchedule() {
+    fetch("{% url 'filter_emptoday_schedule' %}")
+        .then(response => response.json())
+        .then(data => {
+            let tbody = document.getElementById("empscheduleTableBody");
+            tbody.innerHTML = ""; // clear the table
+
+            if (data.status === "success" && data.data.length > 0) {
+                data.data.forEach(item => {
+                    tbody.innerHTML += `
+                        <tr class="text-white">
+                            <td>
+                                <span class="${item.schedule_status == 1 ? 'completed-text' : ''}">
+                                    ${formatDateReadable(item.schedule_date)}
+                                </span>
+                                <br>
+                                <small class="text-white-50"> Time - ${formatTimeAMPM(item.start_time)} to ${formatTimeAMPM(item.end_time)}</small>
+                            </td>
+                            <td>
+                                ${item.employee_name}
+                            </td>
+                            <td>
+                                <span class="${item.schedule_status == 1 ? 'completed-text' : ''}">
+                                    ${item.schedule_head}
+                                </span>
+                                <br>
+                                <small class="text-white-50">${item.todo_content}</small>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary edit-btn mt-2" data-id="${item.id}">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-danger delete-btn mt-2" data-id="${item.id}">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } else {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center text-white py-4">
+                            <i class="fas fa-calendar-times fa-2x mb-2 d-block"></i>
+                            No schedules found for today.
+                        </td>
+                    </tr>
+                `;
+            }
+        });
+}
+
+// Today's schedule button
+document.getElementById("todayScheduleBtn").addEventListener("click", function () {
+    fetch("{% url 'filter_emptoday_schedule' %}")
+        .then(response => response.json())
+        .then(data => {
+            let tbody = document.getElementById("empscheduleTableBody");
+            tbody.innerHTML = ""; // clear old data
+            document.getElementById("empSelect").value = "";
+
+            if (data.status === "success" && data.data.length > 0) {
+                data.data.forEach(item => {
+                    tbody.innerHTML += `
+                        <tr class="text-white">
+                            <td>
+                                <span class="${item.schedule_status == 1 ? 'completed-text' : ''}">
+                                    ${formatDateReadable(item.schedule_date)}
+                                </span>
+                                <br>
+                                <small class="text-white-50"> Time - ${formatTimeAMPM(item.start_time)} to ${formatTimeAMPM(item.end_time)}</small>
+                            </td>
+                            <td>
+                                ${item.employee_name}
+                            </td>
+                            <td>
+                                <span class="${item.schedule_status == 1 ? 'completed-text' : ''}">
+                                    ${item.schedule_head}
+                                </span>
+                                <br>
+                                <small class="text-white-50">${item.todo_content}</small>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary edit-btn mt-2" data-id="${item.id}">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-danger delete-btn mt-2" data-id="${item.id}">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } else {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center text-white py-4">
+                            <i class="fas fa-calendar-times fa-2x mb-2 d-block"></i>
+                            No schedules found for today.
+                        </td>
+                    </tr>
+                `;
+            }
+        });
+});
+
+// Search filter
+document.getElementById("searchfilter").addEventListener("keyup", function () {
+    let searchValue = this.value.toLowerCase().trim();
+    let rows = document.querySelectorAll("#empscheduleTableBody tr");
+
+    rows.forEach(row => {
+        let text = row.innerText.toLowerCase();
+        
+        if (text.includes(searchValue)) {
+            row.style.display = "";
+        } else {
+            row.style.display = "none";
+        }
+    });
+});
+
+// Employee filter
+document.getElementById("filterBtn").addEventListener("click", function () {
+    let empId = document.getElementById("empSelect").value;
+
+    if (!empId) {
+        Swal.fire({
+            icon: "warning",
+            title: "Select Employee",
+            text: "Please select an employee to filter.",
+            timer: 1500,
+            showConfirmButton: false
+        });
+        return;
+    }
+
+    fetch(`/filter_emp_schedule/?emp_id=${empId}`)
+        .then(response => response.json())
+        .then(data => {
+            let tbody = document.getElementById("empscheduleTableBody");
+            tbody.innerHTML = "";
+
+            if (data.status === "success" && data.data.length > 0) {
+                data.data.forEach(item => {
+                    tbody.innerHTML += `
+                        <tr class="text-white">
+                            <td>
+                                <span class="${item.schedule_status == 1 ? 'completed-text' : ''}">
+                                    ${formatDateReadable(item.schedule_date)}
+                                </span><br>
+                                <small class="text-white-50">Time - ${formatTimeAMPM(item.start_time)} to ${formatTimeAMPM(item.end_time)}</small>
+                            </td>
+
+                            <td>${item.employee_name}</td>
+
+                            <td>
+                                <span class="${item.schedule_status == 1 ? 'completed-text' : ''}">
+                                    ${item.schedule_head}
+                                </span>
+                                <br>
+                                <small class="text-white-50">${item.todo_content}</small>
+                            </td>
+
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary edit-btn mt-2" data-id="${item.id}">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-danger delete-btn mt-2" data-id="${item.id}">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } else {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center text-white py-4">
+                            <i class="fas fa-calendar-times fa-2x mb-2 d-block"></i>
+                            No schedules found for this employee.
+                        </td>
+                    </tr>
+                `;
+            }
+        });
+});
+
+</script>
+<script>
+// delete schedule button
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== "") {
+        const cookies = document.cookie.split(";");
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + "=")) {
+                cookieValue = cookie.substring(name.length + 1);
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+document.addEventListener("click", function (event) {
+    let btn = event.target.closest(".delete-btn");
+    if (!btn) return;
+
+    let scheduleId = btn.getAttribute("data-id");
+    if (!scheduleId || scheduleId === "undefined") {
+        console.error("Schedule ID missing in delete button!");
+        return;
+    }
+
+    Swal.fire({
+        title: "Delete Schedule?",
+        text: "This action cannot be undone.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Yes, delete",
+        cancelButtonText: "Cancel"
+    }).then(result => {
+        if (result.isConfirmed) {
+
+            fetch(`/delete_schedule/${scheduleId}/`, {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": getCookie("csrftoken"),
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === "success") {
+
+                    Swal.fire({
+                        icon: "success",
+                        title: "Deleted!",
+                        text: "Schedule removed.",
+                        timer: 1200,
+                        showConfirmButton: false
+                    });
+
+                    loadTodaySchedule();
+                }
+            });
+        }
+    });
+});
+
+// Format time 24h -> 12h AM/PM
+function formatTimeAMPM(timeStr) {
+    if (!timeStr) return "";
+    let [h, m] = timeStr.split(":");
+    h = parseInt(h);
+    const ampm = h >= 12 ? "PM" : "AM";
+    h = h % 12 || 12;
+    return `${h.toString().padStart(2, "0")}:${m} ${ampm}`;
+}
+// Auto-update AM/PM fields in Edit Modal
+document.addEventListener("DOMContentLoaded", function () {
+    const editStart = document.getElementById("editStartTime");
+    const editEnd = document.getElementById("editEndTime");
+
+    editStart.addEventListener("input", () => {
+        document.getElementById("showeditStartTime").value = formatTimeAMPM(editStart.value);
+    });
+
+    editEnd.addEventListener("input", () => {
+        document.getElementById("showeditEndTime").value = formatTimeAMPM(editEnd.value);
+    });
+});
+// Edit modal
+document.addEventListener("click", function (event) {
+    let btn = event.target.closest(".edit-btn");
+    if (!btn) return;
+
+    let scheduleId = btn.getAttribute("data-id");
+    if (!scheduleId) return;
+
+    fetch(`/get_empschedule/${scheduleId}/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === "success") {
+                // Fill modal fields
+                document.getElementById("editScheduleId").value = data.data.id;
+                document.getElementById("editScheduleEmp").value = data.data.emp_id;
+                document.getElementById("editScheduleDate").value = data.data.schedule_date;
+                document.getElementById("editStartTime").value = data.data.start_time;
+                document.getElementById("editEndTime").value = data.data.end_time;
+                document.getElementById("editTaskTitle").value = data.data.schedule_head;
+                document.getElementById("editTaskDescription").value = data.data.todo_content || "";
+                document.getElementById("showeditStartTime").value = formatTimeAMPM(data.data.start_time);
+                document.getElementById("showeditEndTime").value = formatTimeAMPM(data.data.end_time);
+
+                // Open modal
+                var modal = new bootstrap.Modal(document.getElementById("editScheduleModal"));
+                modal.show();
+            }
+        });
+});
+// Update
+document.getElementById("updateScheduleBtn").addEventListener("click", function () {
+    let id = document.getElementById("editScheduleId").value;
+
+    const formData = new FormData();
+    formData.append("emp_id", document.getElementById("editScheduleEmp").value);
+    formData.append("schedule_date", document.getElementById("editScheduleDate").value);
+    formData.append("start_time", document.getElementById("editStartTime").value);
+    formData.append("end_time", document.getElementById("editEndTime").value);
+    formData.append("schedule_head", document.getElementById("editTaskTitle").value);
+    formData.append("todo_content", document.getElementById("editTaskDescription").value);
+
+    fetch(`/update_empschedule/${id}/`, {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": getCookie("csrftoken"),
+        },
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === "success") {
+
+            Swal.fire({
+                icon: "success",
+                title: "Updated!",
+                text: "Schedule updated successfully",
+                timer: 1500,
+                showConfirmButton: false
+            });
+
+            // Close modal
+            document.getElementById("editScheduleModal").querySelector(".btn-close").click();
+
+            // Reload today's schedule
+            loadTodaySchedule();
+        }
+    });
+});
+
+</script>
+{% endblock %}

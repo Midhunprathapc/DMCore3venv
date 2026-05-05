@@ -1,0 +1,347 @@
+{% extends 'telecaller_base.html' %}
+
+{% block content %}
+<style>
+    
+    .form-details{
+    /* padding: 35px 15px; */
+    margin-bottom: 10px;
+    /* box-shadow: inset 0 0 0 1px #fcfcfc13; */
+    border-radius: 5px;
+    /* background-color: rgba(32, 32, 32, 0.432); */
+    color: rgb(126, 127, 129);
+    input,select,textarea{
+        background-color: rgba(0, 0, 0, 0.373);
+        color: rgb(253, 253, 253);
+
+        &::placeholder{
+            color: rgb(191, 193, 196);
+        }
+        &:focus{
+            outline: none;
+            background-color:rgba(0, 0, 0, 0.373) ;
+            color: rgb(253, 253, 253);
+
+        }
+        &::-webkit-calendar-picker-indicator{
+            filter: invert(1);
+        }
+    }
+    i{
+        margin-right: 15px;;
+    }
+
+
+    
+  }
+  .relative{
+        position: relative;
+
+    }
+    .absolute{
+        position: absolute;
+        bottom:-40px;
+        right: 0;
+        padding:5px 10px;
+        border: 1px solid #767474;
+        background: black;
+        color: white;
+        display: none;
+
+
+        
+    }
+    .relative input:hover ~ .absolute{
+        display: block;
+
+
+    }
+    .relative select:hover ~ .absolute{
+        display: block;
+
+    }
+    .no-wrap{
+        text-wrap: nowrap !important;
+    }
+</style>
+<div class="text-white">
+   <a href="{% url 'telecaller_dashboard' %}" class="text-white-50 text-decoration-none">  <small>Dashboard</small></a>  /  <small>Closed Leads</small>
+</div>
+
+
+
+<section class="mt-4">
+     <form action="{% url 'telecaller_closedLeads' %}" method="get" class="form-details" id="filter_form">
+    <div class="container p-3 bg-dark text-white rounded">
+
+        <div class="row">
+            <div class="col-sm-2"><h3 style="font-size: x-large;">Followup - <b class="badge bg-primary rounded p-2">{{ closed_count }}</b></h3></div>
+            <div class="col-sm-10">
+                <div class="d-flex" style="gap: 10px; flex-wrap: wrap;"><select name="pagination" id="" class="px-3 border rounded" >
+                <option value="10" {% if selected_pagination == '10' or not selected_pagination %}selected{% endif %}>10</option>
+                <option value="50" {% if selected_pagination == '50' %}selected{% endif %}>50</option>
+                <option value="100" {% if selected_pagination == '100' %}selected{% endif %}>100</option>
+                <option value="All" {% if selected_pagination == 'All' %}selected{% endif %}>All</option>
+            </select>
+           
+            <div class="form-group relative">
+                <input type="date" name="from" class="form-control" value="{{ selected_from|default:'' }}">
+                <div class="absolute">From date</div>
+            </div>
+            <div class="form-group relative">
+                <input type="date" name="to" class="form-control" value="{{ selected_to|default:'' }}">
+                <div class="absolute">To date</div>
+            </div>
+
+            <div class="form-group">
+                <select name="status" id="" class="px-3 border rounded relative" style="height: 100%;" >
+                <option value="">Status</option>
+                {% for i in follow_reason %}
+                <option value="{{ i.name }}" {% if selected_status == i.name %}selected{% endif %}>{{ i.name }}</option>
+                {% endfor %}
+                
+            </select>
+            <div class="absolute"> Status</div>
+            
+            </div>
+            <button class="btn btn-outline-primary" type="submit"><i class="fa-solid fa-magnifying-glass" style="color: rgb(177, 151, 252);"></i></button>
+            <button class="btn btn-outline-success" type="button" id="reset"><i class="fa-solid fa-retweet" style="color: rgb(255, 212, 59);"></i></button>
+
+            
+        </div></div>
+        </div>
+        
+        
+    </div>
+    <div class="container p-3 bg-dark text-white mt-2 rounded">
+            <div class="row">
+                <div class="col-sm-3"><button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#waste_modal">Waste</button></div>
+                <div class="col-sm-9">
+                    <input type="text" placeholder="Search" id="search" class="form-control mt-2 mt-sm-0">
+
+                </div>
+        </div>
+        </div>
+
+       </form>
+
+       <div class="container p-3 bg-dark text-white mt-2">
+        <div class="table-responsive">
+            <table class="table table-dark">
+                <thead>
+                    <tr class="text-center text-sm-start">
+                        <th>SI NO</th>
+                        <th>Recall</th>
+                        <th class="no-wrap">Add Date <button type="button" onclick="sortbydate(event)" class="btn btn-outline-primary btn-sm"><i class="fa-solid fa-arrow-up" style="color: rgb(116, 192, 252);"></i></button></th>
+                        <th class="no-wrap">Name <button type="button" onclick="sortbyname(event)" class="btn btn-outline-primary btn-sm"><i class="fa-solid fa-arrow-up" style="color: rgb(116, 192, 252);"></i></button></th>
+                        <th class="no-wrap">Email <button type="button" onclick="sortbyemail(event)" class="btn btn-outline-primary btn-sm"><i class="fa-solid fa-arrow-up" style="color: rgb(116, 192, 252);"></i></button></th>
+                        <th class="no-wrap">Contact <button type="button" onclick="sortbycontact(event)" class="btn btn-outline-primary btn-sm"><i class="fa-solid fa-arrow-up" style="color: rgb(116, 192, 252);"></i></button></th>
+                        <th class="no-wrap">Details </th>
+                        <th class="no-wrap">Final Status <button type="button" onclick="sortbystatus(event)" class="btn btn-outline-primary btn-sm"><i class="fa-solid fa-arrow-up" style="color: rgb(116, 192, 252);"></i></button></th>
+
+                    </tr>
+                </thead>
+                <tbody id="tbody">
+                    {% for i in closed_leads %}
+                    <tr>
+                        <td>{{forloop.counter}}</td>
+                        <td><a href="{% url 'change_lead_recall' i.id %}"><i class="fa-solid fa-arrows-rotate" style="color: rgb(237, 75, 75);"></i></i></a></td>
+                        <td>{{i.transfer_date|date:"Y-m-d"}}</td>
+                        <td>{{i.full_name}}</td>
+                        <td>{{i.email}}</td>
+                        <td>{{i.contact}}</td>
+                        <td><a href="{% url 'telecaller_followup_details' i.id %}" class="btn btn-outline-success"><i class="fa-solid fa-file" style="color: rgb(75, 237, 142);"></i></a></td>
+
+
+                        <td>{% if i.second_last_followup_response %}{{ i.second_last_followup_response }}{% else %}<div class=""> No Updations</div>{% endif %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="page d-flex justify-content-end mt-2" style="gap: 10px;">
+        {% if closed_leads.has_previous %}
+        <a class="btn btn-outline-primary" href="?page={{ closed_leads.previous_page_number }}&pagination={{ selected_pagination }}"><i class="fa-solid fa-angle-left"></i></a>
+        {% endif %}
+        <b class="p-3 rounded border" style="cursor: pointer;">{{closed_leads.number}}</b>
+        {% if closed_leads.has_next %}
+        <a class="btn btn-outline-primary d-flex justify-content-center align-items-center" href="?page={{ closed_leads.next_page_number }}&pagination={{ selected_pagination }}"><i class="fa-solid fa-angle-right"></i></a>
+        {% endif %}
+       </div>
+       </div>
+       
+    
+</section>
+
+
+
+<!-- Modal -->
+ <form action=" {% url 'telecaller_closedLeads' %}" method="post">
+    {% csrf_token %}
+<div class="modal fade w-100" id="waste_modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog " style="max-width: 65%;">
+    <div class="modal-content w-100 bg-dark text-white">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5 text-danger" id="exampleModalLabel">Add Waste</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="table-responsive">
+            <table class="table table-dark">
+                <thead>
+                    <tr>
+                        <th>SI NO</th>
+                        <th>select</th>
+                        <th>Add Date</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Contact</th>
+                        <th>Final Status</th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for i in closed_leads %}
+                    <tr>
+                        <td>{{forloop.counter}}</td>
+                        <td><input type="checkbox" name="lead_id[]" value="{{i.id}}" id=""></td>
+                        <td>{{i.transfer_date|date:"Y-m-d"}}</td>
+                        <td>{{i.full_name}}</td>
+                        <td>{{i.email}}</td>
+                        <td>{{i.contact}}</td>
+
+
+                        <td>{% if i.second_last_followup_response %}{{ i.second_last_followup_response }}{% else %}<div class=""> No Updations</div>{% endif %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal"  data-bs-toggle="modal" data-bs-target="#waste_modal_msg" >Next</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="waste_modal_msg" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content bg-dark text-white">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Please clarify the reason for making waste lead !</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+            <label for="">Enter your reason</label>
+            <textarea name="waste_reason" id="" class="form-control" required></textarea>
+            <!-- <input type="hidden" name="lead_id" value="{{lead.id}}"> -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-primary">Update</button>
+      </div>
+     
+    </div>
+  </div>
+</div>
+</form>
+
+
+<script>
+     let found=false
+    const search = document.getElementById('search')
+    const reset = document.getElementById('reset')
+    const filterform = document.getElementById('filter_form')
+
+    reset.addEventListener('click', function () {
+        window.location.href = filterform.action
+    })
+
+    search.addEventListener('keyup', function(event){
+        const data = event.target.value.toLowerCase()
+        const tbody = document.getElementById('tbody')
+        const rows = [...tbody.getElementsByTagName('tr')]
+        rows.forEach(row => {
+            const cells = [...row.getElementsByTagName('td')]
+            let found = false
+            row.style.display = 'none'
+            cells.forEach(cell => {
+                if (cell.textContent.toLowerCase().includes(data)) {
+                    found = true
+                    row.style.display = ''
+                    return
+                }
+            })
+        })
+        
+        }
+    )
+
+    let sortdict={
+        2:true,
+        3:true,
+        4:true,
+        5:true,
+        7:true,
+        
+    }
+
+    function sorttable(ind,button) {
+        const tbody = document.getElementById('tbody')
+        const rows = [...tbody.querySelectorAll('tr')]
+        isopen=sortdict[ind]
+
+        rows.sort((a,b)=>{
+            const textA=a.children[ind].textContent.trim().toLocaleLowerCase()
+            const textB=b.children[ind].textContent.trim().toLocaleLowerCase()
+            return isopen ? textA.localeCompare(textB) : textB.localeCompare(textA)
+
+
+        })
+        rows.forEach(row => {
+            tbody.appendChild(row)
+        })
+
+        sortdict[ind]=!isopen
+        const icon = button.querySelector('i')
+        if (isopen) {
+            icon.classList.remove('fa-arrow-up')
+            icon.classList.add('fa-arrow-down')
+        } else {
+            icon.classList.remove('fa-arrow-down')
+            icon.classList.add('fa-arrow-up')
+
+        }
+    }
+
+const sortbydate = (event) => {
+    event.preventDefault()
+    const button=event.target.closest('button')
+    sorttable(2,button)
+}
+const sortbyname = (event) => {
+    event.preventDefault()
+    const button=event.target.closest('button')
+    sorttable(3,button)
+}
+const sortbyemail = (event) => {
+    event.preventDefault()
+    const button=event.target.closest('button')
+    sorttable(4,button)
+}
+const sortbycontact = (event) => {
+    event.preventDefault()
+    const button=event.target.closest('button')
+    sorttable(5,button)
+}
+const sortbystatus = (event) => {
+    event.preventDefault()
+    const button=event.target.closest('button')
+    sorttable(7,button)
+}
+</script>
+{% endblock %}

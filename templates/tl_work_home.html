@@ -1,0 +1,56 @@
+{% extends "teamlead_base.html" %}
+
+{% block title %}Team Lead Work Dashboard{% endblock %}
+
+
+
+{% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb breadcrumb-custom bg-transparent p-0 mb-3">
+        <li class="breadcrumb-item">
+            <a href="{% url 'teamlead_dashboard' %}" class="text-secondary fw-bold" style="text-decoration: none">Dashboard</a>
+        </li>
+         
+        <li class="breadcrumb-item active text-secondary" aria-current="page">
+            Work
+        </li>
+    </ol>
+</nav>
+<div class="container-fluid mt-4">
+    <div class="row g-4">
+
+        <div class="col-md-4">
+            <a href="{% url 'teamlead_allocated_works' %}" style="text-decoration: none; color:white;">
+            <div class="dashboard-card">
+                    <i class="fas fa-user-check card-icon" style="color: #4caf50;"></i>
+                    <h5 class="card-title">Work Allocate</h5>
+                    <p class="card-description">Assign tasks or Projects to specific individuals.</p>
+                </div>
+            </a>
+        </div>
+      
+        <div class="col-md-4">
+            <a href="{% url 'teamlead_pending_works' %}" style="text-decoration: none; color:white;">
+                <div class="dashboard-card">
+                    <i class="fas fa-hourglass-half card-icon" style="color: #ff5722;"></i>
+                    <h5 class="card-title">Pending Works</h5>
+                    <p class="card-description">Works that are yet to be require further attention</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a href="{% url 'tl_individualwork_home' %}" style="text-decoration: none; color:white;">
+                <div class="dashboard-card">
+                    <i class="fas fa-user-check card-icon" style="color: #ff5722;"></i>
+                    <h5 class="card-title">Individual works</h5>
+                    <p class="card-description">Access individual work assigned </p>
+                </div>
+            </a>
+        </div>
+
+
+    </div>
+
+    </div>
+</div>
+{% endblock %}

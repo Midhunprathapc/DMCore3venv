@@ -1,0 +1,553 @@
+{% extends "data_manager_base.html" %}
+{% block content %}
+<style>
+    .alloc-wrapper {
+        background-color: #000000;
+        min-height: 100vh;
+        padding: 25px;
+        color: #e2e8f0;
+    }
+
+    .breadcrumb-text {
+        color: #64748b;
+        font-size: 0.85rem;
+        margin-bottom: 25px;
+    }
+
+    .top-info-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .table-title {
+        font-size: 1rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .search-box {
+        background: #010203;
+        border: 1px solid #334155;
+        color: white;
+        padding: 8px 15px;
+        border-radius: 4px;
+        width: 250px;
+        font-size: 0.85rem;
+    }
+
+
+    .filter-row {
+        display: flex;
+        gap: 20px;
+        background: #040811;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 30px;
+    }
+
+    .filter-group {
+        flex: 1;
+    }
+
+    .filter-label {
+        font-size: 0.8rem;
+        color: #94a3b8;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .custom-select {
+        background: #0f172a;
+        border: 1px solid #334155;
+        color: white;
+        padding: 10px;
+        border-radius: 5px;
+        width: 100%;
+        font-size: 0.85rem;
+    }
+
+
+    .custom-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.85rem;
+    }
+
+    .custom-table th {
+        color: #64748b;
+        font-weight: 500;
+        text-align: left;
+        padding: 15px;
+        border-bottom: 1px solid #1e293b;
+    }
+
+    .custom-table td {
+        padding: 15px;
+        border-bottom: 1px solid #1e293b;
+        color: #cbd5e1;
+    }
+
+    .status-text {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .dot-green {
+        width: 8px;
+        height: 8px;
+        background-color: #10b981;
+        border-radius: 50%;
+    }
+
+
+    .custom-dropdown {
+        position: relative;
+        display: inline-block;
+    }
+
+    .dropbtn {
+        background: transparent;
+        color: #64748b;
+        border: none;
+        cursor: pointer;
+        padding: 5px;
+    }
+
+    .dropdown-content {
+        display: none;
+        position: absolute;
+        right: 0;
+        background-color: #161d31;
+        min-width: 120px;
+        box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.5);
+        z-index: 100;
+        border-radius: 6px;
+        border: 1px solid #334155;
+    }
+
+    .dropdown-content a {
+        color: #cbd5e1;
+        padding: 10px 15px;
+        text-decoration: none;
+        display: block;
+        font-size: 0.85rem;
+    }
+
+    .dropdown-content a:hover {
+        background-color: #1e293b;
+    }
+
+    .show {
+        display: block;
+    }
+
+    .copyright {
+        margin-top: 50px;
+        color: #64748b;
+        font-size: 0.8rem;
+    }
+
+
+    .action-dropdown {
+        position: relative;
+    }
+
+
+    .action-btn {
+        background: transparent;
+        border: none;
+        color: #64748b;
+        cursor: pointer;
+        padding: 5px 10px;
+        font-size: 0.9rem;
+    }
+
+    .action-menu {
+        display: none;
+        position: fixed;
+        background-color: #161d31;
+        min-width: 130px;
+        box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.4);
+        z-index: 9999;
+        border-radius: 4px;
+        border: 1px solid #2d3748;
+        padding: 5px 0;
+    }
+
+
+    .action-menu a {
+        color: #cbd5e1;
+        padding: 8px 16px;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        font-size: 0.8rem;
+        gap: 12px;
+        transition: background 0.2s;
+    }
+
+
+    .action-menu i {
+        width: 14px;
+        text-align: center;
+        font-size: 0.85rem;
+    }
+
+   
+    .action-menu a:hover:not(.disabled-link) {
+        background-color: #1e293b;
+        color: #ffffff;
+    }
+
+
+    .disabled-link {
+        opacity: 0.6;
+        cursor: default;
+    }
+
+
+    .text-danger-custom {
+        color: #ef4444 !important;
+    }
+
+
+    .show-action {
+        display: block !important;
+    }
+
+   
+
+    @media (max-width: 768px) {
+        .alloc-wrapper {
+            padding: 15px;
+        }
+
+        
+        .top-info-bar {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .search-box {
+            width: 100%;
+        }
+
+     
+        .filter-row {
+            flex-direction: column;
+            gap: 15px;
+            padding: 15px;
+        }
+
+        
+        .custom-table {
+            min-width: 1000px; 
+        }
+
+        .table-responsive {
+            border: 1px solid #1e293b;
+            border-radius: 8px;
+        }
+
+        
+        .action-menu {
+            position: absolute; 
+        }
+    }
+
+    /* Print Styles */
+    @media print {
+        @page {
+            size: A4 landscape;
+            margin: 0;
+        }
+
+        body {
+            margin: 1.5cm !important;
+            background: white !important;
+            color: black !important;
+        }
+
+        /* Hide all navigation and layout elements */
+        #sidebar, .sidebar, 
+        #navbar, .navbar, 
+        .navbar-toggle, .mobile-toggle, .desktop-toggle, 
+        .profile-section, .custom-dropdown, .search-box,
+        .breadcrumb-custom, .container-fluid:has(.breadcrumb-custom),
+        .top-info-bar, .filter-row, .copyright,
+        .action-dropdown, th:nth-child(2), td:nth-child(2) { /* Hide Action column */
+            display: none !important;
+        }
+
+        /* Reset main content margins and background */
+        .main-content, .alloc-wrapper {
+            background: white !important;
+            color: black !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+            min-height: auto !important;
+            position: static !important;
+            overflow: visible !important;
+        }
+
+        .table-responsive {
+            display: block !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: visible !important;
+            border: none !important;
+        }
+
+        .custom-table {
+            width: 100% !important;
+            min-width: initial !important;
+            border-collapse: collapse !important;
+            color: black !important;
+            background: white !important;
+            font-size: 8.5pt !important;
+            table-layout: auto !important;
+        }
+
+        .custom-table th, .custom-table td {
+            border: 1px solid #000 !important;
+            padding: 6px 4px !important;
+            color: black !important;
+            background: white !important;
+            word-wrap: break-word !important;
+            white-space: normal !important;
+        }
+
+        .custom-table th {
+            background-color: #f0f0f0 !important;
+            font-weight: bold !important;
+            -webkit-print-color-adjust: exact;
+        }
+
+        /* Status indicators in print */
+        .dot-green {
+            background-color: #000 !important;
+            border: 1px solid #000 !important;
+        }
+    }
+</style>
+
+<div class="alloc-wrapper">
+
+    <div class="container-fluid">
+        <ol class="breadcrumb breadcrumb-custom bg-transparent p-0 mb-3">
+            <li class="breadcrumb-item">
+                <a href="{% url 'data_manager_dashboard' %}" class="text-secondary fw-bold"
+                    style="text-decoration: none">Dashboard</a>
+            </li>
+            <li class="breadcrumb-item active text-secondary" aria-current="page">Today Allocations</li>
+        </ol>
+    </div>
+
+    <div class="top-info-bar flex-wrap">
+        <div class="table-title w-100 d-flex align-items-center gap-2 mb-md-0 mb-2">
+            <span>Leads We Have - ( {{ leads_count }} )</span>
+            
+            <div class="custom-dropdown">
+                <button class="dropbtn" onclick="toggleDropdown()">
+                    <i class="fas fa-ellipsis-v"></i>
+                </button>
+                <div id="exportDropdown" class="dropdown-content">
+                    <a href="#" onclick="window.print()"><i class="fas fa-print"></i> Print</a>
+                    <a href="javascript:void(0)" onclick="exportData('pdf')"><i class="fas fa-file-pdf"></i> Pdf</a>
+                    <a href="javascript:void(0)" onclick="exportData('excel')"><i class="fas fa-file-excel"></i> Excel</a>
+                </div>
+            </div>
+        </div>
+        <form method="GET" class="w-100">
+            <input type="text" name="q" class="search-box" placeholder="search here.." value="{{ search_query }}">
+        </form>
+    </div>
+
+    <form method="GET" class="filter-row flex-wrap">
+        <div class="filter-group w-100">
+            <label class="filter-label">Allocation Status</label>
+            <select name="status" class="custom-select" onchange="this.form.submit()">
+                <option value="">Change status</option>
+                <option value="Allocated">Allocated</option>
+                <option value="Joined">Joined</option>
+                <option value="Opened">Opened</option>
+            </select>
+        </div>
+
+        <div class="filter-group w-100">
+            <label class="filter-label">Select HR\Telecaller *</label>
+            <select name="employee" class="custom-select" onchange="this.form.submit()">
+                <option value="">Select Employee</option>
+                {% for emp in employees %}
+                <option value="{{ emp.id }}">
+                    {{ emp.employee_name|default:emp.name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+    </form>
+
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Action</th>
+                    <th>Status</th>
+                    <th>Added Date</th>
+                    <th>Lead Name</th>
+                    <th>Email</th>
+                    <th>Phone Number</th>
+                    <th>Data Sourse</th>
+                    <th>Client name</th>
+                    <th>Lead Category</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if request.GET.employee %}
+                    {% for lead in leads %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>
+                            <div class="action-dropdown">
+                                <button type="button" class="action-btn" onclick="toggleActionMenu(this)">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+
+                                <div class="action-menu">
+                                    <a href="javascript:void(0)" class="disabled-link">
+                                        <i class="fas fa-phone-alt"></i> FollowUp
+                                    </a>
+                                    <a href="javascript:void(0)" class="disabled-link">
+                                        <i class="fas fa-file-alt"></i> Details
+                                    </a>
+                                    <a href="javascript:void(0)" onclick="deleteLead('{{ lead.id }}')"
+                                        class="text-danger-custom">
+                                        <i class="fas fa-trash-alt"></i> Delete
+                                    </a>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="status-text">
+                                <span class="dot-green"></span> {{ lead.status }}
+                            </div>
+                        </td>
+                        <td>{{ lead.created_at|date:"F d, Y" }}</td>
+                        <td>{{ lead.full_name }}</td>
+                        <td>{{ lead.email }}</td>
+                        <td>{{ lead.contact }}</td>
+                        <td>{{ lead.source }}</td>
+                        <td>{{ lead.lead_collection.work_Id.clientId.client_name }}</td>
+                        <td>{{ lead.lead_collection.collection_head }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="10" class="text-center py-4">No allocations found for today.</td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="10" class="text-center py-4" style="color: #64748b;">
+                            <i class="fas fa-filter mb-2" style="font-size: 1.5rem; opacity: 0.5;"></i><br>
+                            Please select an Employee to view details.
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<script>
+    function toggleActionMenu(button) {
+        const currentMenu = button.nextElementSibling;
+        document.querySelectorAll('.action-menu').forEach(menu => {
+            if (menu !== currentMenu) {
+                menu.classList.remove('show-action');
+            }
+        });
+
+
+        if (currentMenu.classList.contains('show-action')) {
+            currentMenu.classList.remove('show-action');
+        } else {
+            const rect = button.getBoundingClientRect();
+            currentMenu.style.top = rect.bottom + 'px';
+            currentMenu.style.left = (rect.left + 20) + 'px'; 
+            currentMenu.classList.add('show-action');
+        }
+    }
+
+    window.addEventListener('scroll', function () {
+        document.querySelectorAll('.action-menu.show-action').forEach(menu => {
+            menu.classList.remove('show-action');
+        });
+    }, true);
+
+    function toggleDropdown() {
+        document.getElementById("exportDropdown").classList.toggle("show");
+    }
+
+   
+    window.addEventListener('click', function (event) {
+        if (!event.target.closest('.action-dropdown')) {
+            document.querySelectorAll('.action-menu').forEach(menu => {
+                menu.classList.remove('show-action');
+            });
+        }
+
+        if (!event.target.matches('.dropbtn') && !event.target.closest('.dropbtn')) {
+            var dropdowns = document.getElementsByClassName("dropdown-content");
+            for (var i = 0; i < dropdowns.length; i++) {
+                var openDropdown = dropdowns[i];
+                if (openDropdown.classList.contains('show')) openDropdown.classList.remove('show');
+            }
+        }
+    });
+
+
+    function exportData(format) {
+        const urlParams = new URLSearchParams(window.location.search);
+        urlParams.set('export', format);
+        window.location.href = window.location.pathname + '?' + urlParams.toString();
+    }
+
+    function deleteLead(leadId) {
+        if (confirm("Are you sure you want to remove the allocation for this lead?")) {
+            fetch(`/unassign-lead/${leadId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.reload();
+                    } else {
+                        alert("Failed to remove allocation.");
+                    }
+                })
+                .catch(error => console.error("Error:", error));
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const urlParams = new URLSearchParams(window.location.search);
+
+        if (urlParams.has('status')) {
+            let el = document.querySelector('select[name="status"]');
+            if (el) el.value = urlParams.get('status');
+        }
+        if (urlParams.has('employee')) {
+            let el = document.querySelector('select[name="employee"]');
+            if (el) el.value = urlParams.get('employee');
+        }
+    });
+</script>
+{% endblock %}

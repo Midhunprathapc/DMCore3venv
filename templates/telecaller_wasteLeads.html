@@ -1,0 +1,288 @@
+{% extends 'telecaller_base.html' %}
+{% block content %}
+
+<style>
+    .no-wrap{
+        text-wrap: nowrap;
+    }
+     .relative{
+        position: relative;
+
+    }
+    .absolute{
+        position: absolute;
+        bottom:-40px;
+        right: 0;
+        padding:5px 10px;
+        border: 1px solid #767474;
+        background: black;
+        color: white;
+        display: none;
+
+
+        
+    }
+    .relative input:hover ~ .absolute{
+        display: block;
+
+
+    }
+    .relative select:hover ~ .absolute{
+        display: block;
+
+
+    }
+    .form-details{
+    /* padding: 35px 15px; */
+    margin-bottom: 10px;
+    /* box-shadow: inset 0 0 0 1px #fcfcfc13; */
+    border-radius: 5px;
+    /* background-color: rgba(32, 32, 32, 0.432); */
+    color: rgb(126, 127, 129);
+    input,select,textarea{
+        background-color: rgba(0, 0, 0, 0.373);
+        color: rgb(253, 253, 253);
+
+        &::placeholder{
+            color: rgb(191, 193, 196);
+        }
+        &:focus{
+            outline: none;
+            background-color:rgba(0, 0, 0, 0.373) ;
+            color: rgb(253, 253, 253);
+
+        }
+        &::-webkit-calendar-picker-indicator{
+            filter: invert(1);
+        }
+    }
+    i{
+        margin-right: 15px;;
+    }
+
+
+    
+  }  
+  .pending{
+    border:1px solid yellow;
+    border-radius: 5px;
+    padding: 5px;
+    color: yellow;
+    width: fit-content;
+  }
+  .comp{
+    border:1px solid green;
+    border-radius: 5px;
+    padding: 5px;
+    color: green;
+    width: fit-content;
+  }
+</style>
+
+<div class="text-white">
+   <a href="{% url 'telecaller_dashboard' %}" class="text-white-50 text-decoration-none">  <small>Dashboard</small></a>  /  <small>Waste Leads</small>
+</div>
+
+
+<section class="mt-4">
+     <form class="form-details" action="{% url 'telecaller_wasteLeads' %}" id="filter_form">
+    <div class="container p-3 bg-dark text-white rounded">
+
+        <div class="row">
+            <div class="col-sm-3"><h4>Waste Leads - <b class="badge bg-primary rounded p-2">{{ waste_count }}</b></h4></div>
+            <div class="col-sm-9">
+                <div class="d-flex" style="gap: 10px; flex-wrap: wrap;"><select name="pagination" id="" class="border px-3 rounded" >
+                <option value="10" {% if selected_pagination == '10' or not selected_pagination %}selected{% endif %}>10</option>
+                <option value="50" {% if selected_pagination == '50' %}selected{% endif %}>50</option>
+                <option value="100" {% if selected_pagination == '100' %}selected{% endif %}>100</option>
+                <option value="All" {% if selected_pagination == 'All' %}selected{% endif %}>All</option>
+            </select>
+            <div class="form-group relative">
+                <input type="date" name="from" class="form-control" value="{{ selected_from|default:'' }}">
+                <div class="absolute" >From date</div>
+            </div>
+            <div class="form-group relative">
+                <input type="date" name="to" class="form-control" value="{{ selected_to|default:'' }}">
+                <div class="absolute">To date</div>
+            </div>
+            
+
+            <div class="form-group relative">
+                <select name="status" id="" class="border rounded px-3" style="height: 100%;" >
+                <option value="" {% if not selected_status %}selected{% endif %}>Status</option>
+                <option value="pending" {% if selected_status == 'pending' %}selected{% endif %}>Pending</option>
+                <option value="approved" {% if selected_status == 'approved' %}selected{% endif %}>Approved</option>
+
+            </select>
+            <div class="absolute">Status</div>
+            
+            </div>
+            <button class="btn btn-outline-primary" type="submit"><i class="fa-solid fa-magnifying-glass" style="color: rgb(177, 151, 252);"></i></button>
+            <button class="btn btn-outline-success" type="button" id="reset"><i class="fa-solid fa-retweet" style="color: rgb(255, 212, 59);"></i></button>
+
+            
+        </div></div>
+        </div>
+        
+        
+    </div>
+    <div class="container p-3 bg-dark text-white mt-2 rounded">
+            <div class="">
+            <input type="text" placeholder="Search" class="form-control" id="search">
+        </div>
+        </div>
+
+       </form>
+
+       <div class="container p-3 bg-dark text-white mt-2 rounded">
+        <div class="table-responsive">
+            <table class="table table-dark">
+                <thead>
+                    <tr>
+                        <th>SI NO</th>
+                        <th class="no-wrap">Add Date <button type="button" onclick="sortbydate(event)" class="btn btn-outline-primary btn-sm"><i class="fa-solid fa-arrow-up" style="color: rgb(116, 192, 252);"></i></button></th>
+                        <th class="no-wrap">Name <button type="button" onclick="sortbyname(event)" class="btn btn-outline-primary btn-sm"><i class="fa-solid fa-arrow-up" style="color: rgb(116, 192, 252);"></i></button></th>
+                        <th class="no-wrap">Email <button type="button" onclick="sortbyemail(event)" class="btn btn-outline-primary btn-sm"><i class="fa-solid fa-arrow-up" style="color: rgb(116, 192, 252);"></i></button></th>
+                        <th class="no-wrap">Contact <button type="button" onclick="sortbycontact(event)" class="btn btn-outline-primary btn-sm"><i class="fa-solid fa-arrow-up" style="color: rgb(116, 192, 252);"></i></button></th>
+                        <th class="no-wrap">Reason <button type="button" onclick="sortbyreason(event)" class="btn btn-outline-primary btn-sm"><i class="fa-solid fa-arrow-up" style="color: rgb(116, 192, 252);"></i></button></th>
+                        <th class="no-wrap">Status <button type="button" onclick="sortbystatus(event)" class="btn btn-outline-primary btn-sm"><i class="fa-solid fa-arrow-up" style="color: rgb(116, 192, 252);"></i></button></th>
+
+                    </tr>
+                </thead>
+                <tbody id="tbody">
+                    {% for i in waste_leads %}
+                    <tr>
+                        <td>{{forloop.counter}}</td>
+                        <td class="no-wrap">{{i.waste_marked_date|date:"Y-m-d"}}</td>
+                        <td class="no-wrap">{{i.full_name}}</td>
+                        <td class="no-wrap">{{i.email}}</td>
+                        <td class="no-wrap">{{i.contact}}</td>
+                        <td class="no-wrap">{{i.waste_reason}}</td>
+                        <td class="no-wrap">{% if i.waste_status == False %} <div class="pending">Pending</div> {% else %} <div class="comp">Completed</div> {% endif %}</td>
+                        
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="page d-flex justify-content-end mt-2" style="gap: 10px;">
+        {% if waste_leads.has_previous %}
+        <a class="btn btn-outline-primary d-flex justify-content-center align-items-center" href="?page={{ waste_leads.previous_page_number }}&pagination={{ selected_pagination }}"><i class="fa-solid fa-angle-left"></i></a>
+        {% endif %}
+        <b class="p-3 rounded border" style="cursor: pointer;">{{waste_leads.number}}</b>
+        {% if waste_leads.has_next %}
+        <a class="btn btn-outline-primary d-flex justify-content-center align-items-center" href="?page={{ waste_leads.next_page_number }}&pagination={{ selected_pagination }}"><i class="fa-solid fa-angle-right"></i></a>
+        {% endif %}
+       </div>
+       </div>
+       
+    
+</section>
+
+<script>
+    let found=false
+    const search = document.getElementById('search')
+    const reset = document.getElementById('reset')
+    const filterform = document.getElementById('filter_form')
+
+    reset.addEventListener('click', function () {
+        window.location.href = filterform.action
+    })
+
+    search.addEventListener('keyup', function(event){
+        const data = event.target.value.toLowerCase()
+        const tbody = document.getElementById('tbody')
+        const rows = [...tbody.getElementsByTagName('tr')]
+        rows.forEach(row => {
+            const cells = [...row.getElementsByTagName('td')]
+            let found = false
+            row.style.display = 'none'
+            cells.forEach(cell => {
+                if (cell.textContent.toLowerCase().includes(data)) {
+                    found = true
+                    row.style.display = ''
+                    return
+                }
+            })
+        })
+        
+        }
+    )
+
+    let sortdict={
+        1:true,
+        2:true,
+        3:true,
+        4:true,
+        5:true,
+        6:true,
+
+    }
+
+    function sorttable(ind,button){
+        const tbody = document.getElementById('tbody')
+        rows=[...tbody.querySelectorAll('tr')]
+        isopen=sortdict[ind]
+        rows.sort((a,b)=>{
+            const textA=a.children[ind].textContent.trim().toLowerCase()
+            const textB=b.children[ind].textContent.trim().toLowerCase()
+            return isopen ? textA.localeCompare(textB) : textB.localeCompare(textA)
+        })
+        rows.forEach(row=>tbody.appendChild(row))
+        sortdict[ind]=!isopen
+
+        const icon=button.querySelector('i')
+        if (isopen) {
+            icon.classList.remove('fa-arrow-up')
+            icon.classList.add('fa-arrow-down')
+        }
+        else{
+            icon.classList.remove('fa-arrow-down')
+            icon.classList.add('fa-arrow-up')
+        }
+
+    }
+    function sortbydate(event){
+        event.preventDefault()
+        const button=event.target.closest('button')
+        sorttable(1,button)
+    }
+    function sortbyname(event){
+        event.preventDefault()
+        const button=event.target.closest('button')
+        sorttable(2,button)
+
+        
+    }
+    function sortbyemail(event){
+        event.preventDefault()
+        const button=event.target.closest('button')
+        sorttable(3,button)
+
+        
+    }
+    function sortbycontact(event){
+        event.preventDefault()
+        const button=event.target.closest('button')
+        sorttable(4,button)
+
+        
+    }
+    function sortbyreason(event){
+        event.preventDefault()
+        const button=event.target.closest('button')
+        sorttable(5,button)
+
+        
+    }
+    function sortbystatus(event){
+        event.preventDefault()
+        const button=event.target.closest('button')
+        sorttable(6,button)
+
+        
+    }
+
+</script>
+
+{% endblock %}

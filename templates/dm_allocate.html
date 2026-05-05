@@ -1,0 +1,235 @@
+{% extends "head_base.html" %}
+{% block content %}
+
+<style>
+.form-container {
+    background:#0f172a;
+    padding:20px;
+    border-radius:10px;
+    color:white;
+}
+
+input, select, textarea {
+    width:100%;
+    padding:8px;
+    background:#1e293b;
+    border:none;
+    color:white;
+    border-radius:5px;
+}
+
+label {
+    font-size:13px;
+    color:#94a3b8;
+}
+.work-type-group {
+    display: flex;
+    align-items: center;
+    gap: 10px; 
+    margin-top: 5px;
+}
+
+.work-type-group label {
+    display: flex;
+    align-items: center;
+    gap: 3px;    
+    margin: 0;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.work-type-group input[type="radio"] {
+    margin: 0;    
+}
+.breadcrumb-item a {
+    position: relative;
+    z-index: 5;  
+    cursor: pointer;
+    text-decoration: underline;
+    color: #2563eb; 
+}
+</style>
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb breadcrumb-custom bg-transparent p-0 mb-3">
+        <li class="breadcrumb-item">
+            <a href="{% url 'head_dashboard' %}" class="text-secondary fw-bold" style="text-decoration: none">Dashboard</a>
+        </li>
+         <li class="breadcrumb-item active text-secondary" aria-current="page">
+            /
+        </li>
+        <li class="breadcrumb-item active text-secondary" aria-current="page">
+            Work Allocate
+        </li>
+    </ol>
+</nav>
+
+<div class="container mt-4">
+    <div class="form-container">
+
+        <h5>Allocate Work</h5>
+
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="row">
+
+            
+                <div class="col-md-3">
+                    <label>Team Lead Name</label>
+                   <select name="team_lead">
+    <option value="">Select Team Lead</option>
+
+    {% for emp in team_leads %}
+        <option value="{{ emp.id }}">{{ emp.name }}</option>
+    {% endfor %}
+
+</select>
+                </div>
+
+   
+            <div class="col-md-3">
+    <label>Select Task to team lead</label>
+    <select name="task" id="taskSelect">
+        <option value="">Select Task</option>
+        {% for t in task_list %}
+    
+            <option value="{{ t.id }}" data-lead="{{ t.is_lead_collection|yesno:'1,0' }}">
+                {{ t.task_name }}
+            </option>
+        {% endfor %}
+    </select>
+</div>
+
+
+<div class="col-md-3" id="leadCategoryDiv">
+    <label>Select Task Category</label>
+    <select name="lead_collection" id="leadCollectionSelect" class="dark-input">
+        <option value="">Select Category</option>
+    </select>
+</div>
+
+               <div class="col-md-3">
+    <label>Work Type</label>
+    <div class="work-type-group">
+        <label><input type="radio" name="type" value="single" checked> Singlework</label>
+        <label><input type="radio" name="type" value="group"> Groupwork</label>
+    </div>
+</div>
+
+                <div class="col-md-3 mt-3">
+    <label>Start Date</label>
+    <input type="date" name="start_date"
+           min="{{ work.work_create_date|date:'Y-m-d' }}"
+           max="{{ work.work_end_date|date:'Y-m-d' }}">
+</div>
+
+<div class="col-md-3 mt-3">
+    <label>Due Date</label>
+    <input type="date" name="end_date"
+           min="{{ work.work_create_date|date:'Y-m-d' }}"
+           max="{{ work.work_end_date|date:'Y-m-d' }}">
+</div>
+
+                <div class="col-md-3 mt-3">
+                    <label>Total Target</label>
+                    <input type="number" name="target">
+                </div>
+
+                <div class="col-md-3 mt-3">
+                    <label>File</label>
+                    <input type="file" name="file">
+                </div>
+
+
+
+<div class="col-md-12 mt-3">
+
+    <div class="row mt-1">
+
+        <div class="col-md-3">
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input" id="instagramCheck">
+                <label class="form-check-label" for="instagramCheck">Instagram</label>
+            </div>
+            <div class="mt-1" id="instagramInputDiv" style="display:none;">
+                <input type="text" name="instagram_link" placeholder="Instagram URL" class="dark-input">
+            </div>
+        </div>
+
+
+        <div class="col-md-3">
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input" id="facebookCheck">
+                <label class="form-check-label" for="facebookCheck">Facebook</label>
+            </div>
+            <div class="mt-1" id="facebookInputDiv" style="display:none;">
+                <input type="text" name="facebook_link" placeholder="Facebook URL" class="dark-input">
+            </div>
+        </div>
+    </div>
+</div>
+
+                <div class="col-md-12 mt-3">
+                    <label>More about work</label>
+                    <textarea name="description"></textarea>
+                </div>
+
+            </div>
+
+            <div class="mt-3 text-center">
+                <button type="reset" class="btn btn-secondary">Clear</button>
+                <button type="submit" class="btn btn-primary">Allocate</button>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+<script type="application/json" id="lead-collection-data">
+    {{ lead_collection_list|safe }}
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const taskSelect = document.getElementById('taskSelect');
+    const categorySelect = document.getElementById('leadCollectionSelect');
+    const leadCollections = JSON.parse(document.getElementById('lead-collection-data').textContent);
+
+    taskSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        const isLead = selectedOption.getAttribute('data-lead') === '1';
+
+
+        categorySelect.innerHTML = '<option value="">Select Category</option>';
+
+        if (isLead) {
+
+            leadCollections.forEach(lead => {
+                const option = document.createElement('option');
+                option.value = lead.id;
+                option.textContent = lead.collection_head;
+                categorySelect.appendChild(option);
+            });
+        }
+
+    });
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const instaCheck = document.getElementById('instagramCheck');
+    const instaInputDiv = document.getElementById('instagramInputDiv');
+    const fbCheck = document.getElementById('facebookCheck');
+    const fbInputDiv = document.getElementById('facebookInputDiv');
+
+    instaCheck.addEventListener('change', function() {
+        instaInputDiv.style.display = this.checked ? 'block' : 'none';
+    });
+
+    fbCheck.addEventListener('change', function() {
+        fbInputDiv.style.display = this.checked ? 'block' : 'none';
+    });
+});
+</script>
+
+{% endblock %}

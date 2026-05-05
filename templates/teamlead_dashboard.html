@@ -1,0 +1,39 @@
+{% extends "teamlead_base.html" %}
+
+{% block title %}TeamLead Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row g-4">
+
+        <div class="col-md-4">
+            <div class="dashboard-card">
+                <i class="fas fa-user-tie card-icon"></i>
+                <h5 class="card-title">Clients</h5>
+                <p class="card-count">4</p>
+                <p class="card-description">clients doing Business with us</p>
+            </div>
+        </div>
+      
+        <div class="col-md-4">
+            <div class="dashboard-card">
+                <i class="fas fa-building card-icon"></i>
+                <h5 class="card-title">works</h5>
+                <p class="card-count">8</p>
+                <p class="card-description">Number of works registered with us</p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="dashboard-card">
+                <i class="fas fa-users card-icon"></i>
+                <h5 class="card-title">Executives</h5>
+                <p class="card-count">156</p>
+                <p class="card-description">Total number of active Executives</p>
+            </div>
+        </div>
+
+
+    </div>
+</div>
+{% endblock %}

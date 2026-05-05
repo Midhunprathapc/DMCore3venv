@@ -1,0 +1,1 @@
+from DMCore.wsgi import application

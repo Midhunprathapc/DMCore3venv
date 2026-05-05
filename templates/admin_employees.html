@@ -1,0 +1,143 @@
+{% extends "admin_base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<style>
+    .breadcrumb {
+        background-color: transparent;
+        padding: 0;
+        margin-bottom: 10px;
+    }
+    
+    .breadcrumb-item a {
+        color: var(--accent-color);
+    }
+    
+    .breadcrumb-item.active {
+        color: var(--muted-text);
+    }
+    
+    .content-container-fluid {
+        background-color: var(--card-bg);
+        border-radius: 10px;
+        padding: 25px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+</style>
+<!-- breadcrumbs -->
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item text-danger"><a href="{% url 'admin_dashboard' %}" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item active text-secondary" aria-current="page">Employee Section</li>
+                </ol>
+            </nav>
+        </div>
+
+<div class="container-fluid mt-4">
+    <div class="row g-4">
+      
+        <div class="col-md-3">
+            <div class="dashboard-card" style="height: 80%;" data-url="{% url 'employee_views' %}">
+                <i class="fas fa-solid fa-users card-icon text-success"></i>
+                <h5 class="card-title">View Employees</h5>
+                <br>
+                <p class="card-description">To view all employees in different department/designations.</p>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="dashboard-card" style="height: 80%;" data-url="{% url 'allocated_lists' %}">
+                <i class="fa-solid fa-user-plus card-icon"></i>
+                <h5 class="card-title">Allocated List</h5>
+                <br>
+                <p class="card-description">The list of employees who have allocated.</p>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="dashboard-card" style="height: 80%;" data-url="{% url 'employee_leaves' %}">
+                <i class="fas fa-solid fa-calendar-xmark card-icon text-danger"></i>
+                <h5 class="card-title">Leaves</h5>
+                <br>
+                <p class="card-description">The list of all employees's leave details.</p>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="dashboard-card" style="height: 80%;" data-url="{% url 'employee_schedule' %}">
+                <i class="fas fa-solid fa-calendar card-icon text-warning"></i>
+                <h5 class="card-title">Schedules</h5>
+                <br>
+                <p class="card-description">The list of all employees schedules.</p>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="dashboard-card" style="height: 80%;" data-url="{% url 'admin_action_taken_list' %}">
+                <i class="fas fa-solid fa-hand-point-up card-icon text-primary"></i>
+                <h5 class="card-title">Action Taken</h5>
+                <br>
+                <p class="card-description">The list of all actions taken against employees.</p>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="dashboard-card" style="height: 80%;" data-url="{% url 'admin_feedback_list' %}">
+                <i class="fas fa-solid fa-message card-icon text-success"></i>
+                <h5 class="card-title">Feedbacks</h5>
+                <p class="card-description">The lists of all employees Feedbacks.</p>
+            </div>
+        </div>
+
+        
+        <div class="col-md-3">
+            <div class="dashboard-card" style="height: 80%;" data-url="{% url 'admin_complaints_list' %}">
+                <i class="fas fa-solid fa-circle-user card-icon"></i>
+                <h5 class="card-title">Complaints</h5>
+                <p class="card-description">The list of all employees complaints.</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-card" style="height: 80%;">
+                <i class="fas fa-business-time card-icon text-success"></i>
+                <h5 class="card-title">Works</h5>
+                <br>
+                <p class="card-description">The employees wise list of all the work done.</p>
+            </div>
+        </div>
+
+        <!-- 3rd row -->
+        <div class="col-md-3">
+            <div class="dashboard-card" style="height: 80%;" data-url="{% url 'resigned' %}">
+                <i class="fas fa-solid fa-user-minus card-icon text-danger"></i>
+                <h5 class="card-title">Resigned</h5>
+                <br>
+                <p class="card-description">List of employees who have resigned.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- script -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".dashboard-card").forEach(card => {
+        card.style.cursor = "pointer"; 
+        card.addEventListener("click", function () {
+            const url = this.getAttribute("data-url");
+            if (url) {
+                window.location.href = url;
+            }
+        });
+    });
+});
+</script>
+
+
+
+{% endblock %}

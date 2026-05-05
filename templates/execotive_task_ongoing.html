@@ -1,0 +1,397 @@
+{% extends "executive_base.html" %}
+{% block title %} Executive New Work{% endblock %}
+
+{% block content %}
+
+<style>
+
+.page-container {
+    background: #0f172a;
+    padding: 20px;
+    border-radius: 12px;
+    color: #fff;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.assign-btn {
+    background: #7c3aed;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 6px;
+    color: white;
+    font-size: 14px;
+    text-decoration: none;
+}
+
+
+.search-box {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 15px;
+    border-radius: 6px;
+    border: none;
+    background-color: #1e293b;
+    color: white;
+}
+
+.table-container {
+    overflow-x: auto;
+}
+
+.custom-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.custom-table th {
+    text-align: left;
+    font-size: 13px;
+    color: #94a3b8;
+    padding: 10px;
+    border-bottom: 1px solid #1e293b;
+}
+
+.custom-table td {
+    padding: 12px 10px;
+    border-bottom: 1px solid #1e293b;
+    font-size: 14px;
+}
+
+.progress-bar-bg {
+    background: #1e293b;
+    border-radius: 5px;
+    height: 6px;
+    width: 100px;
+}
+
+.progress-bar-fill {
+    background: #3b82f6;
+    height: 100%;
+    border-radius: 5px;
+}
+.allocate-btn {
+    border: 1px solid #3b82f6;
+    background: transparent;
+    color: #3b82f6;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    text-decoration: none;
+}
+.complete-btn {
+    border: 1px solid green;
+    background: transparent;
+    color: green;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    text-decoration: none;
+}
+.status-dotred {
+    width: 12px;
+    height: 12px;
+    background: #ef4444;
+    border-radius: 50%;
+    display: block;          
+    margin: 0;               
+    flex-shrink: 0;         
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.status-dotred:hover {
+    transform: scale(1.3);
+    background: #dc2626;
+}
+.not-allocated-btn {
+    display: inline-block;
+    padding: 5px 12px;
+    background: yellow; 
+    color: black;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: default; 
+    transition: background 0.3s;
+}
+
+.not-allocated-btn:hover {
+    background: black;
+    color: yellow; 
+}
+.breadcrumb-item a {
+    position: relative;
+    z-index: 5;  
+    cursor: pointer;
+    text-decoration: underline;
+    color: #2563eb; 
+}
+
+
+.team-lead-row {
+    display: flex;
+    align-items: center;      
+    justify-content: flex-start;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+.main-content::before {
+    pointer-events: none;
+}
+/* 🔥 Dark inputs inside modal */
+.modal-content input,
+.modal-content select,
+.modal-content textarea {
+    background-color: #1e293b !important;   /* deep black */
+    color: #ffffff !important;
+    border: 1px solid #1e293b !important;
+}
+
+/* Placeholder color */
+.modal-content input::placeholder,
+.modal-content textarea::placeholder {
+    color: #94a3b8 !important;
+}
+
+/* Focus effect */
+.modal-content input:focus,
+.modal-content select:focus,
+.modal-content textarea:focus {
+    background-color: #1e293b !important;
+    color: #ffffff !important;
+    border-color: #3b82f6 !important;
+    box-shadow: none !important;
+}
+
+/* Disabled fields (Task & Lead) */
+.modal-content select:disabled {
+    background-color: #1e293b !important;
+    color: #94a3b8 !important;
+    opacity: 1 !important;
+    cursor: not-allowed;
+}
+.modal-body {
+    max-height: 600px;
+    
+}
+.modal-body .mb-3 {
+    margin-bottom: 10px; /* reduce gap */
+}
+
+.modal-body label {
+    font-size: 12px;
+    margin-bottom: 2px;
+}
+
+.modal-body input {
+    padding: 5px 8px;
+    font-size: 13px;
+    height: 32px;
+}
+
+
+</style>
+{% if messages %}
+    <div class="row mb-4">
+        <div class="col-12">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb breadcrumb-custom bg-transparent p-0 mb-3">
+        <li class="breadcrumb-item">
+            <a href="{% url 'executive_work_home' %}" class="text-secondary fw-bold" style="text-decoration: none">Work</a>
+        </li>
+         <li class="breadcrumb-item active text-secondary" aria-current="page">
+            /
+        </li>
+        <li class="breadcrumb-item active text-secondary" aria-current="page">
+            ongoing Works
+        </li>
+    </ol>
+</nav>
+<div class="container-fluid mt-4">
+    <div class="page-container">
+
+
+        <div class="page-header">
+            <h5>Ongoing Tasks</h5>
+            
+        </div>
+
+
+        <input type="text" id="searchBox"  placeholder="Search here..." class="search-box">
+
+
+        <div class="table-container">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        
+                        <th>No</th>
+                         <th>Task Name</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Accepted Date</th>
+                        <th>Task Details</th>
+                        <th>Add Daily Works</th>
+                        <th>View Daily Works</th>
+                        <th>Progress</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+{% for Task in Tasks %}
+<tr>
+    <td>{{ forloop.counter }}</td>
+    <td>{{ Task.task.task_name }}</td>
+
+    <!-- Dates -->
+    <td>{{ Task.start_date }}</td>
+    <td>{{ Task.end_date }}</td>
+    <td>{{Task.accepted_date}}</td>
+    <td>
+     <button class="allocate-btn view-btn"
+        data-bs-toggle="modal"
+        data-bs-target="#taskModal"
+
+        data-client="{{ Task.work.clientId.client_name }}"
+        data-allocateby="{{ Task.team_lead.name }}"
+        data-allocatedate="{{ Task.allocated_date|date:'M d, Y' }}"
+
+        data-task="{% if Task.task %}{{ Task.task.task_name }}{% else %}No Task{% endif %}"
+        data-description="{{ Task.description|default_if_none:''|escapejs }}"
+
+        data-start="{{ Task.start_date|date:'M d, Y' }}"
+        data-end="{{ Task.end_date|date:'M d, Y' }}"
+        data-target="{{ Task.target }}">
+
+    View
+</button>
+</td>
+<td><button class="allocate-btn view-btn"><a href="{% url 'executive_adddaily_work' Task.id %}" class="text-decoration-none">Add</a></button></td>
+<td><button class="allocate-btn view-btn"><a href="{% url 'executive_view_dailywork' Task.id %}" class="text-decoration-none">View</a></button></td>
+       
+<td>
+    <div class="progress-bar-bg">
+        <div class="progress-bar-fill
+            {% if Task.progress_percent < 40 %}
+                bg-danger
+            {% elif Task.progress_percent < 70 %}
+                bg-warning
+            {% else %}
+                bg-success
+            {% endif %}"
+        style="width: {{ Task.progress_percent }}%;"></div>
+    </div>
+    <small>{{ Task.progress_percent }}%</small>
+</td>
+
+<td><button class="complete-btn view-btn">Completed</button></td>
+
+</tr>
+{% endfor %}
+</tbody>
+            </table>
+            <!-- Assign Modal -->
+<div class="modal fade" id="taskModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="background:#0f172a;color:white;border-radius:10px;">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Task Details</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+
+        <!-- Client -->
+        <div class="mb-3">
+          <label class="form-label">Client Name</label>
+          <input type="text" id="modalClient" class="form-control" readonly>
+        </div>
+         <div class="mb-3">
+          <label class="form-label">Allocated By</label>
+          <input type="text" id="modalallocateby" class="form-control" readonly>
+        </div>
+         <div class="mb-3">
+          <label class="form-label">Allocated Date</label>
+          <input type="text" id="modalallocatedate" class="form-control" readonly>
+        </div>
+         <div class="mb-3">
+          <label class="form-label">Task Name</label>
+          <input type="text" id="modaltask" class="form-control" readonly>
+        </div>
+         <div class="mb-3">
+          <label class="form-label">Task Description</label>
+          <input type="text" id="modaldescription" class="form-control" readonly>
+        </div>
+         <div class="mb-3">
+          <label class="form-label">Start Date</label>
+          <input type="text" id="modalstart" class="form-control" readonly>
+        </div>
+         <div class="mb-3">
+          <label class="form-label">End Date</label>
+          <input type="text" id="modalend" class="form-control" readonly>
+        </div>
+         <div class="mb-3">
+          <label class="form-label">Target</label>
+          <input type="text" id="modalTarget" class="form-control" readonly>
+        </div>
+        
+    </div>
+
+    </div>
+  </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    // 🔍 Search
+    const searchInput = document.getElementById('searchBox');
+    const rows = document.querySelectorAll('.custom-table tbody tr');
+
+    searchInput.addEventListener('keyup', function() {
+        const filter = this.value.toLowerCase();
+
+        rows.forEach(row => {
+            row.style.display = row.textContent.toLowerCase().includes(filter) ? '' : 'none';
+        });
+    });
+
+document.querySelectorAll('.view-btn').forEach(btn => {
+    btn.addEventListener('click', function () {
+
+        document.getElementById('modalClient').value = this.dataset.client || '';
+        document.getElementById('modalallocateby').value = this.dataset.allocateby || '';
+        document.getElementById('modalallocatedate').value = this.dataset.allocatedate || '';
+        document.getElementById('modaltask').value = this.dataset.task || '';
+        document.getElementById('modaldescription').value = this.dataset.description || '';
+        document.getElementById('modalstart').value = this.dataset.start || '';
+        document.getElementById('modalend').value = this.dataset.end || '';
+        document.getElementById('modalTarget').value = this.dataset.target || '';
+
+    });
+});
+});
+
+    
+</script>
+
+
+
+{% endblock %}

@@ -1,0 +1,378 @@
+{% extends "admin_base.html" %}
+
+{% block title %}Login Requests{% endblock %}
+
+{% block content %}
+
+<style>
+    .breadcrumb {
+        background-color: transparent;
+        padding: 0;
+        margin-bottom: 10px;
+    }
+    
+    .breadcrumb-item a {
+        color: var(--accent-color);
+    }
+    
+    .breadcrumb-item.active {
+        color: var(--muted-text);
+    }
+    
+    .content-container {
+        background-color: var(--card-bg);
+        border-radius: 10px;
+        padding: 25px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .table {
+        color: var(--text-color);
+        margin-bottom: 0;
+        background-color: rgba(255, 255, 255, 0.05) !important;
+    }
+    
+    .table thead th {
+        border-bottom: 1px solid rgb(30, 30, 30) !important;
+        font-weight: 600;
+        background-color: rgba(255, 255, 255, 0.05) !important;
+        color: rgb(202, 204, 207) !important;
+    }
+
+    .table tbody tr td {
+        border-bottom: 1px solid rgb(30, 30, 30) !important;
+        font-weight: 500;
+        background-color: rgba(41, 40, 40, 0.05) !important;
+        color: rgb(154, 155, 157) !important;
+    }
+    
+    .table tbody tr {
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+    
+    .table tbody tr:hover {
+        background-color: rgba(255, 255, 255, 0.08);
+    }
+    
+    .form-control, .form-select {
+        background-color: var(--secondary-color);
+        border: 1px solid var(--gray);
+        color: var(--text-color);
+    }
+    
+    .form-control::placeholder {
+        color: #6c757d !important; 
+        opacity: 1 !important; 
+    }
+    
+    .form-control:focus, .form-select:focus {
+        background-color: var(--secondary-color);
+        border-color: var(--accent-color);
+        color: var(--text-color);
+        box-shadow: 0 0 0 0.2rem rgba(0, 212, 255, 0.25);
+    }
+    
+    .form-label {
+        color: var(--text-color);
+        font-weight: 500;
+    }
+    
+    .btn-success {
+        background-color: #198754;
+        border-color: #198754;
+    }
+    
+    .btn-success:hover {
+        background-color: #157347;
+        border-color: #146c43;
+    }
+    
+    .btn-danger {
+        background-color: #dc3545;
+        border-color: #dc3545;
+    }
+    
+    .btn-danger:hover {
+        background-color: #bb2d3b;
+        border-color: #b02a37;
+    }
+    
+    .btn-outline-primary {
+        border-color: var(--accent-color);
+        color: var(--accent-color);
+    }
+    
+    .btn-outline-primary:hover {
+        background-color: var(--accent-color);
+        color: var(--text-color);
+    }
+    
+    .btn-outline-secondary {
+        border-color: #6c757d;
+        color: #6c757d;
+    }
+    
+    .btn-outline-secondary:hover {
+        background-color: #6c757d;
+        color: var(--text-color);
+    }
+    
+    .badge {
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+    
+    .table-responsive-custom {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 5px;
+        background: var(--card-bg);
+    }
+
+    .table-scrollable {
+        min-width: 800px;
+        width: 100%;
+        margin-bottom: 0;
+    }
+
+    .table-scrollable th,
+    .table-scrollable td {
+        white-space: nowrap;
+        padding: 12px 15px;
+    }
+    
+    .page-link {
+        background-color: var(--secondary-color);
+        border: 1px solid var(--gray);
+        color: var(--text-color);
+    }
+    
+    .page-link:hover {
+        background-color: var(--accent-color);
+        border-color: var(--accent-color);
+        color: var(--text-color);
+    }
+    
+    .page-item.active .page-link {
+        background-color: var(--accent-color);
+        border-color: var(--accent-color);
+    }
+    
+    .page-item.disabled .page-link {
+        background-color: var(--secondary-color);
+        border-color: var(--gray);
+        color: var(--muted-text);
+    }
+
+    @media (max-width: 992px) {
+        .d-flex.justify-content-between.align-items-center.mb-4 {
+            flex-direction: column;
+            align-items: flex-start !important;
+        }
+        
+        .d-flex.justify-content-between.align-items-center.mb-4 .d-flex {
+            margin-top: 15px;
+            width: 100%;
+        }
+        
+        .input-group {
+            max-width: 100% !important;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .content-container {
+            padding: 15px;
+        }
+        
+        .table-responsive-custom {
+            font-size: 0.9rem;
+        }
+        
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+        }
+        
+        .badge {
+            font-size: 0.7rem;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .table-responsive-custom {
+            font-size: 0.8rem;
+        }
+        
+        .table-scrollable th,
+        .table-scrollable td {
+            padding: 8px 10px;
+        }
+        
+        .btn-sm {
+            display: block;
+            width: 100%;
+            margin-bottom: 5px;
+        }
+        
+        .btn-sm.me-1 {
+            margin-right: 0 !important;
+        }
+        
+        .pagination {
+            flex-wrap: wrap;
+        }
+        
+        .page-item {
+            margin-bottom: 5px;
+        }
+    }
+        @media (max-width: 5368px) {
+    .table-responsive-custom {
+        position: relative;
+    }
+}
+</style>
+
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Login Requests</li>
+                </ol>
+            </nav>
+            <h2 class="mb-0">Pending Login Requests</h2>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="content-container" id="loginRequestsContainer">
+                <!-- <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4>Pending Requests</h4>
+                    
+                </div> -->
+
+                <div class="table-responsive-custom">
+                    <table class="table table-scrollable">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Full Name</th>
+                                <th>Email ID</th>
+                                <th>Phone Number</th>
+                                <th>Designation</th>
+                                <th>Login to Dashboard</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for employee in pending_employees %}
+                            <tr>
+                                <td class="align-middle text-center">{{ forloop.counter }}</td>
+                                <td class="align-middle">{{ employee.name }}</td>
+                                <td class="align-middle">{{ employee.email }}</td>
+                                <td class="align-middle">{{ employee.contact_number }}</td>
+                                <td class="align-middle">{{ employee.designation.name }}</td>
+                                <td class="align-middle">{{ employee.designation.dashboard_id }} </td>
+                                <td class="align-middle">
+                                    <form method="post" action="{% url 'approve_employee' employee.id %}" style="display: inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-success me-1">
+                                            <i class="fas fa-check"></i> Approve
+                                        </button>
+                                    </form>
+                                    <form method="post" action="{% url 'decline_employee' employee.id %}" style="display: inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-danger" >
+                                            <i class="fas fa-times"></i> Decline
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center align-middle">No pending login requests</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const approveButtons = document.querySelectorAll('.btn-success');
+        const declineButtons = document.querySelectorAll('.btn-danger');
+        
+        approveButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const row = this.closest('tr');
+                const name = row.cells[1].textContent;
+                
+                if (confirm(`Are you sure you want to approve login request for ${name}?`)) {
+                    row.style.opacity = '0.5';
+                    setTimeout(() => {
+                        row.remove();
+                        updateRowNumbers();
+                    }, 500);
+                    
+                    // showAlert('Login request approved successfully!', 'success');
+                }
+            });
+        });
+        
+        declineButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const row = this.closest('tr');
+                const name = row.cells[1].textContent;
+                
+                if (confirm(`Are you sure you want to decline login request for ${name}?`)) {
+                    row.style.opacity = '0.5';
+                    setTimeout(() => {
+                        row.remove();
+                        updateRowNumbers();
+                    }, 500);
+                    
+                    // showAlert('Login request declined successfully!', 'danger');
+                }
+            });
+        });
+        
+        function updateRowNumbers() {
+            const rows = document.querySelectorAll('tbody tr');
+            rows.forEach((row, index) => {
+                row.cells[0].textContent = index + 1;
+            });
+        }
+        
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            const container = document.getElementById('loginRequestsContainer');
+            container.insertBefore(alertDiv, container.firstChild);
+
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        }
+    });
+</script>
+{% endblock %}

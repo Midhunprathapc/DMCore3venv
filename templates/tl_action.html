@@ -1,0 +1,389 @@
+{% extends "teamlead_base.html" %}
+
+{% block title %}Action Taken{% endblock %}
+
+{% block content %}
+
+<style>
+.card-dark{
+    background:#1e1f26;
+    border-radius:10px;
+    padding:20px;
+    color:#fff;
+    box-shadow:0 4px 6px rgba(0,0,0,.3);
+    border:1px solid #2a2b33;
+}
+
+.card-nav{
+    transition:.2s;
+    cursor:pointer;
+}
+.card-nav:hover{
+    transform:translateY(-3px);
+    border-color:#0d6efd;
+}
+
+.hidden{display:none}
+.container-fluid,
+.row,
+.col-md-4,
+.col-md-8{
+    position:relative;
+    z-index:1;
+    }
+.form-control-dark {
+    background: #2a2b33;
+    border: 1px solid #3a3b44;
+    color: #fff;
+}
+.form-control-dark:focus {
+    background: #2a2b33;
+    border-color: #007bff;
+    color: #fff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+.date-col{
+    white-space: nowrap;
+    width:1%;
+}
+</style>
+
+
+<div class="container-fluid py-3">
+
+    {% if messages %}
+    <div class="mb-3">
+        {% for message in messages %}
+            <div class="alert 
+                {% if message.tags == 'error' %}alert-danger
+                {% elif message.tags == 'success' %}alert-success
+                {% elif message.tags == 'warning' %}alert-warning
+                {% else %}alert-info{% endif %}
+                alert-dismissible fade show" role="alert">
+
+                    {{ message }}
+
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- BREADCRUMB -->
+    <div class="text-white mb-4">
+        <small>
+            <a href="{% url 'teamlead_dashboard' %}" class="text-decoration-none text-white-50">
+                Dashboard
+            </a> /
+        </small>
+        <small class="text-white">Action Taken</small>
+    </div>
+
+    <div class="row g-4">
+
+    <!-- LEFT COLUMN -->
+    <div class="col-md-4">
+
+        <!-- TAKE ACTION -->
+        <div class="card-dark card-nav mb-3" onclick="showSection('take')">
+            <h5><i class="fas fa-bolt me-2"></i>Take Action</h5>
+            <small class="text-secondary">Address team issues promptly.</small>
+        </div>
+
+        <!-- ACTIONS TAKEN -->
+        <div class="card-dark card-nav mb-3" onclick="showSection('taken')">
+            <h5><i class="fas fa-check-circle me-2"></i>Actions Taken</h5>
+            <small class="text-secondary">Actions taken against your team.</small>
+        </div>
+
+        <!-- ACTIONS RECEIVED -->
+        <div class="card-dark card-nav" onclick="showSection('received')">
+            <h5><i class="fas fa-inbox me-2"></i>Actions Received</h5>
+            <small class="text-secondary">View actions against to you.</small>
+        </div>
+
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div class="col-md-8">
+
+        <!-- ================= TAKE ACTION ================= -->
+        <div id="take" class="card-dark {% if not edit_action %}hidden{% endif %}">
+        <h5 class="mb-3">
+            <i class="fas fa-bolt me-2"></i>Take Action
+        </h5>
+
+        <form method="post">
+            {% csrf_token %}
+            {% if edit_action %}
+                <input type="hidden" name="edit_id" value="{{ edit_action.id }}">
+            {% endif %}
+            <div class="row g-3">
+
+                <!-- Employee -->
+                <div class="col-md-6">
+                    <label>Employee</label>
+                    <select name="employee" class="form-select form-control-dark" required>
+                        <option value="">Select Employee</option>
+                            {% for emp in employees %}
+                        <option value="{{ emp.id }}"
+                            {% if edit_action and emp.id == edit_action.act_emp_id.id %}selected{% endif %}>
+                                {{ emp.name }}
+                        </option>
+                            {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Date -->
+                <div class="col-md-6">
+                    <label>Date</label>                
+                    <input type="date"
+                        name="action_date"
+                        value="{% if edit_action %}{{ edit_action.action_date|date:'Y-m-d' }}{% endif %}"
+                        class="form-control form-control-dark" required>
+                </div>
+
+                <!-- Reason Headline -->
+                <div class="col-md-12">
+                    <label>Reason</label>                
+                    <input type="text"
+                        name="reason_title"
+                        value="{% if edit_action %}{{ edit_action.act_head }}{% endif %}"
+                        class="form-control form-control-dark"
+                        placeholder="Short title for action"
+                        required>
+                </div>
+
+                <!-- Action Taken -->
+                <div class="col-12">
+                    <label>Reason for action?</label>                
+                    <textarea name="reason_action"
+                        rows="3"
+                        class="form-control form-control-dark"
+                        required>{% if edit_action %}{{ edit_action.act_reason }}{% endif %}</textarea>
+                </div>
+
+                <!-- Detailed Reason -->
+                <div class="col-12">
+                    <label>What action taken?</label>                            
+                    <textarea name="action_taken"
+                        rows="3"
+                        class="form-control form-control-dark"
+                        required>{% if edit_action %}{{ edit_action.act_content }}{% endif %}</textarea>
+                </div>
+
+            </div>
+
+            <!-- Submit -->
+            <div class="text-center mt-3">            
+                <button class="btn btn-outline-success px-4">
+                    {% if edit_action %}Update Action{% else %}Submit Action{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- ================= ACTIONS TAKEN ================= -->
+    <div id="taken" class="card-dark hidden">
+        <h5 class="mb-3">
+            <i class="fas fa-check-circle me-2"></i>Actions Taken
+        </h5>
+
+        <div class="table-responsive">
+            <table class="table table-dark table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th class="date-col">Date</th>
+                        <th>Action Details</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                {% for a in actions_taken %}
+                    <tr>
+
+                        <!-- DATE + EDIT -->
+                        <td class="date-col">
+                            <div class="d-flex align-items-center gap-2">
+                                <a href="?edit={{ a.id }}" class="text-warning">
+                                    <i class="fas fa-pen"></i>
+                                </a>
+                                <span>{{ a.action_date }}</span>
+                            </div>
+                        </td>
+
+                        <!-- FULL CONTENT COLUMN -->                            
+                        <td>
+                            <!-- Reason Section -->
+                            <div class="d-flex align-items-start gap-2 mb-2">
+
+                                <!-- red icon -->
+                                <div style="background:#dc3545;width:35px;height:35px;
+                                    display:flex;align-items:center;justify-content:center;
+                                    border-radius:6px;">
+                                    <i class="fas fa-file-alt text-white"></i>
+                                </div>
+                                <div>
+                                    <!-- headline -->
+                                    <div class="fw-bold text-info">
+                                        {{ a.act_head }} ({{ a.act_emp_id.name }})
+                                    </div>
+
+                                    <!-- employee -->
+                                    <!-- <small class="text-secondary">
+                                        {{ a.act_emp_id.name }}
+                                    </small> -->
+
+                                    <!-- reason -->
+                                    <div class="small mt-1">
+                                        {{ a.act_reason }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Divider -->
+                            <hr class="border-secondary my-2">
+
+                            <!-- Action Content -->
+                            <div>
+                                <b>Action</b><br>
+
+                                <small class="text-secondary">
+                                    Taken by <b>{{ a.act_from_name }}</b>
+                                    on {{ a.action_date }}
+                                </small>
+
+                                <div class="mt-1">
+                                    {{ a.act_content }}
+                                </div>
+                            </div>
+
+                        </td>
+                    </tr>
+
+                {% empty %}
+                    <tr>
+                        <td colspan="2" class="text-center text-secondary">
+                            No actions taken yet
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ================= ACTIONS RECEIVED ================= -->
+    <div id="received" class="card-dark hidden">
+
+        <h5 class="mb-3">
+            <i class="fas fa-inbox me-2"></i>Actions Received
+        </h5>
+
+        <div class="table-responsive">
+            <table class="table table-dark table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th style="width:120px;">Date</th>
+                        <th>Action Details</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for r in actions_received %}
+                        <tr>
+
+                            <!-- DATE -->
+                            <td class="text-nowrap">
+                                {{ r.action_date }}
+                            </td>
+
+                            <!-- DETAILS -->
+                            <td>
+                                <!-- Reason Section -->
+                                <div class="d-flex align-items-start gap-2 mb-2">
+
+                                    <!-- red icon -->
+                                    <div style="background:#dc3545;width:35px;height:35px;
+                                        display:flex;align-items:center;justify-content:center;
+                                        border-radius:6px;">
+                                        <i class="fas fa-file-alt text-white"></i>
+                                    </div>
+
+                                    <div>
+
+                                        <!-- headline -->
+                                        <div class="fw-bold text-info">
+                                            {{ r.act_head }} ({{ r.act_emp_id.name }})
+                                        </div>
+
+                                        <!-- reason -->
+                                        <div class="small mt-1">
+                                            {{ r.act_reason }}
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                                <hr class="border-secondary my-2">
+
+                                <!-- Action Content -->
+                                <div>
+
+                                    <b>Action</b><br>
+
+                                    <small class="text-secondary">
+                                    Taken by <b>{{ r.act_from_name }}</b>
+                                    on {{ r.action_date }}
+                                    </small>
+
+                                    <div class="mt-1">
+                                    {{ r.act_content }}
+                                    </div>
+
+                                </div>
+
+                            </td>
+                        </tr>
+
+                    {% empty %}
+                        <tr>
+                            <td colspan="2" class="text-center text-secondary">
+                                No actions received
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+
+            </table>
+        </div>
+
+    </div>
+
+</div>
+</div>
+</div>
+
+
+<script>
+function showSection(section){
+    document.querySelectorAll("#take,#taken,#received")
+    .forEach(el=> el.classList.add("hidden"));
+
+    document.getElementById(section)
+    .classList.remove("hidden");
+}
+</script>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+    const params = new URLSearchParams(window.location.search);
+    const section = params.get("section");
+    if(section){
+        showSection(section);
+    }
+});
+</script>
+
+{% endblock %}

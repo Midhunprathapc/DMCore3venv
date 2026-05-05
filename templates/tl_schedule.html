@@ -1,0 +1,422 @@
+{% extends "teamlead_base.html" %}
+
+{% block title %}TeamLead Dashboard{% endblock %}
+
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+
+<style>
+    .schedule-container {
+        background: #1e1f26;
+        border-radius: 8px;
+        padding: 20px;
+        color: #fff;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        position: relative;
+        z-index: 1;
+    }
+    .schedule-header {
+        border-bottom: 1px solid #2a2b33;
+        padding-bottom: 15px;
+        margin-bottom: 20px;
+    }
+    .action-btn {
+        border-radius: 20px;
+        padding: 6px 16px;
+        font-size: 14px;
+        border: 1px solid;
+        transition: all 0.3s ease;
+    }
+    .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    .search-input {
+        background: #2a2b33;
+        border: 1px solid #3a3b44;
+        color: #fff;
+        border-radius: 6px;
+    }
+    .search-input:focus {
+        background: #2a2b33;
+        border-color: #007bff;
+        color: #fff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    .modal-dark .modal-content {
+        background: #1e1f26;
+        color: #fff;
+        border: 1px solid #2a2b33;
+    }
+    .modal-dark .modal-header {
+        border-bottom: 1px solid #2a2b33;
+    }
+    .modal-dark .modal-footer {
+        border-top: 1px solid #2a2b33;
+    }
+    .form-control-dark {
+        background: #2a2b33;
+        border: 1px solid #3a3b44;
+        color: #fff;
+    }
+    .form-control-dark:focus {
+        background: #2a2b33;
+        border-color: #007bff;
+        color: #fff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    ::placeholder {
+        color: #999 !important;
+    }
+    .completed-text {
+        color: red !important;
+        text-decoration: line-through !important;
+    }
+    .table-dark tbody tr{
+        border-color: rgba(255,255,255,0.08) !important;
+    }
+</style>
+
+<div class="container-fluid py-3">
+
+    <!-- Breadcrumb -->
+    <div class="text-white mb-4">
+        <small class="">Dashboard / </small>
+        <small class="text-white-50">My Schedule</small>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- HIDDEN SCHEDULE SECTION -->
+    <div id="scheduleSection" style="display:none;transition:.3s;" class="mb-4">
+
+        <div class="schedule-container">
+
+            <div class="schedule-header">
+                <div class="row align-items-center">
+                    <div class="col-md-2 mt-2">
+                        <i class="fas fa-calendar-alt me-2"></i>Schedule Your Day
+                    </div>               
+                </div>
+
+                <div class="modal-body">
+                    <form id="scheduleForm" method="post" action="{% url 'tl_schedule' %}">
+                        {% csrf_token %}
+                        <div class="row g-3">
+                        
+                            <div class="col-6 col-md-6">
+                                <label class="form-label">Start Time</label>
+                                <input type="time" name="start_time" class="form-control form-control-dark" id="startTime" required>
+                            </div>
+                            <div class="col-6 col-md-6">
+                                <label class="form-label">End Time</label>
+                                <input type="time" name="end_time" class="form-control form-control-dark" id="endTime" required>
+                            </div>
+                            <div class="col-6 col-md-6">
+                                <input type="text" class="form-control form-control-dark" id="showstartTime" readonly>
+                            </div>
+                            <div class="col-6 col-md-6">
+                                <input type="text" class="form-control form-control-dark" id="showendTime" readonly>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Task Title</label>
+                                <input type="text" class="form-control form-control-dark" id="taskTitle" name="schedule_head" placeholder="Add a new task" required>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Task Description</label>
+                                <textarea class="form-control form-control-dark" id="taskDescription" name="todo_content" rows="3" placeholder="Give task description" style="resize: none;"></textarea>
+                            </div>
+                            <input type="hidden" name="schedule_date" id="scheduleDate">
+                            <input type="hidden" name="schedule_id" id="scheduleId">                        
+                        </div>
+                        <div class="text-center mb-4 mt-3">                        
+                            <button type="submit" class="btn btn-outline-success btn-sm" id="saveScheduleBtn">Add</button>                       
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="row g-4">
+
+    <!-- SMALL CARD -->
+    <div class="col-md-4">
+        <div class="schedule-container h-100">
+            <div class="d-flex justify-content-between align-items-center px-3 pt-3">
+                <span class="fw-semibold">
+                    <i class="fas fa-calendar-day me-2"></i>My Days List
+                </span>
+                <!-- Add Day Button -->
+                <button class="btn btn-sm btn-outline-primary text-primary " id="addDayBtn">
+                    <i class="fa-sharp-duotone fa-solid fa-circle-plus"></i>
+                </button>
+            </div>
+            <div class="p-4">
+                <div class="d-flex justify-content-between align-items-center px-3 py-2 rounded"
+                    style="background:#0d6efd20; border:1px solid #0d6efd50;">
+
+                    <!-- Day -->
+                    <h5 id="todayDay" class=""></h5>
+                    <!-- Date -->
+                    <span id="todayDate" class="text-secondary"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LARGE CARD -->
+    <div class="col-md-8">
+        <div class="schedule-container h-100">
+
+            <!-- Header -->
+            <div class="schedule-header">
+                <i class="fas fa-calendar-alt me-2"></i>My Schedule List
+            </div>
+
+            <div class="p-3">
+
+                <!-- Date Filters -->
+                <form method="GET">
+                    <div class="row mb-4">
+                        <div class="col-12 col-md-8 col-lg-6">
+                            <div class="row g-2 align-items-end">
+
+                                <div class="col-12 col-md-5">
+                                    <label class="form-label">From</label>
+                                    <input type="date" name="from_date" id="startDate"
+                                        class="form-control form-control-sm form-control-dark"value="{{ request.GET.from_date }}" >
+                                </div>
+
+                                <div class="col-12 col-md-5">
+                                     <label class="form-label">To</label>
+                                    <input type="date" name="to_date" id="endDate"
+                                        class="form-control form-control-sm form-control-dark" value="{{ request.GET.to_date }}" >
+                                </div>
+                                <div class="col-12 col-md-2">
+                                    <button class="btn btn-primary btn-sm w-100" id="filterBtn">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="table-responsive mt-3">
+                    <table class="table table-dark table-bordered align-middle">
+                        <tbody>
+                            {% for s in schedules %}
+                                <tr class="border-bottom">
+
+                                    <!-- COLUMN 1 -->
+                                    <td style="width:280px;">
+                                        <div class="d-flex gap-3 align-items-start">
+                                            <input type="checkbox"
+                                                class="form-check-input toggle-status mt-1"
+                                                data-id="{{ s.id }}"
+                                                {% if s.schedule_status == 1 %}checked{% endif %}>
+                                            <div>
+                                                <div class="{% if s.schedule_status == 1 %}completed-text{% endif %}">
+                                                    {{ s.schedule_date }}
+                                                </div>
+
+                                                <small class="text-secondary">
+                                                    {{ s.start_time|time:"h:i a" }} to {{ s.end_time|time:"h:i a" }}
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                    <!-- COLUMN 2 -->
+                                    <td>
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <div class="fw-semibold {% if s.schedule_status == 1 %}completed-text{% endif %}">
+                                                    {{ s.schedule_head }}
+                                                </div>
+
+                                                <small class="{% if s.schedule_status == 1 %}completed-text{% endif %}">
+                                                    {{ s.todo_content }}
+                                                </small>
+                                            </div>
+
+                                            <!-- ACTIONS -->
+                                            <div class="ms-3"style="display:flex;">
+
+                                                <a href="#"
+                                                    class="text-info me-2 editBtn"
+                                                    data-id="{{ s.id }}"
+                                                    data-date="{{ s.schedule_date|date:'Y-m-d' }}"
+                                                    data-start="{{ s.start_time|time:'H:i' }}"
+                                                    data-end="{{ s.end_time|time:'H:i' }}"
+                                                    data-head="{{ s.schedule_head }}"
+                                                    data-content="{{ s.todo_content }}">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+
+                                                <a href="{% url 'delete_tlschedule' s.id %}" class="text-danger">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="2" class="text-center text-secondary">No schedules found</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+// ---------- TODAY DATE DISPLAY ----------
+const today = new Date();
+
+document.getElementById("todayDay").innerText =
+    today.toLocaleDateString("en-US",{ weekday:'long' });
+
+document.getElementById("todayDate").innerText =
+    today.toLocaleDateString("en-US",{ month:'short', day:'numeric', year:'numeric' });
+
+
+// ---------- TOGGLE SCHEDULE PANEL ----------
+const addBtn = document.getElementById("addDayBtn");
+const panel = document.getElementById("scheduleSection");
+
+// icon inside button
+const icon = addBtn.querySelector("i");
+
+// initial state
+panel.style.display = "none";
+
+addBtn.addEventListener("click", () => {
+
+    const isHidden = panel.style.display === "none";
+
+    panel.style.display = isHidden ? "block" : "none";
+
+    // toggle icon
+    icon.classList.remove(isHidden ? "fa-circle-plus" : "fa-minus");
+    icon.classList.add(isHidden ? "fa-circle-minus" : "fa-circle-plus");
+
+    icon.classList.remove(isHidden ? "text-primary" : "text-danger");
+    icon.classList.add(isHidden ? "text-danger" : "text-primary");
+
+    addBtn.classList.toggle("btn-outline-primary", !isHidden);
+    addBtn.classList.toggle("btn-outline-danger", isHidden);
+});
+
+
+// ---------- TIME FORMATTER ----------
+const startTime = document.getElementById("startTime");
+const endTime = document.getElementById("endTime");
+const showstartTime = document.getElementById("showstartTime");
+const showendTime = document.getElementById("showendTime");
+
+function formatAMPM(time){
+    if(!time) return "";
+    let [h,m] = time.split(":");
+    h = parseInt(h);
+    let ampm = h >= 12 ? "PM" : "AM";
+    h = h % 12 || 12;
+    return `${h}:${m} ${ampm}`;
+}
+
+startTime.addEventListener("input",()=>{
+    showstartTime.value = formatAMPM(startTime.value);
+});
+
+endTime.addEventListener("input",()=>{
+    showendTime.value = formatAMPM(endTime.value);
+});
+
+
+// ---------- FORM VALIDATION ----------
+document.getElementById("scheduleForm").addEventListener("submit",function(e){
+
+    if(startTime.value >= endTime.value){
+        e.preventDefault();
+        Swal.fire({
+            icon:"error",
+            title:"Invalid Time",
+            text:"End time must be greater than start time"
+        });
+        return;
+    }
+
+});
+</script>
+<script>
+document.getElementById("scheduleDate").value =
+    new Date().toISOString().split("T")[0];
+</script>
+
+<script>
+document.querySelectorAll(".toggle-status").forEach(box=>{
+    box.addEventListener("change",function(){
+        fetch(`/toggle-schedule/${this.dataset.id}/`)
+        .then(()=>location.reload())
+    })
+})
+</script>
+<script>
+document.querySelectorAll(".editBtn").forEach(btn=>{
+    btn.addEventListener("click",function(e){
+        e.preventDefault();
+
+        // open form
+        panel.style.display="block";
+        icon.classList.remove("fa-circle-plus");
+        icon.classList.add("fa-circle-minus");
+
+        // fill values
+        document.getElementById("scheduleId").value=this.dataset.id;
+        document.getElementById("scheduleDate").value=this.dataset.date;
+        document.getElementById("startTime").value=this.dataset.start;
+        document.getElementById("endTime").value=this.dataset.end;
+        document.getElementById("taskTitle").value=this.dataset.head;
+        document.getElementById("taskDescription").value=this.dataset.content;
+
+        // show formatted times
+        showstartTime.value=formatAMPM(this.dataset.start);
+        showendTime.value=formatAMPM(this.dataset.end);
+
+        // change button text
+        document.getElementById("saveScheduleBtn").innerText="Update Task";
+
+        // scroll to form
+        window.scrollTo({top:0,behavior:"smooth"});
+    });
+});
+</script>
+<!-- refresh filter -->
+<!-- <script>
+if (performance.navigation.type === 1) {
+    window.location.href = window.location.pathname;
+}
+</script> -->
+{% endblock %}
+

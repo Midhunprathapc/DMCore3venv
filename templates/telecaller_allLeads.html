@@ -1,0 +1,496 @@
+{% extends "telecaller_base.html" %}
+
+{% block title %}Telecaller Dashboard{% endblock %}
+
+{% block content %}
+
+
+<style>
+.content-container {
+    margin-top: 35px;
+}
+
+.card-dark {
+    background: #1e1f26;
+    border: 1px solid #2a2b33;
+    border-radius: 10px;
+    padding: 15px;
+    color: #fff;
+     overflow: visible !important;
+}
+
+.form-control-dark {
+    background: #2a2b33;
+    border: 1px solid #3a3b44;
+    color: #fff;
+}
+
+.form-control-dark:focus {
+    border-color: #0d6efd;
+    box-shadow: none;
+}
+
+.table-dark th, .table-dark td {
+    vertical-align: middle;
+}
+
+.status-badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+}
+
+.status-allocated { background: #0d6efd; }
+.status-not { background: #6c757d; }
+.status-closed { background: red; }
+.status-open { background:  #198754; color: #000; }
+
+.main-content::before {
+    pointer-events: none;
+}
+/* Dropdown menu background */
+.dropdown-menu,
+.custom-dropdown-menu {
+    background-color: #1e1f26 !important;
+    border: 1px solid #2a2b33;
+    color: #fff;
+}
+
+/* Dropdown items */
+.dropdown-item {
+    color: #fff !important;
+}
+
+/* Hover effect */
+.dropdown-item:hover {
+    background-color: #2a2b33 !important;
+    color: #fff !important;
+}
+
+/* Active item */
+.dropdown-item.active,
+.dropdown-item:active {
+    background-color: #0d6efd !important;
+    color: #fff !important;
+}
+
+/* Dropdown divider */
+.dropdown-divider {
+    border-color: #3a3b44;
+}
+th {
+    cursor: pointer;
+}
+.pagination .page-link {
+    background-color: #1e1f26 !important;
+    border: 1px solid #2a2b33 !important;
+    color: #fff !important;
+}
+
+.pagination .page-link:hover {
+    background-color: #2a2b33 !important;
+    color: #fff !important;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #0d6efd !important;
+    border-color: #0d6efd !important;
+    color: #fff !important;
+}
+
+.pagination .page-item.disabled .page-link {
+    background-color: #1e1f26 !important;
+    color: #6c757d !important;
+    border-color: #2a2b33 !important;
+}
+.dropdown {
+    position: relative;
+    z-index: 2000;
+}
+
+.dropdown-menu {
+    z-index: 3000 !important;
+    position: absolute !important;
+}
+/* RESPONSIVE FIX */
+@media (max-width: 992px) {
+
+    /* Allow filter row to wrap */
+    .card-dark .d-flex {
+        flex-wrap: wrap !important;
+    }
+
+    /* Inputs take full width */
+    .card-dark input,
+    .card-dark .input-group {
+        width: 100% !important;
+    }
+
+    /* Dropdown buttons full width */
+    .card-dark .dropdown {
+        width: 100%;
+    }
+
+    .card-dark .dropdown button {
+        width: 100%;
+        text-align: left;
+    }
+
+    /* Reduce spacing */
+    .card-dark {
+        padding: 10px;
+    }
+
+    /* Heading adjust */
+    h4 {
+        font-size: 18px;
+    }
+}
+
+@media (max-width: 768px) {
+
+    /* Stack filters vertically */
+    .card-dark .d-flex {
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+
+    /* Remove fixed widths */
+    #startDate,
+    #endDate {
+        width: 100% !important;
+    }
+
+    /* Search button full width */
+    #searchBtn {
+        width: 100%;
+        text-align: center;
+    }
+
+    /* Table font smaller */
+    table {
+        font-size: 13px;
+    }
+
+    /* Pagination wrap */
+    .pagination {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    /* Info text center */
+    .d-flex.justify-content-between {
+        flex-direction: column;
+        gap: 10px;
+        align-items: center !important;
+    }
+}
+
+@media (max-width: 480px) {
+
+    /* Even smaller text */
+    table {
+        font-size: 12px;
+    }
+
+    /* Reduce badge size */
+    .status-badge {
+        font-size: 10px;
+        padding: 3px 6px;
+    }
+
+    /* Breadcrumb smaller */
+    .breadcrumb {
+        font-size: 12px;
+    }
+}
+
+</style>
+
+ <nav aria-label="breadcrumb">
+    <ol class="breadcrumb breadcrumb-custom bg-transparent p-0 mb-3">
+        <li class="breadcrumb-item">
+            <a href="{% url 'telecaller_dashboard' %}" class="text-secondary fw-bold" style="text-decoration: none">Dashboard</a>
+        </li>
+        <li class="breadcrumb-item active text-secondary" aria-current="page">
+            /
+        </li>
+        <li class="breadcrumb-item active text-secondary" aria-current="page">
+            All Leads
+        </li>
+    </ol>
+</nav>
+
+<div class="container-fluid content-container">
+
+<!-- Heading Row -->
+<div class="d-flex justify-content-between align-items-center mb-2">
+    <h4 class="mb-0">
+       All Leads <span class="text-secondary">({{ leads|length }})</span>
+    </h4>
+</div>
+
+<div class="card-dark mb-3">
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+        <!-- Pagination -->
+          <div class="dropdown">
+    <button class="btn btn-dark dropdown-toggle" data-bs-toggle="dropdown" id="pageSizeDropdown">
+        {{ page_size }}
+    </button>
+    <ul class="dropdown-menu">
+        <li><a class="dropdown-item page-size-item" href="#" data-value="20">20</a></li>
+        <li><a class="dropdown-item page-size-item" href="#" data-value="50">50</a></li>
+        <li><a class="dropdown-item page-size-item" href="#" data-value="100">100</a></li>
+    </ul>
+</div>
+     
+
+        <!-- Start Date -->
+        <input type="date" class="form-control form-control-dark" style="width:150px;" id="startDate" >
+
+        <!-- End Date -->
+        <input type="date" class="form-control form-control-dark" style="width:150px;" id="endDate">
+
+        <!-- Status -->
+       <div class="dropdown">
+    <button class="btn btn-dark dropdown-toggle" data-bs-toggle="dropdown" id="statusDropdown">
+        Status
+    </button>
+    <ul class="dropdown-menu">
+        <li><a class="dropdown-item status-item" href="#" data-value="Allocated">Allocated</a></li>
+        <li><a class="dropdown-item status-item" href="#" data-value="Closed">Closed</a></li>
+        <li><a class="dropdown-item status-item" href="#" data-value="Opened">Opened</a></li>
+    </ul>
+</div>
+
+<!-- hidden input -->
+<input type="hidden" id="statusInput" name="status">
+        
+
+        <!-- Search -->
+        <div class="input-group" style="width:180px;">
+            <span class="input-group-text bg-dark border-secondary text-white" id="searchBtn" style="cursor:pointer;">
+                <i class="fas fa-search"></i>
+            </span>
+        </div>
+
+    </div>
+</div>
+
+<!-- Global Search -->
+<div class="card-dark mb-2">
+    <div class="input-group" style="max-width:300px;">
+        <input type="text" id="globalSearch" class="form-control form-control-dark" placeholder="Search leads...">
+       
+    </div>
+</div>
+
+<!-- Table -->
+<div class="card-dark">
+    <div class="table-responsive">
+        <table class="table table-dark table-hover">
+            <thead>
+                <tr>
+                    <th onclick="sortTable(0)">No <i class="fas fa-sort ms-1"></i></th>
+                    <th onclick="sortTable(1)">Add Date <i class="fas fa-sort ms-1"></i></th>
+                    <th onclick="sortTable(2)">Name <i class="fas fa-sort ms-1"></i></th>
+                    <th onclick="sortTable(3)">Email <i class="fas fa-sort ms-1"></i></th>
+                    <th onclick="sortTable(4)">Contact <i class="fas fa-sort ms-1"></i></th>
+                    <th onclick="sortTable(5)">Status <i class="fas fa-sort ms-1"></i></th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                {% for lead in leads %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ lead.created_at|date:"d M Y" }}</td>
+                    <td>{{ lead.full_name }}</td>
+                    <td>{{ lead.email }}</td>
+                    <td>{{ lead.contact }}</td>
+                    <td>
+                        {% if lead.status == "Allocated" %}
+                            <span class="status-badge status-allocated">Allocated</span>
+                        {% elif lead.status == "Not Attended" %}
+                            <span class="status-badge status-not">Not Attended</span>
+                        {% elif lead.status == "Closed" %}
+                            <span class="status-badge status-closed">Closed</span>
+                        {% else %}
+                            <span class="status-badge status-open">{{lead.status}}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center text-secondary">No data available</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+     <div class="d-flex justify-content-between align-items-center mt-3">
+    <small class="text-secondary">
+        Showing {{ leads.start_index }} to {{ leads.end_index }} of {{ leads.paginator.count }} entries
+    </small>
+
+   <nav>
+    <ul class="pagination pagination-sm mb-0 align-items-center">
+
+        <!-- Previous -->
+        {% if leads.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ leads.previous_page_number }}&page_size={{ page_size }}&client={{ request.GET.client }}&category={{ request.GET.category }}&hr={{ request.GET.hr }}&status={{ request.GET.status }}&start={{ request.GET.start }}&end={{ request.GET.end }}">
+                &lt;
+            </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <span class="page-link">&lt;</span>
+        </li>
+        {% endif %}
+
+        <!-- Page Numbers -->
+        {% for num in leads.paginator.page_range %}
+            {% if leads.number == num %}
+                <li class="page-item active">
+                    <span class="page-link">{{ num }}</span>
+                </li>
+            {% elif num >= leads.number|add:-2 and num <= leads.number|add:2 %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ num }}&page_size={{ page_size }}&client={{ request.GET.client }}&category={{ request.GET.category }}&hr={{ request.GET.hr }}&status={{ request.GET.status }}&start={{ request.GET.start }}&end={{ request.GET.end }}">
+                        {{ num }}
+                    </a>
+                </li>
+            {% endif %}
+        {% endfor %}
+
+        <!-- Next -->
+        {% if leads.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ leads.next_page_number }}&page_size={{ page_size }}&client={{ request.GET.client }}&category={{ request.GET.category }}&hr={{ request.GET.hr }}&status={{ request.GET.status }}&start={{ request.GET.start }}&end={{ request.GET.end }}">
+                &gt;
+            </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <span class="page-link">&gt;</span>
+        </li>
+        {% endif %}
+
+    </ul>
+</nav>
+</div>
+
+</div>
+
+
+</div>
+
+<script>
+   
+document.querySelectorAll(".status-item").forEach(item => {
+    item.addEventListener("click", function(e) {
+        e.preventDefault();
+
+        let btn = document.getElementById("statusDropdown");
+        btn.innerText = this.innerText;
+        btn.dataset.value = this.innerText;
+    });
+});
+
+document.getElementById("searchBtn").addEventListener("click", function () {
+
+    let status = document.getElementById("statusDropdown").dataset.value || "";
+    let start = document.getElementById("startDate").value;
+    let end = document.getElementById("endDate").value;
+
+    let url = `/telecaller_allLeads/?&status=${status}&start=${start}&end=${end}`;
+
+    window.location.href = url;   // reload with filters
+});
+
+document.querySelectorAll(".status-item").forEach(item => {
+    item.addEventListener("click", function(e) {
+        e.preventDefault();
+
+        let value = this.dataset.value;
+        let text = this.innerText;
+
+        // Set button text
+        document.getElementById("statusDropdown").innerText = text;
+
+        // Store value
+        document.getElementById("statusInput").value = value;
+    });
+});
+
+
+let sortDirection = {};  // track asc/desc per column
+
+function sortTable(colIndex) {
+    let table = document.querySelector("table tbody");
+    let rows = Array.from(table.rows);
+
+    // toggle direction
+    sortDirection[colIndex] = !sortDirection[colIndex];
+
+    rows.sort((a, b) => {
+        let A = a.cells[colIndex].innerText.trim().toLowerCase();
+        let B = b.cells[colIndex].innerText.trim().toLowerCase();
+
+        // detect date
+        if (!isNaN(Date.parse(A)) && !isNaN(Date.parse(B))) {
+            return sortDirection[colIndex] 
+                ? new Date(A) - new Date(B)
+                : new Date(B) - new Date(A);
+        }
+
+        // detect number
+        if (!isNaN(A) && !isNaN(B)) {
+            return sortDirection[colIndex] ? A - B : B - A;
+        }
+
+        // string compare
+        return sortDirection[colIndex]
+            ? A.localeCompare(B)
+            : B.localeCompare(A);
+    });
+
+    rows.forEach(row => table.appendChild(row));
+}
+
+
+document.getElementById("globalSearch").addEventListener("keyup", function () {
+    let value = this.value.toLowerCase();
+    let rows = document.querySelectorAll("#tableBody tr");
+
+    rows.forEach(row => {
+        row.style.display = row.innerText.toLowerCase().includes(value)
+            ? ""
+            : "none";
+    });
+});
+
+document.querySelectorAll(".page-size-item").forEach(item => {
+    item.addEventListener("click", function(e) {
+        e.preventDefault();
+
+        let size = this.dataset.value;   // ← was dataset.size, now dataset.value
+
+        let btn = document.getElementById("pageSizeDropdown");
+        btn.innerText = size;
+        btn.dataset.value = size;
+
+        let url = new URL(window.location.href);
+        url.searchParams.set("page_size", size);
+        url.searchParams.set("page", 1);
+
+        window.location.href = url.toString();
+    });
+});
+
+</script>
+
+
+
+{% endblock %}

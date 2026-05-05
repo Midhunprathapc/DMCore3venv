@@ -1,0 +1,267 @@
+{% extends "head_base.html" %}
+
+{% block title %}DigitalMarketing Head LeaveRequest{% endblock %}
+
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<style>
+    .schedule-container {
+        background: #1e1f26;
+        border-radius: 8px;
+        padding: 20px;
+        color: #fff;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        position: relative;
+        z-index: 1;
+    }
+    .schedule-header {
+        border-bottom: 1px solid #2a2b33;
+        padding-bottom: 15px;
+        margin-bottom: 20px;
+    }
+    .action-btn {
+        border-radius: 20px;
+        padding: 6px 16px;
+        font-size: 14px;
+        border: 1px solid;
+        transition: all 0.3s ease;
+    }
+    .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    .search-input {
+        background: #2a2b33;
+        border: 1px solid #3a3b44;
+        color: #fff;
+        border-radius: 6px;
+    }
+    .search-input:focus {
+        background: #2a2b33;
+        border-color: #007bff;
+        color: #fff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    .modal-dark .modal-content {
+        background: #1e1f26;
+        color: #fff;
+        border: 1px solid #2a2b33;
+    }
+    .modal-dark .modal-header {
+        border-bottom: 1px solid #2a2b33;
+    }
+    .modal-dark .modal-footer {
+        border-top: 1px solid #2a2b33;
+    }
+    .form-control-dark {
+        background: #2a2b33;
+        border: 1px solid #3a3b44;
+        color: #fff;
+    }
+    .form-control-dark:focus {
+        background: #2a2b33;
+        border-color: #007bff;
+        color: #fff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    ::placeholder {
+        color: #999 !important;
+    }
+    .completed-text {
+        color: red !important;
+        text-decoration: line-through !important;
+    }
+</style>
+
+{% if messages %}
+    <script>
+        {% for message in messages %}
+            Swal.fire({
+                icon: "{{ message.tags }}",
+                title: "{{ message.tags|title }}",
+                text: "{{ message }}",
+                timer: 2000,
+                showConfirmButton: false
+            });
+        {% endfor %}
+    </script>
+{% endif %}
+
+<div class="container-fluid py-3">
+    <div class="text-white mb-4">
+        <small class="">Dashboard / </small>
+        <small class="text-white-50">Leave Requests</small>
+    </div>
+
+    <div class="schedule-container">
+        <div class="schedule-header">
+            <div class="row align-items-center">
+                <div class="col-md-3 mt-2">
+                    <i class="fas fa-calendar-alt me-2"></i>Leave Request List
+                </div>
+                <div class="col-md-6"></div>
+                <div class="col-md-3 text-end mt-2">
+                    <input type="text" class="form-control form-control-sm search-input" id="searchfilter" placeholder="Search here...">
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="d-flex gap-2">
+                    <select name="" id="searchFilter" class="form-control form-control-sm form-control-dark">
+                        <option value="">---select filter---</option>
+                        <option value="0">Requested Leaves</option>
+                        <option value="1">Approved Leaves</option>
+                        <option value="2">Rejected Leaves</option>
+                        <option value="all">All Leaves</option>
+                    </select>
+                    <button class="btn btn-outline-primary btn-sm" id="filterBtn">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Leave Table -->
+        <div class="table-responsive">
+            <table class="table table-sm table-dark">
+                <thead>
+                    <tr>
+                        <th>Status</th>
+                        <th>Apply Date</th>
+                        <th>Employee</th>
+                        <th>From Date</th>
+                        <th>To Date</th>
+                        <th>Days</th>
+                        <th>Leave Type</th>
+                        <th>Reason</th>
+                        <th>Approved/Rejected Date</th>
+                    </tr>
+                </thead>
+                <tbody id="LeaveRequestTableBody">
+                    {% for e in empl %}
+                    <tr data-status="{{ e.leave_status }}">
+                        <td>
+                            {% if e.leave_status == 0 %}
+                            <button class="btn btn-sm btn-outline-success approveBtn mt-2" data-id="{{ e.id }}">Approve</button>
+                            <button class="btn btn-sm btn-outline-danger rejectBtn mt-2" data-id="{{ e.id }}">Reject</button>
+                            {% elif e.leave_status == 1 %}
+                            <button class="btn btn-outline-success">Approved</button>
+                            {% else %}
+                            <button class="btn btn-outline-danger">Rejected</button>
+                            {% endif %}
+                        </td>
+                        <td>{{ e.leave_apply_date }}</td>
+                        <td>{{ e.emp_id.name }}</td>
+                        <td>{{ e.start_date }}</td>
+                        <td>{{ e.end_date }}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-danger">{{ e.no_of_days }}</button>
+                        </td>
+                        <td>{{ e.leave_type }}</td>
+                        <td>
+                            {{ e.leave_reason }}
+                            <br>
+                            <button class="btn btn-sm btn-outline-primary dwnldBtn" data-file="{{ e.leave_request_file.url }}">
+                                <i class="fa-solid fa-download"></i>
+                            </button>
+                        </td>
+                        <td>{{ e.leave_statuChange_date }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+// Search filter
+document.getElementById("searchfilter").addEventListener("keyup", function () {
+    let searchValue = this.value.toLowerCase().trim();
+    let rows = document.querySelectorAll("#LeaveRequestTableBody tr");
+
+    rows.forEach(row => {
+        let text = row.innerText.toLowerCase();
+        
+        if (text.includes(searchValue)) {
+            row.style.display = "";
+        } else {
+            row.style.display = "none";
+        }
+    });
+});
+
+// Leave status
+document.addEventListener("DOMContentLoaded", function () {
+    // APPROVE BUTTON CLICK
+    $(document).on("click", ".approveBtn", function () {
+        let leaveId = $(this).data("id");
+        updateLeaveStatus(leaveId, "approve");
+    });
+    // REJECT BUTTON CLICK
+    $(document).on("click", ".rejectBtn", function () {
+        let leaveId = $(this).data("id");
+        updateLeaveStatus(leaveId, "reject");
+    });
+    function updateLeaveStatus(leaveId, action) {
+        $.ajax({
+            url: "{% url 'update_leave_status' %}",
+            method: "POST",
+            data: {
+                leave_id: leaveId,
+                action: action,
+                csrfmiddlewaretoken: "{{ csrf_token }}"
+            },
+            success: function (response) {
+                if (response.status === "success") {
+                    Swal.fire({
+                        icon: "success",
+                        title: "Success",
+                        text: `Leave ${action}d successfully`,
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                    // Reload only the table body
+                    $("#LeaveRequestTableBody").load(location.href + " #LeaveRequestTableBody > *");
+                } else {
+                    Swal.fire("Error", response.message, "error");
+                }
+            }
+        });
+    }
+});
+
+// FILTER BUTTON CLICK
+$("#filterBtn").click(function () {
+    let filterValue = $("#searchFilter").val(); // 0 / 1 / 2 / all
+    $("#LeaveRequestTableBody tr").each(function () {
+        let rowStatus = $(this).data("status");
+        
+        if (filterValue === "all" || filterValue === "") {
+            $(this).show();
+        } 
+        else if (String(rowStatus) === filterValue) {
+            $(this).show();
+        }
+        else {
+            $(this).hide();
+        }
+    });
+});
+
+// file download
+$(document).on("click", ".dwnldBtn", function () {
+    let fileUrl = $(this).data("file");
+    if (!fileUrl) {
+        Swal.fire("No File", "No document uploaded for this leave request", "warning");
+        return;
+    }
+    window.open(fileUrl, "_blank");
+});
+
+</script>
+{% endblock %}

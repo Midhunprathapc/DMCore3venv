@@ -1,0 +1,832 @@
+{% extends "head_base.html" %}
+{% load static %}
+{% block content %}
+
+<div class="lead-wrapper">
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb breadcrumb-custom bg-transparent p-0 mb-3">
+        <li class="breadcrumb-item">
+            <a href="{% url 'head_dashboard' %}" class="text-secondary fw-bold" style="text-decoration: none">Dashboard</a>
+        </li>
+         <li class="breadcrumb-item active text-secondary" aria-current="page">
+            /
+        </li>
+        <li class="breadcrumb-item active text-secondary" aria-current="page">
+         Transferred Leads
+        </li>
+    </ol>
+</nav>
+
+
+<div class="lead-card">
+
+<div class="table-header">
+
+<h3>
+Transferred Leads List
+<span class="count-badge">
+{{ transferred_leads|length }}
+</span>
+</h3>
+
+</div>
+
+<div class="filter-header">
+
+<div class="filter-bar">
+<form method="get" id="filterForm">
+
+<button type="button" id="resetFilters" title="Reset Filters" class="reset-icon">
+🔄
+</button>
+
+<select name="today" id="todayFilter">
+<option value="today" {% if today_filter == "today" %}selected{% endif %}>Today</option>
+<option value="all" {% if today_filter == "all" %}selected{% endif %}>All</option>
+</select>
+
+<select name="client" id="clientFilter">
+<option value="">Client</option>
+{% for client in clients %}
+<option value="{{ client.id }}"
+{% if client.id|stringformat:"s" == selected_client %}selected{% endif %}>
+{{ client.client_name }}
+</option>
+{% endfor %}
+</select>
+
+<select name="category" id="categoryFilter">
+<option value="">Category</option>
+{% for cat in categories %}
+<option value="{{ cat.id }}"
+data-client="{{ cat.work_Id.clientId.id }}"
+{% if cat.id|stringformat:"s" == selected_category %}selected{% endif %}>
+{{ cat.collection_head }}
+</option>
+{% endfor %}
+</select>
+
+<select name="employee" id="employeeFilter">
+<option value="">Employee</option>
+{% for emp in employees %}
+<option value="{{ emp.id }}"
+{% if emp.id|stringformat:"s" == selected_employee %}selected{% endif %}>
+{{ emp.name }}
+</option>
+{% endfor %}
+</select>
+
+<input type="date" id="startDate" name="startDate" value="{{ start_date }}">
+<input type="date" id="endDate" name="endDate" value="{{ end_date }}">
+<button type="submit" class="search-btn">🔍</button>
+
+</form>
+</div>
+
+
+<div class="search-container">
+
+<input type="text"
+id="liveSearch"
+placeholder="Search..."
+class="search-box">
+
+</div>
+
+</div>
+<div class="table-controls">
+
+<div class="entries">
+Show
+
+<select id="entriesSelect">
+
+<option value="10" selected>10</option>
+
+<option value="50">50</option>
+
+<option value="100">100</option>
+
+<option value="150">150</option>
+
+<option value="200">200</option>
+
+</select>
+
+entries
+</div>
+
+
+
+</div>
+
+
+
+{% if transferred_leads %}
+
+<div class="table-responsive">
+
+<table class="lead-table" id="leadTable">
+
+<thead>
+<tr>
+<th onclick="sortTable(0)">No ▲▼</th>
+<th onclick="sortTable(1)">Transfer Date ▲▼</th>
+<th onclick="sortTable(2)">Add On Date ▲▼</th>
+<th onclick="sortTable(3)">Lead Full Name ▲▼</th>
+<th onclick="sortTable(4)">Email ▲▼</th>
+<th onclick="sortTable(5)">Contact ▲▼</th>
+<th onclick="sortTable(6)">Client ▲▼</th>
+<th onclick="sortTable(7)">Category ▲▼</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for lead in transferred_leads %}
+
+<tr class="lead-row"
+data-date="{{ lead.transfer_date|date:'Y-m-d' }}"
+data-client="{{ lead.lead_collection.work_Id.clientId.id }}"
+data-category="{{ lead.lead_collection.id }}"
+data-employee="{{ lead.collected_by.id }}">
+<td>{{forloop.counter}}</td>
+
+<td>{{lead.transfer_date|date:"F d, Y"|default:"-"}}</td>
+<td>{{lead.created_at|date:"F d, Y"}}</td>
+
+<td>{{lead.full_name}}</td>
+
+<td>{{lead.email}}</td>
+
+<td>{{lead.contact}}</td>
+
+<td>
+{{lead.lead_collection.work_Id.clientId.client_name|default:"-"}}
+</td>
+
+<td>
+{{ lead.lead_collection.collection_head|default:"N/A" }}
+</td>
+
+
+
+
+
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+</div>
+
+
+<div class="table-footer">
+
+<div id="tableInfo"></div>
+
+<div class="pagination">
+
+<button id="prevBtn">Previous</button>
+
+<span id="pageNumbers"></span>
+
+<button id="nextBtn">Next</button>
+
+</div>
+
+</div>
+
+
+{% else %}
+
+<div class="empty-box">
+
+<img src="{% static 'images/no-data.png' %}">
+
+<p>No Transferred Leads Found</p>
+
+</div>
+
+{% endif %}
+
+</div>
+
+</div>
+
+
+
+<style>
+
+.lead-wrapper{
+background:#0b1120;
+min-height:100vh;
+padding:25px;
+color:white;
+}
+
+.page-path{
+color:#94a3b8;
+font-size:13px;
+margin-bottom:15px;
+}
+
+.lead-card{
+background:#0f172a;
+border:1px solid #1e293b;
+border-radius:10px;
+padding:20px;
+}
+
+.table-header{
+margin-bottom:15px;
+}
+
+.count-badge{
+background:#0ea5e9;
+padding:2px 8px;
+border-radius:20px;
+font-size:12px;
+margin-left:6px;
+}
+
+.filter-bar{
+display:flex;
+gap:10px;
+margin-bottom:15px;
+}
+
+.filter-bar select,
+.filter-bar input{
+background:#020617;
+border:1px solid #334155;
+color:white;
+padding:6px;
+border-radius:5px;
+font-size:12px;
+}
+
+.search-btn{
+background:#0ea5e9;
+border:none;
+padding:6px 12px;
+border-radius:5px;
+color:white;
+cursor:pointer;
+}
+
+.table-controls{
+display:flex;
+justify-content:space-between;
+margin-bottom:15px;
+font-size:13px;
+color:#94a3b8;
+}
+
+.entries select{
+background:#020617;
+border:1px solid #334155;
+color:white;
+padding:4px;
+border-radius:4px;
+}
+
+.search-box{
+background:#020617;
+border:1px solid #334155;
+color:white;
+padding:6px 10px;
+border-radius:5px;
+width:220px;
+}
+
+.lead-table{
+width:100%;
+border-collapse:collapse;
+}
+
+.lead-table th{
+font-size:12px;
+color:#94a3b8;
+padding:10px;
+text-align:left;
+border-bottom:1px solid #1e293b;
+}
+
+.lead-table td{
+padding:12px 10px;
+border-bottom:1px solid #1e293b;
+font-size:13px;
+}
+
+.lead-table tr:hover{
+background:#020617;
+}
+
+.table-footer{
+display:flex;
+justify-content:space-between;
+margin-top:15px;
+font-size:12px;
+color:#94a3b8;
+align-items:center;
+}
+.filter-header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:10px;
+flex-wrap:wrap;
+}
+
+.filter-bar form{
+display:flex;
+gap:10px;
+flex-wrap:wrap;
+align-items:center;
+}
+
+.search-container{
+display:flex;
+align-items:center;
+}
+
+.reset-icon{
+background:none;
+border:none;
+cursor:pointer;
+color:#ef4444;
+font-size:18px;
+}
+.pagination button{
+background:#020617;
+border:1px solid #334155;
+color:white;
+padding:5px 10px;
+margin:2px;
+border-radius:4px;
+cursor:pointer;
+}
+
+.pagination button.active{
+background:#0ea5e9;
+}
+
+.empty-box{
+text-align:center;
+margin-top:50px;
+}
+.reset-btn{
+
+background:#ef4444;
+
+border:none;
+
+padding:6px 14px;
+
+border-radius:5px;
+
+color:white;
+
+cursor:pointer;
+
+font-size:12px;
+
+}
+
+.reset-btn:hover{
+
+background:#dc2626;
+
+}
+.table-responsive{
+
+width:100%;
+
+overflow-x:auto;
+
+overflow-y:hidden;
+
+border-radius:8px;
+
+}
+
+.lead-table{
+
+min-width:900px;
+
+width:100%;
+
+border-collapse:collapse;
+
+}
+
+
+
+@media(max-width:900px){
+
+.search-box{
+width:100%;
+margin-top:10px;
+}
+
+.filter-header{
+flex-direction:column;
+align-items:flex-start;
+gap:10px;
+}
+
+.filter-bar form{
+width:100%;
+}
+
+}
+.breadcrumb-item a {
+    position: relative;
+    z-index: 5;  
+    cursor: pointer;
+    text-decoration: underline;
+    color: #2563eb; 
+}
+.lead-table th {
+    cursor: pointer;
+}
+.lead-table th:hover {
+    color: #0ea5e9;
+}
+
+</style>
+<script>
+
+document.addEventListener("DOMContentLoaded", function(){
+
+const search =
+document.getElementById("liveSearch");
+
+const rows =
+document.querySelectorAll("#leadTable tbody tr");
+
+search.addEventListener("input", function(){
+
+let keyword =
+this.value.trim().toLowerCase();
+
+rows.forEach(row=>{
+
+let visibleText =
+row.textContent.toLowerCase();
+
+let hiddenData =
+(
+(row.dataset.client || "") + " " +
+(row.dataset.category || "") + " " +
+(row.dataset.employee || "") + " " +
+(row.dataset.date || "")
+).toLowerCase();
+
+let fullText =
+visibleText + " " + hiddenData;
+
+if(fullText.includes(keyword)){
+
+row.dataset.searchMatch = "true";
+
+}else{
+
+row.dataset.searchMatch = "false";
+
+}
+
+});
+
+
+document.dispatchEvent(
+new Event("searchUpdated")
+);
+
+});
+
+});
+
+</script>
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+
+
+const resetBtn = document.getElementById("resetFilters");
+const todayFilter = document.getElementById("todayFilter");
+const clientFilter = document.getElementById("clientFilter");
+const categoryFilter = document.getElementById("categoryFilter");
+const employeeFilter = document.getElementById("employeeFilter");
+const startDate = document.getElementById("startDate");
+const endDate = document.getElementById("endDate");
+const entries = document.getElementById("entriesSelect");
+
+
+
+if(resetBtn){
+
+resetBtn.addEventListener("click",function(){
+
+todayFilter.value="today";
+
+clientFilter.value="";
+
+categoryFilter.value="";
+
+employeeFilter.value="";
+
+if(startDate) startDate.value="";
+if(endDate) endDate.value="";
+
+document.getElementById("filterForm").submit();
+
+});
+
+}
+
+
+
+function filterCategories(){
+
+if(!categoryFilter || !clientFilter) return;
+
+const clientId = clientFilter.value;
+
+Array.from(categoryFilter.options).forEach(opt=>{
+
+if(opt.value===""){
+opt.style.display="";
+}
+
+else if(clientId===""){
+opt.style.display="none";
+}
+
+else if(opt.getAttribute("data-client")===clientId){
+opt.style.display="";
+}
+
+else{
+opt.style.display="none";
+}
+
+});
+
+if(categoryFilter.value){
+
+const selected =
+categoryFilter.selectedOptions[0];
+
+if(selected &&
+selected.getAttribute("data-client")!==clientId){
+
+categoryFilter.value="";
+
+}
+
+}
+
+}
+
+if(clientFilter){
+
+clientFilter.addEventListener("change",filterCategories);
+
+filterCategories();
+
+}
+
+
+
+
+const table = document.getElementById("leadTable");
+
+if (!table) return;
+
+
+
+
+const rows = Array.from(table.querySelectorAll("tbody tr"));
+
+rows.forEach(row=>{
+row.dataset.searchMatch="true";
+});
+
+const info = document.getElementById("tableInfo");
+const pageNumbers = document.getElementById("pageNumbers");
+
+let currentPage = 1;
+let rowsPerPage = parseInt(entries.value) || 10;
+
+
+
+
+function displayTable(){
+
+const today =
+new Date().toLocaleDateString('en-CA');
+
+let filtered =
+rows.filter(row=>{
+
+const rowDate = row.dataset.date;
+
+const matchesToday =
+todayFilter.value==="all" ||
+(todayFilter.value==="today" && rowDate===today);
+
+const matchesClient =
+clientFilter.value==="" ||
+clientFilter.value===row.dataset.client;
+
+const matchesCategory =
+categoryFilter.value==="" ||
+categoryFilter.value===row.dataset.category;
+
+const matchesEmployee =
+employeeFilter.value==="" ||
+employeeFilter.value===row.dataset.employee;
+
+const matchesStart =
+!startDate.value ||
+rowDate>=startDate.value;
+
+const matchesEnd =
+!endDate.value ||
+rowDate<=endDate.value;
+
+const matchesSearch =
+row.dataset.searchMatch==="true";
+
+return matchesToday &&
+matchesClient &&
+matchesCategory &&
+matchesEmployee &&
+matchesStart &&
+matchesEnd &&
+matchesSearch;
+
+});
+
+
+rows.forEach(r=>{
+r.style.display="none";
+});
+
+
+const startIndex =
+(currentPage-1)*rowsPerPage;
+
+const endIndex =
+startIndex+rowsPerPage;
+
+
+filtered
+.slice(startIndex,endIndex)
+.forEach(r=>{
+r.style.display="";
+});
+
+
+if(info){
+
+info.innerText =
+`Showing ${filtered.length===0?0:startIndex+1} to ${Math.min(endIndex,filtered.length)} of ${filtered.length} entries`;
+
+}
+
+
+/* pagination */
+
+pageNumbers.innerHTML="";
+
+const totalPages =
+Math.ceil(filtered.length/rowsPerPage);
+
+for(let i=1;i<=totalPages;i++){
+
+const btn =
+document.createElement("button");
+
+btn.innerText=i;
+
+btn.classList.toggle(
+"active",
+i===currentPage
+);
+
+btn.onclick=function(){
+
+currentPage=i;
+
+displayTable();
+
+};
+
+pageNumbers.appendChild(btn);
+
+}
+
+}
+
+
+entries.addEventListener("change",function(){
+
+rowsPerPage =
+parseInt(entries.value);
+
+currentPage=1;
+
+displayTable();
+
+});
+
+
+[
+todayFilter,
+categoryFilter,
+employeeFilter,
+startDate,
+endDate
+
+].forEach(el=>{
+
+if(el){
+
+el.addEventListener("change",function(){
+
+currentPage=1;
+
+displayTable();
+
+});
+
+}
+
+});
+
+
+document.addEventListener("searchUpdated",function(){
+
+currentPage=1;
+
+displayTable();
+
+});
+
+displayTable();
+
+});
+
+</script>
+<script>
+let sortDirection = {}; 
+
+function sortTable(colIndex) {
+    const table = document.getElementById("leadTable");
+    const tbody = table.querySelector("tbody");
+    let rows = Array.from(tbody.querySelectorAll("tr"));
+
+    
+    sortDirection[colIndex] = !sortDirection[colIndex];
+    const asc = sortDirection[colIndex];
+
+    rows.sort((a, b) => {
+        let A = a.cells[colIndex].innerText.trim();
+        let B = b.cells[colIndex].innerText.trim();
+
+     
+        if (colIndex === 1 || colIndex === 2) {
+            A = new Date(A);
+            B = new Date(B);
+            return asc ? A - B : B - A;
+        }
+
+       
+        if (colIndex === 0) {
+            return asc ? A - B : B - A;
+        }
+
+       
+        A = A.toLowerCase();
+        B = B.toLowerCase();
+
+        if (A < B) return asc ? -1 : 1;
+        if (A > B) return asc ? 1 : -1;
+        return 0;
+    });
+
+  
+    rows.forEach(row => tbody.appendChild(row));
+
+   
+    document.dispatchEvent(new Event("searchUpdated"));
+}
+</script>
+{% endblock %}

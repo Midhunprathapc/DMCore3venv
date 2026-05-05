@@ -1,0 +1,904 @@
+{% extends "admin_base.html" %}
+
+{% block title %}Designation Management{% endblock %}
+
+{% block content %}
+
+<style>
+    .card-title{
+        color: grey;
+    }
+    .card-text{
+        color: grey;
+    }
+    .breadcrumb {
+        background-color: transparent;
+        padding: 0;
+        margin-bottom: 10px;
+    }
+    
+    .breadcrumb-item a {
+        color: var(--accent-color);
+    }
+    
+    .breadcrumb-item.active {
+        color: var(--muted-text);
+    }
+    
+    .action-card {
+        background-color: var(--card-bg);
+        border: 1px solid var(--gray);
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .action-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        border-color: var(--accent-color);
+    }
+    
+    .action-card.active {
+        border-color: var(--accent-color);
+    }
+    
+    .card-icon-small {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(0, 212, 255, 0.2);
+        color: var(--accent-color);
+    }
+    
+    .content-container {
+        background-color: var(--card-bg);
+        border-radius: 10px;
+        padding: 25px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    #viewDesignationsContainer .table {
+        color: var(--text-color);
+        margin-bottom: 0;
+        background-color: rgba(255, 255, 255, 0.05) !important;
+    }
+    
+    #viewDesignationsContainer .table thead th {
+        border-bottom: 1px solid rgb(30, 30, 30) !important;
+        font-weight: 600;
+        background-color: rgba(255, 255, 255, 0.05) !important;
+        color: rgb(202, 204, 207) !important;
+    }
+
+    #viewDesignationsContainer .table tbody tr td {
+        border-bottom: 1px solid rgb(30, 30, 30) !important;
+        font-weight: 500;
+        background-color: rgba(41, 40, 40, 0.05) !important;
+        color: rgb(154, 155, 157) !important;
+    }
+    
+    #viewDesignationsContainer .table tbody tr {
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+    
+    #viewDesignationsContainer .table tbody tr:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+    
+  
+    .form-control, .form-select {
+        background-color: var(--secondary-color);
+        border: 1px solid var(--gray);
+        color: var(--text-color);
+    }
+    
+    .form-control::placeholder {
+        color: #6c757d !important; 
+        opacity: 1 !important; 
+    }
+    
+    .form-control:focus, .form-select:focus {
+        background-color: var(--secondary-color);
+        border-color: var(--accent-color);
+        color: var(--text-color);
+        box-shadow: 0 0 0 0.2rem rgba(0, 212, 255, 0.25);
+    }
+    
+    .form-label {
+        color: var(--text-color);
+        font-weight: 500;
+    }
+    
+    .btn-primary {
+        background-color: #088cad;
+        border-color: var(--accent-color);
+        color: var(--text-color);
+    }
+    
+    .btn-primary:hover {
+        background-color: #0da9d0;
+        border-color: #00b8e6;
+    }
+    
+    .btn-outline-primary {
+        border-color: var(--accent-color);
+        color: var(--accent-color);
+    }
+    
+    .btn-outline-primary:hover {
+        background-color: var(--accent-color);
+        color: var(--text-color);
+    }
+    
+    .btn-outline-danger {
+        border-color: #dc3545;
+        color: #dc3545;
+    }
+    
+    .btn-outline-danger:hover {
+        background-color: #dc3545;
+        color: var(--text-color);
+    }
+    
+    .badge {
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+    
+    .table-responsive-custom {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 5px;
+        background: var(--card-bg);
+    }
+
+    .table-scrollable {
+        min-width: 650px;
+        width: 100%;
+        margin-bottom: 0;
+    }
+
+    .table-scrollable th,
+    .table-scrollable td {
+        white-space: nowrap;
+        padding: 12px 15px;
+    }
+
+    .validation-message {
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+        font-weight: 500;
+        display: block;
+    }
+    
+    .validation-message.text-danger {
+        color: #dc3545 !important;
+    }
+    
+    .validation-message.text-success {
+        color: #198754 !important;
+    }
+    
+    .is-invalid {
+        border-color: #dc3545 !important;
+        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+    }
+    
+    .is-valid {
+        border-color: #198754 !important;
+        box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25) !important;
+    }
+    
+    .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        background-color: #6c757d !important;
+        border-color: #6c757d !important;
+    }
+
+    .modal-content {
+        background-color: var(--card-bg);
+        color: var(--text-color);
+        border: 1px solid var(--gray);
+    }
+
+    .modal-header {
+        border-bottom: 1px solid var(--gray);
+    }
+
+    .modal-footer {
+        border-top: 1px solid var(--gray);
+    }
+
+    .btn-close {
+        filter: invert(1);
+    }
+
+    @media (max-width: 768px) {
+        .action-card {
+            margin-bottom: 15px;
+        }
+        
+        .content-container {
+            padding: 15px;
+        }
+        
+        .table-responsive-custom {
+            font-size: 0.9rem;
+        }
+        
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+        }
+        
+        .badge {
+            font-size: 0.7rem;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .d-flex.justify-content-between.align-items-center.mb-4 {
+            flex-direction: column;
+            align-items: flex-start !important;
+        }
+        
+        .table-responsive-custom {
+            font-size: 0.8rem;
+        }
+        
+        .row.mb-3 .col-md-6 {
+            margin-bottom: 15px;
+        }
+        
+        .table-scrollable th,
+        .table-scrollable td {
+            padding: 8px 10px;
+        }
+    }
+    
+    #addDesignationContainer {
+        position: relative;
+    }
+
+    #addDesignationContainer::before {
+        display: none !important;
+    }
+
+    #addDesignationContainer * {
+        pointer-events: auto !important;
+    }
+    
+
+        @media (max-width: 5368px) {
+    .table-responsive-custom {
+        position: relative;
+    }
+}
+</style>
+
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Designation</li>
+                </ol>
+            </nav>
+            <h2 class="mb-0">Designation Management</h2>
+        </div>
+    </div>
+
+    {% if messages %}
+    <div class="row mb-4">
+        <div class="col-12">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row">
+        <div class="col-lg-3 col-md-4 mb-4">
+            <div class="card action-card mb-3" id="viewDesignationsCard" onclick="showViewDesignations()">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="card-icon-small me-3">
+                            <i class="fas fa-list-alt"></i>
+                        </div>
+                        <h5 class="card-title mb-0">Designations</h5>
+                    </div>
+                    <p class="card-text">View all designations under every department</p>
+                </div>
+            </div>
+            
+            <div class="card action-card" id="addDesignationCard" onclick="showAddDesignation()">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="card-icon-small me-3">
+                            <i class="fas fa-plus-circle"></i>
+                        </div>
+                        <h5 class="card-title mb-0">Add Designation</h5>
+                    </div>
+                    <p class="card-text">Add designation to all registered departments</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-9 col-md-8">
+            <div class="content-container" id="viewDesignationsContainer">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4>Designations</h4>
+                </div>
+
+                {% if departments_with_designations %}
+    <div class="table-responsive-custom">
+        <table class="table table-scrollable">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Department Name</th>
+                    <th>Designation</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for dept_data in departments_with_designations %}
+                {% with department=dept_data.department designations=dept_data.designations %}
+                {% for designation in designations %}
+                <tr class="department-group {% if forloop.last %}last-row{% endif %}">
+                    {% if forloop.first %}
+                    <td rowspan="{{ designations|length }}" class="align-middle text-center">{{ forloop.parentloop.counter }}</td>
+                    <td rowspan="{{ designations|length }}" class="department-cell align-middle">{{ department.name }}</td>
+                    {% endif %}
+                    <td>{{ designation.name }}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal('{{ designation.id }}')">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="confirmDelete('{{ designation.id }}', '{{ designation.name }}', '{{ department.name }}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% endwith %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-id-card fa-3x text-muted mb-3" style="color: grey !important;"></i>
+        <h5 class="text-muted" style="color: grey !important;">No Designations Found</h5>
+        <p class="text-muted" style="color: grey !important;">Click on "Add Designation" to create your first designation.</p>
+    </div>
+    {% endif %}
+</div>
+
+            <div class="content-container d-none" id="addDesignationContainer">
+                <h4 class="mb-4">Add Designation</h4>
+                
+                <div class="row">
+                    <div class="col-md-12">
+                        <form method="POST" action="{% url 'add_designation' %}" id="addDesignationForm">
+                            {% csrf_token %}
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="departmentSelect" class="form-label">Department <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="departmentSelect" name="departmentSelect" required>
+                                        <option value="" selected disabled>Select Department</option>
+                                        {% for department in departments %}
+                                        <option value="{{ department.id }}">{{ department.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="dashboardSelect" class="form-label">Allocate Dashboard <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="dashboardSelect" name="dashboardSelect" required>
+                                        <option value="" selected disabled>Select Dashboard</option>
+                                        <option value="Digital_Marketing_Head">Digital Marketing Head Dashboard</option>
+                                        <option value="Team_Lead">Team Lead Dashboard</option>
+                                        <option value="Executive">Executive Dashboard</option>
+                                        <option value="Data_Manager">Data Manager Dashboard</option>
+                                        <option value="Telecaller">Telecaller Dashboard</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="designationSelect" class="form-label">Designation <span class="text-danger">*</span></label>
+                                <select class="form-select" id="designationSelect" name="designationSelect" required>
+                                    <option value="" selected disabled>Select Designation</option>
+                                    <option value="Digital Marketing Head">Digital Marketing Head</option>
+                                    <option value="Team Lead">Team Lead</option>
+                                    <option value="Executive">Executive</option>
+                                    <option value="Data Manager">Data Manager</option>
+                                    <option value="Telecaller">Telecaller</option>
+                                </select>
+                                <div id="addDesignationValidation" class="form-text validation-message"></div>
+                                <div id="addDashboardMatchValidation" class="form-text validation-message"></div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="designationDescription" class="form-label">Description</label>
+                                <textarea class="form-control" id="designationDescription" name="designationDescription" rows="4" placeholder="Enter designation description"></textarea>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary" id="addDesignationBtn">Add Designation</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editDesignationModal" tabindex="-1" aria-labelledby="editDesignationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editDesignationModalLabel">Edit Designation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editDesignationForm" method="POST">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <input type="hidden" id="editDesignationId" name="designationId">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="editDepartmentSelect" class="form-label">Department <span class="text-danger">*</span></label>
+                            <select class="form-select" id="editDepartmentSelect" name="departmentSelect" required>
+                                <option value="" selected disabled>Select Department</option>
+                                {% for department in departments %}
+                                <option value="{{ department.id }}">{{ department.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="editDashboardSelect" class="form-label">Allocate Dashboard <span class="text-danger">*</span></label>
+                            <select class="form-select" id="editDashboardSelect" name="dashboardSelect" required>
+                                <option value="" selected disabled>Select Dashboard</option>
+                                <option value="Digital_Marketing_Head">Digital Marketing Head Dashboard</option>
+                                <option value="Team_Lead">Team Lead Dashboard</option>
+                                <option value="Executive">Executive Dashboard</option>
+                                <option value="Data_Manager">Data Manager Dashboard</option>
+                                <option value="Telecaller">Telecaller Dashboard</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editDesignationSelect" class="form-label">Designation <span class="text-danger">*</span></label>
+                        <select class="form-select" id="editDesignationSelect" name="designationSelect" required>
+                            <option value="" selected disabled>Select Designation</option>
+                            <option value="Digital Marketing Head">Digital Marketing Head</option>
+                            <option value="Team Lead">Team Lead</option>
+                            <option value="Executive">Executive</option>
+                            <option value="Data Manager">Data Manager</option>
+                            <option value="Telecaller">Telecaller</option>
+                        </select>
+                        <div id="editDesignationValidation" class="form-text validation-message"></div>
+                        <div id="editDashboardMatchValidation" class="form-text validation-message"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editDesignationDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="editDesignationDescription" name="designationDescription" rows="4"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="editDesignationBtn">Update Designation</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteConfirmModalLabel">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete designation "<span id="designationNameToDelete"></span>" from "<span id="departmentNameToDelete"></span>" department?</p>
+                <p class="text-danger"><small>This action cannot be undone.</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteDesignationForm" method="POST" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+    // Dashboard to Designation mapping
+    const dashboardDesignationMap = {
+        'Digital_Marketing_Head': 'Digital Marketing Head',
+        'Team_Lead': 'Team Lead', 
+        'Executive': 'Executive',
+        'Data_Manager': 'Data Manager',
+        'Telecaller': 'Telecaller'
+    };
+
+    function updateActiveNav() {
+
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Designation page loaded');
+        showViewDesignations();
+
+        initializeDesignationValidation();
+        initializeDashboardMatchValidation();
+        autoDismissAlerts();
+    });
+    
+    function initializeDashboardMatchValidation() {
+        console.log('Initializing dashboard match validation');
+        
+        // Add form validation
+        const addDashboardSelect = document.getElementById('dashboardSelect');
+        const addDesignationSelect = document.getElementById('designationSelect');
+        
+        if (addDashboardSelect && addDesignationSelect) {
+            addDashboardSelect.addEventListener('change', function() {
+                validateDashboardMatch('add');
+            });
+            
+            addDesignationSelect.addEventListener('change', function() {
+                validateDashboardMatch('add');
+            });
+        }
+        
+        // Edit form validation
+        const editDashboardSelect = document.getElementById('editDashboardSelect');
+        const editDesignationSelect = document.getElementById('editDesignationSelect');
+        
+        if (editDashboardSelect && editDesignationSelect) {
+            editDashboardSelect.addEventListener('change', function() {
+                validateDashboardMatch('edit');
+            });
+            
+            editDesignationSelect.addEventListener('change', function() {
+                validateDashboardMatch('edit');
+            });
+        }
+    }
+    
+    function validateDashboardMatch(formType) {
+        let dashboardSelect, designationSelect, validationElement;
+        
+        if (formType === 'add') {
+            dashboardSelect = document.getElementById('dashboardSelect');
+            designationSelect = document.getElementById('designationSelect');
+            validationElement = document.getElementById('addDashboardMatchValidation');
+        } else {
+            dashboardSelect = document.getElementById('editDashboardSelect');
+            designationSelect = document.getElementById('editDesignationSelect');
+            validationElement = document.getElementById('editDashboardMatchValidation');
+        }
+        
+        const dashboardValue = dashboardSelect ? dashboardSelect.value : '';
+        const designationValue = designationSelect ? designationSelect.value : '';
+        
+        console.log('Validating dashboard match:', {formType, dashboardValue, designationValue});
+        
+        if (!dashboardValue || !designationValue) {
+            hideDashboardMatchValidation(formType);
+            return;
+        }
+        
+        const expectedDesignation = dashboardDesignationMap[dashboardValue];
+        const isMatch = expectedDesignation === designationValue;
+        
+        console.log('Dashboard match result:', {expectedDesignation, isMatch});
+        
+        if (!isMatch) {
+            showDashboardMatchValidation(formType, false, `Designation does not match allocated dashboard.`);
+        } else {
+            hideDashboardMatchValidation(formType);
+        }
+        
+        updateSubmitButtonState(formType);
+    }
+    
+    function showDashboardMatchValidation(formType, isMatch, message) {
+        const messageElement = document.getElementById(`${formType}DashboardMatchValidation`);
+        console.log('Showing dashboard match validation:', {formType, isMatch, message, element: messageElement});
+        
+        if (messageElement) {
+            messageElement.textContent = message;
+            messageElement.className = `form-text validation-message text-danger`;
+            messageElement.style.display = 'block';
+        }
+    }
+    
+    function hideDashboardMatchValidation(formType) {
+        const messageElement = document.getElementById(`${formType}DashboardMatchValidation`);
+        
+        if (messageElement) {
+            messageElement.textContent = '';
+            messageElement.className = 'form-text validation-message';
+            messageElement.style.display = 'none';
+        }
+    }
+    
+    function updateSubmitButtonState(formType) {
+        let submitButton, dashboardSelect, designationSelect;
+        
+        if (formType === 'add') {
+            submitButton = document.getElementById('addDesignationBtn');
+            dashboardSelect = document.getElementById('dashboardSelect');
+            designationSelect = document.getElementById('designationSelect');
+        } else {
+            submitButton = document.getElementById('editDesignationBtn');
+            dashboardSelect = document.getElementById('editDashboardSelect');
+            designationSelect = document.getElementById('editDesignationSelect');
+        }
+        
+        if (!submitButton || !dashboardSelect || !designationSelect) return;
+        
+        const dashboardValue = dashboardSelect.value;
+        const designationValue = designationSelect.value;
+        const expectedDesignation = dashboardDesignationMap[dashboardValue];
+        const isDashboardMatch = !dashboardValue || !designationValue || expectedDesignation === designationValue;
+        
+        // Check if there are any existing validation errors
+        const validationElement = document.getElementById(`${formType}DesignationValidation`);
+        const hasValidationError = validationElement && validationElement.textContent && validationElement.classList.contains('text-danger');
+        
+        console.log('Updating submit button state:', {formType, isDashboardMatch, hasValidationError, dashboardValue, designationValue});
+        
+        if (!isDashboardMatch || hasValidationError) {
+            submitButton.disabled = true;
+            if (!isDashboardMatch) {
+                submitButton.title = 'Designation does not match allocated dashboard';
+            } else {
+                submitButton.title = 'Designation validation failed';
+            }
+        } else {
+            submitButton.disabled = false;
+            submitButton.title = '';
+        }
+    }
+    
+    function initializeDesignationValidation() {
+        console.log('Initializing designation validation');
+
+        const addDepartmentSelect = document.getElementById('departmentSelect');
+        const addDesignationSelect = document.getElementById('designationSelect');
+        
+        if (addDepartmentSelect && addDesignationSelect) {
+            addDepartmentSelect.addEventListener('change', function() {
+                validateDesignationName('add');
+            });
+            
+            addDesignationSelect.addEventListener('change', function() {
+                validateDesignationName('add');
+            });
+        }
+        
+
+        const editDepartmentSelect = document.getElementById('editDepartmentSelect');
+        const editDesignationSelect = document.getElementById('editDesignationSelect');
+        
+        if (editDepartmentSelect && editDesignationSelect) {
+            editDepartmentSelect.addEventListener('change', function() {
+                validateDesignationName('edit');
+            });
+            
+            editDesignationSelect.addEventListener('change', function() {
+                validateDesignationName('edit');
+            });
+        }
+    }
+    
+    function validateDesignationName(formType) {
+        let departmentSelect, designationSelect, designationId;
+        
+        if (formType === 'add') {
+            departmentSelect = document.getElementById('departmentSelect');
+            designationSelect = document.getElementById('designationSelect');
+            designationId = null;
+        } else {
+            departmentSelect = document.getElementById('editDepartmentSelect');
+            designationSelect = document.getElementById('editDesignationSelect');
+            designationId = document.getElementById('editDesignationId').value;
+        }
+        
+        const departmentId = departmentSelect ? departmentSelect.value : '';
+        const designationName = designationSelect ? designationSelect.value : '';
+        
+        console.log('Validating designation:', {formType, departmentId, designationName, designationId});
+        
+        if (!departmentId || !designationName) {
+            hideValidationMessage(formType);
+            updateSubmitButtonState(formType);
+            return;
+        }
+        
+        const data = {
+            'departmentId': departmentId,
+            'designationName': designationName
+        };
+        
+        if (formType === 'edit' && designationId) {
+            data.excludeId = designationId;
+        }
+        
+        console.log('Sending validation request:', data);
+        
+        fetch('/check-designation-exists/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken()
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => {
+            console.log('Validation response status:', response.status);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Validation response data:', data);
+            
+            if (data.error) {
+                console.error('Validation error:', data.error);
+                showValidationMessage(formType, false, 'Error checking designation name');
+                return;
+            }
+            
+            showValidationMessage(formType, data.exists, data.message);
+            updateSubmitButtonState(formType);
+        })
+        .catch(error => {
+            console.error('Validation request failed:', error);
+            showValidationMessage(formType, false, 'Error checking designation availability');
+            updateSubmitButtonState(formType);
+        });
+    }
+    
+    function showValidationMessage(formType, exists, message) {
+        const messageElement = document.getElementById(`${formType}DesignationValidation`);
+        console.log('Showing validation message:', {formType, exists, message, element: messageElement});
+        
+        if (messageElement) {
+            messageElement.textContent = message;
+            messageElement.className = `form-text validation-message ${exists ? 'text-danger' : 'text-success'}`;
+            messageElement.style.display = 'block';
+        } else {
+            console.error('Validation message element not found for:', formType);
+        }
+    }
+    
+    function hideValidationMessage(formType) {
+        const messageElement = document.getElementById(`${formType}DesignationValidation`);
+        
+        if (messageElement) {
+            messageElement.textContent = '';
+            messageElement.className = 'form-text validation-message';
+        }
+        
+        updateSubmitButtonState(formType);
+    }
+    
+    function getCsrfToken() {
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+        if (csrfToken) {
+            return csrfToken.value;
+        }
+        
+        const csrfInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
+        if (csrfInput) {
+            return csrfInput.value;
+        }
+        
+        console.error('CSRF token not found');
+        return '';
+    }
+    
+    function autoDismissAlerts() {
+        const successAlerts = document.querySelectorAll('.alert-success');
+        successAlerts.forEach(alert => {
+            setTimeout(() => {
+                if (alert && alert.classList.contains('show')) {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }
+            }, 3000);
+        });
+        
+        const errorAlerts = document.querySelectorAll('.alert-danger, .alert-warning');
+        errorAlerts.forEach(alert => {
+            setTimeout(() => {
+                if (alert && alert.classList.contains('show')) {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }
+            }, 5000);
+        });
+    }
+    
+    function showViewDesignations() {
+        document.getElementById('viewDesignationsContainer').classList.remove('d-none');
+        document.getElementById('addDesignationContainer').classList.add('d-none');
+        
+        document.getElementById('viewDesignationsCard').classList.add('active');
+        document.getElementById('addDesignationCard').classList.remove('active');
+        
+        hideValidationMessage('add');
+        hideDashboardMatchValidation('add');
+    }
+    
+    function showAddDesignation() {
+        document.getElementById('viewDesignationsContainer').classList.add('d-none');
+        document.getElementById('addDesignationContainer').classList.remove('d-none');
+        
+        document.getElementById('viewDesignationsCard').classList.remove('active');
+        document.getElementById('addDesignationCard').classList.add('active');
+        
+        hideValidationMessage('add');
+        hideDashboardMatchValidation('add');
+    }
+    
+    function openEditModal(designationId) {
+        console.log('Opening edit modal for designation:', designationId);
+        hideValidationMessage('edit');
+        hideDashboardMatchValidation('edit');
+        
+        fetch(`/get-designation-details/${designationId}/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                    return;
+                }
+                
+                document.getElementById('editDesignationId').value = data.id;
+                document.getElementById('editDepartmentSelect').value = data.department_id;
+                document.getElementById('editDashboardSelect').value = data.dashboard_id;
+                document.getElementById('editDesignationSelect').value = data.name;
+                document.getElementById('editDesignationDescription').value = data.description || '';
+                document.getElementById('editDesignationForm').action = `/edit-designation/${data.id}/`;
+                
+                const editModal = new bootstrap.Modal(document.getElementById('editDesignationModal'));
+                editModal.show();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error fetching designation details');
+            });
+    }
+    
+    function confirmDelete(designationId, designationName, departmentName) {
+        document.getElementById('designationNameToDelete').textContent = designationName;
+        document.getElementById('departmentNameToDelete').textContent = departmentName;
+        document.getElementById('deleteDesignationForm').action = `/delete-designation/${designationId}/`;
+        
+        const deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+        deleteModal.show();
+    }
+</script>
+{% endblock %}

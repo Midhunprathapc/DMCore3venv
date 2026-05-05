@@ -1,0 +1,209 @@
+{% extends "head_base.html" %}
+{% block title %}Employee Allocate{% endblock %}
+
+{% block content %}
+
+<style>
+    .dm-card {
+        background: #111827; 
+        border-radius: 8px; 
+        padding: 20px;
+        border: 1px solid #1f2937;
+    }
+    .dm-header {
+        color: #9ca3af;
+        font-size: 16px;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+         font-weight: bolder;
+    }
+    .dm-select, .dm-input, .dm-table th, .dm-table td {
+        background: #1f2937 !important;
+        color: #e5e7eb !important;
+        border: none !important;
+    }
+    .dm-table th {
+        font-weight: 600;
+        color: #9ca3af !important;
+    }
+
+    /* ✅ Horizontal + Vertical Lines */
+    .dm-table, .dm-table th, .dm-table td {
+        border: 1px solid #374151 !important;
+    }
+    .dm-table {
+        border-collapse: collapse !important;
+    }
+
+    .dm-btn {
+        background: #2563eb;
+        color: #fff;
+        border: none;
+        padding: 8px 18px;
+        border-radius: 6px;
+    }
+    .dm-btn:hover {
+        background: #1d4ed8;
+    }
+    .main-content {
+        margin-top: 70px;
+        position: relative;
+        z-index: 1;
+    }
+    .dm-input::placeholder {
+        color: #ffffff !important;
+        opacity: 0.8;
+    }
+</style>
+
+<div class="container-fluid p-4">
+
+    <div class="row g-4">
+
+        <!-- ===== LEFT SIDE ===== -->
+        <div class="col-lg-4">
+            <div class="dm-card">
+                <div class="dm-header">Allocated</div>
+
+                {% for tl in team_leads_with_count %}
+                <div class="d-flex justify-content-between align-items-center p-2"
+                     style="background:#1f2937;border-radius:6px;margin-bottom:8px;">
+                    <div class="text-white fw-bold">{{ tl.tl.name }}</div>
+                    <div class="text-info fw-bold">{{ tl.count }}</div>
+                </div>
+                {% empty %}
+                <p class="text-secondary">No Team Leads</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- ===== RIGHT SIDE ===== -->
+        <div class="col-lg-8">
+            <div class="dm-card">
+
+                <div class="dm-header">Pending Employees List</div>
+
+                <!-- Search -->
+                <form method="get">
+                    <input type="text" name="q" value="{{ q }}" class="form-control dm-input mb-3"
+                        placeholder="Search here...">
+                </form>
+
+                <!-- Team Lead Dropdown + Button -->
+                <div class="d-flex gap-2 mb-3">
+                    <select id="allocateTo" class="form-select dm-select">
+                        <option value="">--- select team lead ---</option>
+                        <!-- {% for tl in team_leads_with_count %}
+                        <option value="{{ tl.tl.id }}">{{ tl.tl.name }}</option>
+                        {% endfor %} -->
+                        {% for tl in team_leads %}
+                            <option value="{{ tl.id }}">{{ tl.name }}</option>
+                        {% endfor %}
+
+                    </select>
+                    <button class="dm-btn" id="allocateBtn">Allocate</button>
+                </div>
+
+                <!-- Table -->
+                <div class="table-responsive">
+                    <table class="table dm-table table-bordered align-middle text-center">
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" id="selectAllUnallocated"></th>
+                                <th>No</th>
+                                <th>Employee ID</th>
+                                <th>Employee Name</th>
+                                <th>Department</th>
+                                <th>Designation</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for emp in unallocated_page.object_list %}
+                            <tr>
+                                <td><input type="checkbox" class="unallocated-checkbox" value="{{ emp.id }}"></td>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ emp.employee_code }}</td>
+                                <td>{{ emp.name }}</td>
+                                <td>{{ emp.department.name }}</td>
+                                <td>{{ emp.designation.name }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-danger">No unallocated employees</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="allocateResult" class="mt-2 text-warning"></div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+// ------ GET CSRF ------
+function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+}
+const csrftoken = getCookie("csrftoken");
+
+// ------ CHECK ALL ------
+document.getElementById("selectAllUnallocated")?.addEventListener("change", function () {
+    document.querySelectorAll(".unallocated-checkbox").forEach(cb => cb.checked = this.checked);
+});
+
+// ------ LIVE SEARCH ------
+document.querySelector("input[name='q']")?.addEventListener("keyup", function () {
+    this.form?.submit();
+});
+
+// ------ ALLOCATE ------
+document.getElementById("allocateBtn")?.addEventListener("click", async (e) => {
+    e.preventDefault();
+
+    const selected = [...document.querySelectorAll(".unallocated-checkbox:checked")]
+        .map(cb => cb.value);
+
+    const tlId = document.getElementById("allocateTo").value;
+    const result = document.getElementById("allocateResult");
+
+    if (!selected.length) {
+        result.innerHTML = "<span class='text-warning'>⚠ Select employees</span>";
+        return;
+    }
+    if (!tlId) {
+        result.innerHTML = "<span class='text-warning'>⚠ Select a Team Lead</span>";
+        return;
+    }
+
+    const formData = new FormData();
+    selected.forEach(id => formData.append("employee_ids[]", id));
+    formData.append("target_tl_id", tlId);
+
+    result.innerHTML = "Processing...";
+
+    const res = await fetch("{% url 'head_api_allocate' %}", {
+        method: "POST",
+        headers: { "X-CSRFToken": csrftoken },
+        body: formData
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+        result.innerHTML = "<span class='text-success'>✔ Allocation Successful</span>";
+        setTimeout(() => location.reload(), 600);
+    } else {
+        result.innerHTML = "<span class='text-danger'>❌ " + (data.error || "Failed") + "</span>";
+    }
+});
+</script>
+
+</div>
+{% endblock %}

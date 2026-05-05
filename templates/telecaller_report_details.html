@@ -1,0 +1,283 @@
+{% extends 'telecaller_base.html' %}
+
+{% block content %}
+
+<style>
+      .grid{
+        display: grid;
+        gap: 16px;;
+    }
+    .col2{
+        grid-template-columns: 1fr 1fr;
+
+    }
+     .lead-details{
+        padding: 5px;
+        box-shadow: inset 0 0 0 1px #fcfcfc13;
+        border-radius: 5px;
+        background-color: rgba(32, 32, 32, 0.432);
+        color: rgb(126, 127, 129);
+        i{
+            margin-right: 5px;
+        }
+
+        .items{
+            
+            font-size:medium;
+
+            .lead-name{
+                font-size: large;
+                color: white;
+            }
+        }
+    }
+    .client-details{
+        padding: 5px;
+        margin-block: 15px;
+        text-align: center;
+        color: rgb(126, 127, 129);
+        font-size:medium;
+        margin-left: 15px;
+        
+        
+        i{
+            margin-right: 5px;
+        }
+    }
+    i{
+            margin-right: 5px;
+            
+        }
+        .tlc,.his{
+            position: relative;
+            p{
+                width: 5px;
+                aspect-ratio: 1;
+                background-color: rgb(0, 0, 0);
+                box-shadow: 0 0 0 3px white;
+                position: absolute;
+                top: 10px;
+                left: -28px;
+                border-radius: 50%;
+                z-index: 2;
+
+            }
+            p::after{
+                content: '';
+                position: absolute;
+                top: 5px;
+                left: 0;
+                width: 5px;
+                height: 166px;
+                background-color: rgb(237, 230, 230);
+                z-index: 1;
+            }
+        }
+        .tlc.last-tlc p::after{
+            display: none;
+        }
+        .his.last-his p::after{
+            display: none;
+        }
+        .tlc::after,.his::after{
+            content: '';
+            position: absolute;
+            top: 5px;
+            left: -15px;
+            width: 10px;
+            height: 15px;
+            background-color: rgb(204, 200, 200);
+            clip-path: polygon(100% 0%, 100% 100%, 0% 50%);
+        }
+        audio{
+            width: 100%;
+            height: 40px;
+        }
+        .shadow{
+            box-shadow: inset 1px -1px 3px 1px  #2110108e !important;
+        }
+          @media (width > 500px) {
+
+            .head-content{
+                background-color: transparent;
+                box-shadow: 0 0 0 0 transparent;
+            }
+            
+        }
+        @media (max-width:500px) {
+            .tlc,.his{
+                p::after{
+                    height: 185px;
+                }
+            }
+             .border-sm{
+                border-bottom: 1px solid #767474;
+            }
+            
+        }
+</style>
+<div class="text-white">
+   <a href="{% url 'telecaller_dashboard' %}" class="text-white-50 text-decoration-none">  <small>Dashboard</small></a>  /  <small>Followup Details</small>
+</div>
+
+<section class="mt-4">
+    <div class="row">
+        <div class="col-sm-4 p-3">
+            <div class="container p-3 bg-dark text-white rounded">
+                <div class=" lead-details">
+                    <div class="row">
+                        <div class="col-3"><div class="d-flex justify-content-center align-items-center " style="font-size: xx-large; height: 100%;"><i class="fa-solid fa-address-card" style="color: rgb(116, 192, 252);"></i></div></div>
+                        <div class="col-9 items">
+                            <div class="text-white">{{ lead.full_name}}</div>
+                            <div class=""><i class="fa-regular fa-envelope" style="color: rgb(82, 83, 84);" ></i>{{ lead.email}}</div>
+                            <div class=""><i class="fa-solid fa-phone" style="color: rgb(82, 83, 84);"></i> {{ lead.contact}}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="lead-details p-2 my-2">
+                    <div class=" d-flex" style="gap:10px;"><div class=""><i class="fa-solid fa-circle-user" style="color: rgb(82, 83, 84);"></i> Client</div> : <div class="">{{lead.lead_collection.work_Id.clientId.client_name}}</div></div>
+                    <div class=" d-flex" style="gap:10px;"><div class=""><i class="fa-regular fa-file-lines" style="color: rgb(82, 83, 84);"></i>  Lead Collected For</div> : <div class="">{{lead.lead_collection.collection_head}}</div></div>
+                    <div class=" d-flex" style="gap:10px;"><div class=""><i class="fa-regular fa-calendar" style="color: rgb(82, 83, 84);"></i> Allocated On</div> : <div class="">{{lead.transfer_date|date:"Y-m-d"}}</div></div>
+                </div>
+
+
+                <div class="lead-details">
+                    <h5 class="text-white text-center border-bottom py-3">{{lead.full_name}} - Collected Details</h5>
+
+                    <div class="p-2">
+                       {% for i in collections %}
+                       <div class="grid col2 px-2"> <div class="">{{i.field.field_name}}</div><div class="">{{i.value}}</div></div>
+                       {% endfor %}
+                </div>
+                </div>
+
+
+            </div>
+        </div>
+        <div class="col-sm-8 ">
+            <div class="row border-sm">
+                <div class="col-sm-1"><div class="d-sm-flex d-none justify-content-center align-items-center " style="font-size: xx-large; height: 100%;"><i class="fa-solid fa-address-card" style="color: rgb(116, 192, 252);"></i></div></div>
+                <div class="col-sm-11">
+                    <div class=" d-sm-flex justify-content-between w-100  pb-3">
+                <div class="head-content lead-details p-2">
+                    <div class="">{{ lead.full_name|capfirst }}</div>
+                            <div class=""><i class="fa-regular fa-envelope" style="color: rgb(82, 83, 84);" ></i>{{ lead.email}}</div>
+                            <div class=""><i class="fa-solid fa-phone" style="color: rgb(59, 58, 58);"></i>{{ lead.contact}}</div>
+                            <div class=""><i class="fa-solid fa-user" style="color: rgb(59, 58, 58);"></i> Teleclaller Status : {{lead.status}}</div>
+                </div>
+                <div class="head-content lead-details mt-2 p-2">
+                    <div class="">Status : {% if second_last_followup %}{{ second_last_followup.response|title }}{% elif last_followup %}{{ last_followup.response }}{% else %}No Status{% endif %}</div>
+                            <div class=""><i class="fa-solid fa-calendar-days" style="color: rgb(82, 83, 84);" ></i>Collected On : {{ lead.created_at|date:"Y-m-d"}}</div>
+                            <div class=""><i class="fa-solid fa-user" style="color: rgb(59, 58, 58);"></i> Collected By : {{lead.collected_by.name|title}}</div>
+                </div>
+            </div>
+                </div>
+            </div>
+            
+
+            <div class="mt-2">
+                <div class="row">
+                    <div class="col-sm-6 ">
+                       <div class="border p-3 rounded bg-dark text-white-50">
+                         
+                        <h5>Followup Details</h5>
+                        {%  for i in followups %}
+                        {% if i.notes != 'Lead is closed' %}
+                        <div class="shadow mb-3 p-3 rounded bg-dark text-white-50">
+                            <div class="tlc"><div class="text-white">{{telecaller_name}}</div>
+                            <p></p>
+                        </div>
+                            
+                            <div class="px-2"><i class="fa-solid fa-calendar-day" style="color: rgb(82, 83, 84);"></i> {{i.updated|date:"Y-m-d"}}</div>
+                            <div class="px-2"><i class="fa-solid fa-file-lines" style="color: rgb(82, 83, 84);"></i>{{i.reason}}</div>
+                            <div class="px-2"><i class="fa-solid fa-calendar-days" style="color: rgb(82, 83, 84);"></i>Next follow up on : {{i.next_update_date|date:"Y-m-d"}}</div>
+                            
+
+                            <div class="px-2">Status - {{i.response}}</div>
+
+
+                        </div>
+                        {% endif %}
+                        {% empty %}
+                        <div class="">No Followups found...</div>
+                        {% endfor %}
+                        <div class="">
+
+                        </div>
+                       </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="border p-3 rounded bg-dark text-white-50 my-2">
+                            
+                        <h5>Call Recordings</h5>
+                        {% for i in followups %}
+                        {% if i.call_record %}
+                        <div class="shadow p-3 rounded bg-dark text-white-50 mb-2">
+                            <div class="d-flex mb-2" style="gap: 10px; ">
+                            <div class=""><i class="fa-solid fa-calendar-day" style="color: rgb(82, 83, 84);"></i>{{i.updated|date:"Y-m-d"}}</div>
+                            <div class=""><i class="fa-solid fa-clock" style="color: rgb(82, 83, 84);"></i>{{i.updated|time:"H:i:a"}}</div>
+                        </div>
+                        <div class="">
+                            <audio controls>
+                                <source src="{% if i.call_record %}{{i.call_record.url}}{% else %} Recordings not found {% endif %}" type="audio/mp3">
+                            </audio>
+                        </div>
+                        </div>
+                        {% else %}{% endif %}
+                        {% empty %}
+                        <div class="">No Recordings found..</div>
+                        {% endfor %}
+
+                        </div>
+                        <div class="border p-3 rounded bg-dark text-white-50 my-2">
+
+                            <h4>Followups History</h4>
+                            {% for i in followups %}
+                            <div class="shadow p-3 rounded bg-dark text-white-50 mb-2">
+                                <div class="his"><div class="text-white">{{lead.full_name|title}}</div>
+                                <p></p>
+                            </div>
+                                <div class="px-2"><i class="fa-solid fa-calendar-days" style="color: rgb(82, 83, 84);"></i> Date : {{i.updated|date:"Y-m-d"}}</div>
+                                <div class="px-2"><i class="fa-solid fa-user" style="color: rgb(82, 83, 84);"></i>Allocated to : {{telecaller_name}}</div>
+                                <div class="px-2"><i class="fa-solid fa-file" style="color: rgb(82, 83, 84);"></i>Note : {{i.notes}}</div>
+                                <div class="px-2">Final Status : {% if i.is_close == 1 %} Closed {% else %} {{i.response}} {% endif %}</div>
+                                
+                                    </div>
+                            {% endfor %}
+
+                        </div>
+                    </div>
+            </div>
+            </div>
+            
+        </div>
+    </div>
+</section>
+<script>
+
+    
+    const disign=document.querySelectorAll('.tlc')
+    const Lasttlc=disign[disign.length-1]
+    if (Lasttlc) {
+        Lasttlc.classList.add('last-tlc')
+    }
+    const history=document.querySelectorAll('.his')
+    const Lasthis=history[history.length-1]
+    if (Lasthis) {
+        Lasthis.classList.add('last-his')
+    }
+
+
+document.addEventListener('play', function (e) {
+    const curaudio = e.target
+
+    document.querySelectorAll('audio').forEach(audio => {
+        if (audio !== curaudio) {
+            audio.pause()
+        }
+    })
+}, true)
+</script>
+
+
+{% endblock %}

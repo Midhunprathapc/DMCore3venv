@@ -1,0 +1,240 @@
+{% extends "head_base.html" %}
+
+{% block title %}DigitalMarketing Head Dashboard{% endblock %}
+
+
+
+{% block content %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<style>
+    .form-control-dark,
+.form-select.form-control-dark {
+    background-color: #1e1e1e !important;
+    color: #fff !important;
+    border: 1px solid #444 !important;
+}
+
+.form-select.form-control-dark:focus {
+    background-color: #1e1e1e !important;
+    color: #fff !important;
+    border-color: #666 !important;
+    box-shadow: none !important;
+}
+
+.table-dark th,
+.table-dark td {
+    color: #adb5bd !important; /* Bootstrap text-secondary color */
+}
+.equal-height {
+    display: flex;
+}
+
+/* Make right side content full height */
+.full-height-card {
+    height: 90%;
+}
+
+/* Left side big cards */
+.big-card {
+    min-height: 150px;
+    border: 1px solid #555;
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: 0.3s;
+}
+.big-card:hover {
+    background-color: #2b2b2b;
+    transform: scale(1.03);
+}
+</style>
+{% if messages %}
+    <script>
+        {% for message in messages %}
+            Swal.fire({
+                icon: "{{ message.tags }}",
+                title: "{{ message.tags|title }}",
+                text: "{{ message }}",
+                timer: 2000,
+                showConfirmButton: false
+            });
+        {% endfor %}
+    </script>
+{% endif %}
+<div class="container-fluid mt-4">
+      <!-- Breadcrumb -->
+   <nav aria-label="breadcrumb">
+    <ol class="breadcrumb breadcrumb-custom bg-transparent p-0 mb-3">
+        <li class="breadcrumb-item">
+            <a href="{% url 'head_dashboard' %}" class="text-secondary fw-bold" style="text-decoration: none">Dashboard</a>
+        </li>
+         <li class="breadcrumb-item active text-secondary" aria-current="page">
+            /
+        </li>
+        <li class="breadcrumb-item active text-secondary" aria-current="page">
+            Feedback
+        </li>
+    </ol>
+</nav>
+    <div class="row equal-height">
+
+        <!-- LEFT SIDE CARDS -->
+        <div class="col-md-3 d-flex flex-column" id="leftPanel">
+
+            <!-- View Feedback Card -->
+           <div class="card bg-dark text-light mb-4 p-4 big-card flex-fill" 
+                id="viewCard" style="cursor: pointer;">
+                <h6 class="fw-bold">
+                    Feedback View
+                     <i class="bi bi-arrow-up-right-circle" style="color:#22c55e;"></i>
+                     <p class="text-secondary">To view all employees feedbacks</p>
+                </h6>
+            </div>
+
+
+            <div class="card bg-dark text-light mb-4 p-4 big-card flex-fill" 
+                id="addCard" style="cursor: pointer;">
+                <h6 class="fw-bold">
+                    Add Feedback
+                    <i class="bi bi-arrow-up-right-circle" 
+                    style="color:#22c55e; margin-left:6px;"></i>
+                    <p class="text-secondary">To add feedbacks to employees</p>
+                </h6>
+            </div>
+
+
+        </div>
+
+        <!-- RIGHT SIDE CONTENT -->
+        <div class="col-md-9" id="rightPanel">
+
+            <!-- TABLE (DEFAULT VIEW) -->
+            <div id="feedbackTableDiv">
+
+                <div class="card bg-dark text-light p-3">
+                   <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold mb-0">Feedback View</h5>
+
+                        <select id="feedbackFilter" class="form-select form-select-sm bg-dark text-light border-secondary w-100 w-md-auto" style="max-width: 220px;">
+                            <option value="">-- Select --</option>
+                            <option value="given">Feedback Given</option>
+                            <option value="received">Feedback Received</option>
+                        </select>
+                    </div>
+
+
+                    <div class="table-responsive">
+                        <table class="table table-dark table-bordered table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Feedback By</th>
+                                    <th>Feedback To</th>
+                                    <th>Feedback</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for fb in feedbacks %}
+                                <tr data-type="{% if fb.from_name == request.session.employee_name %}given{% else %}received{% endif %}">
+                                    <td class="text-nowrap">{{ fb.feedback_date|date:"M d, Y" }}</td>
+                                    <td>{{ fb.from_name }}</td>
+                                    <td>{{ fb.feedback_emp_id.name }}</td>
+                                    <td style="min-width: 220px;">{{ fb.feedback_content }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted">No feedback found</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ADD FEEDBACK FORM (HIDDEN INITIALLY) -->
+        <div id="addFeedbackFormDiv" class="full-height-card" style="display: none;">
+
+                <div class="card bg-dark text-light p-4 h-100 d-flex flex-column">
+                    <h6 class="fw-bold">Add Feedback</h6>
+
+                    <form method="post" action="{% url 'save_feedback' %}" class="d-flex flex-column flex-grow-1">
+                        {% csrf_token %}
+                       <div class="mb-3">
+                        <!-- <div class="row align-items-end gx-1"> -->
+                        <div class="d-flex align-items-center gap-2 flex-nowrap">
+
+
+                            <!-- Employee Dropdown -->
+                           
+                                <select name="feedbackToEmployee" class="form-select form-select-sm form-control-dark flex-grow-1" required>
+                                    <option value="">-- Select --</option>
+                                    {% for emp in employees %}
+                                        <option value="{{ emp.id }}">{{ emp.name }}</option>
+                                    {% endfor %}
+                                </select>
+                          
+
+                            <!-- Submit Button -->
+                          
+                                <button type="submit" class="btn btn-outline-primary btn-sm px-3">
+                                    Add
+                                </button>
+                        
+
+    </div>
+</div>
+
+
+                        <div class="mb-3">
+                            <label class="form-label">Feedback</label>
+                            <textarea name="feedback_text" rows="4"
+                                    class="form-control form-control-dark"
+                                    required></textarea>
+                        </div>
+
+                    </form>
+                </div>
+
+        </div>
+
+
+        </div>
+    </div>
+</div>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+document.getElementById("addCard").onclick = function () {
+    document.getElementById("feedbackTableDiv").style.display = "none";
+    document.getElementById("addFeedbackFormDiv").style.display = "block";
+};
+
+document.getElementById("viewCard").onclick = function () {
+    document.getElementById("addFeedbackFormDiv").style.display = "none";
+    document.getElementById("feedbackTableDiv").style.display = "block";
+};
+
+
+document.getElementById("feedbackFilter").addEventListener("change", function () {
+    const filterValue = this.value;
+    const rows = document.querySelectorAll("tbody tr[data-type]");
+
+    rows.forEach(row => {
+        if (filterValue === "" || row.dataset.type === filterValue) {
+            row.style.display = "";
+        } else {
+            row.style.display = "none";
+        }
+    });
+});
+
+});
+</script>
+
+
+{% endblock %}

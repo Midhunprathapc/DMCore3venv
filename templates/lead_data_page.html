@@ -1,0 +1,291 @@
+{% extends "head_base.html" %}
+{% load static %}
+
+{% block content %}
+
+<div class="page-container">
+    <nav aria-label="breadcrumb">
+    <ol class="breadcrumb breadcrumb-custom bg-transparent p-0 mb-3">
+        <li class="breadcrumb-item">
+            <a href="{% url 'head_dashboard' %}" class="text-secondary fw-bold" style="text-decoration: none">Dashboard</a>
+        </li>
+         <li class="breadcrumb-item active text-secondary" aria-current="page">
+            /
+        </li>
+        <li class="breadcrumb-item active text-secondary" aria-current="page">
+         Lead Collection 
+        </li>
+    </ol>
+</nav>
+    
+
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0">Lead Data</h5>
+        <input type="text" id="searchBox" placeholder="Search here..." class="search-box" style="max-width: 250px;">
+    </div>
+
+    <div class="table-container">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>Serial No</th>
+                    <th>Client</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Categories</th>
+                    <th>Fields</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for client, details in data.items %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ client }}</td>
+                    <td>{{ details.start_date|date:"Y-m-d" }}</td>
+                    <td>{{ details.end_date|date:"Y-m-d" }}</td>
+                 <td>
+    <div class="category-column">
+        {% for category in details.category_fields.keys %}
+<a href="{% url 'client_lead_data' category.id %}"
+   class="category-btn">
+
+   {{ category.collection_head }}
+
+</a>
+
+        {% endfor %}
+    </div>
+</td>
+
+<td>
+    <div class="field-column">
+        {% for category, fields in details.category_fields.items %}
+    {% if fields %}
+    <span class="field-icon"
+          data-field='[{% for f in fields %}{"field_name":"{{ f.field_name|escapejs }}"}{% if not forloop.last %},{% endif %}{% endfor %}]'
+          title="View Fields">📄</span>
+{% else %}
+    <span class="field-icon"
+          data-field='[]'
+          title="No field">📄</span>
+{% endif %}
+{% endfor %}
+    </div>
+</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align:center;">No leads found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+<div id="fieldModal" style="
+    position:fixed;
+    top:0;
+    right:0;
+    width:400px;
+    max-width:90%;
+    height:100%;
+    background:#0f172a;
+    color:#fff;
+    border-left:1px solid #1e293b;
+    overflow-y:auto;
+    padding:20px;
+    z-index:9999;
+    border-radius:0 12px 12px 0;
+    box-shadow:-4px 0 20px rgba(0,0,0,0.5);
+    transform: translateX(100%);
+    transition: transform 0.3s ease-in-out;
+">
+    <h4>Category Fields</h4>
+    <button id="closeFieldModal" style="
+        float:right;
+        background:none;
+        border:none;
+        color:#fff;
+        font-size:18px;
+        cursor:pointer;
+    ">✖</button>
+    <div id="fieldModalContent" style="margin-top:30px;"></div>
+</div>
+</div>
+
+<style>
+.page-container {
+    background: #0f172a;
+    padding: 20px;
+    border-radius: 12px;
+    color: #fff;
+}
+
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.custom-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.custom-table th {
+    text-align: left;
+    font-size: 13px;
+    color: #94a3b8;
+    padding: 10px;
+    border-bottom: 1px solid #1e293b;
+}
+
+.custom-table td {
+    padding: 12px 10px;
+    border-bottom: 1px solid #1e293b;
+    font-size: 14px;
+    color: #ffffff;
+    background: transparent;
+    vertical-align: top;
+}
+
+.custom-table tr:hover {
+    background: #1e293b;
+}
+
+.field-btn {
+    display: inline-block;
+    margin: 3px 3px 3px 0;
+    padding: 5px 10px;
+    background-color: #3b82f6;
+    color: #fff;
+    font-size: 12px;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: 0.2s;
+}
+
+.field-btn:hover {
+    background-color: #2563eb;
+}
+
+.search-box {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 15px;
+    border-radius: 6px;
+    border: none;
+    background-color: #1e293b;
+    color: white;
+}
+
+.search-box::placeholder {
+    color: #94a3b8;
+}
+
+.search-box:focus {
+    outline: none;
+    border: 1px solid #3b82f6;
+}
+.category-btn {
+    display: block;            
+    margin: 4px 0;              
+    padding: 6px 12px;
+    background-color: #fbd500; 
+    color: #000000;
+    font-size: 12px;
+    border-radius: 8px;
+    text-decoration: none;
+    text-align: center;
+    transition: 0.2s;
+}
+.category-btn:hover {
+    background-color: #000000;
+    color: #fbd500;
+}
+.field-icon {
+    cursor: pointer;
+    margin-right: 6px;
+    font-size: 18px;
+    color: #00e5a8;
+    transition: 0.2s;
+}
+
+.field-icon:hover {
+    color: #3b82f6;
+    transform: none;
+}
+.category-column, .field-column {
+    display: flex;
+    flex-direction: column;   
+    justify-content: flex-start;
+}
+
+.category-column a, .field-column .field-icon {
+    margin: 4px 0;           
+}
+@media (max-width: 500px) {
+    #fieldModal {
+        width: 90%;
+    }
+}
+.breadcrumb-item a {
+    position: relative;
+    z-index: 5;  
+    cursor: pointer;
+    text-decoration: underline;
+    color: #2563eb; 
+}
+</style>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script>
+$(document).ready(function(){
+    $('#searchBox').on('keyup', function() {
+        var keywords = this.value.toLowerCase().split(" ");
+        $('.custom-table tbody tr').each(function() {
+            var text = $(this).text().toLowerCase();
+            var match = keywords.every(word => text.includes(word));
+            $(this).toggle(match);
+        });
+    });
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('fieldModal');
+    const modalContent = document.getElementById('fieldModalContent');
+    const closeBtn = document.getElementById('closeFieldModal');
+
+    document.querySelectorAll('.field-icon').forEach(icon => {
+        icon.addEventListener('click', function() {
+    let fields;
+    try {
+        fields = JSON.parse(this.getAttribute('data-field')) || [];
+    } catch(e) {
+        fields = [];
+    }
+
+    let html = '';
+
+    if (fields.length === 0) {
+        html = `<p style="color:#94a3b8;">No fields available</p>`;
+    } else {
+        fields.forEach(f => {
+            html += `<p>${f.field_name}</p>`;
+        });
+    }
+
+    modalContent.innerHTML = html;
+
+    modal.style.transform = 'translateX(0)';
+});
+    });
+
+    closeBtn.addEventListener('click', function() {
+        // Slide out
+        modal.style.transform = 'translateX(100%)';
+    });
+});
+</script>
+
+{% endblock %}

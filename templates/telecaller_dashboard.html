@@ -1,0 +1,292 @@
+{% extends "telecaller_base.html" %}
+
+{% block title %}Telecaller Dashboard{% endblock %}
+
+{% block content %}
+
+<style>
+    /* Force single row */
+.filter-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: nowrap;        /* prevents wrapping */
+    overflow-x: auto;         /*allows scroll instead of breaking */
+}
+
+/* Date fields */
+.filter-date {
+    width: 150px;
+    min-width: 150px;
+}
+
+/* Dark theme */
+.form-control-dark {
+    background: #2a2b33;
+    border: 1px solid #3a3b44;
+    color: #fff;
+}
+
+/* Fix calendar icon color */
+.form-control-dark::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+}
+
+/* Button fixed size */
+.search-btn {
+    white-space: nowrap;
+}
+.card-dark {
+    background: #1e1f26;
+    border: 1px solid #2a2b33;
+    border-radius: 10px;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+.filter-row {
+    position: relative;
+    z-index: 1;
+}
+
+.form-control-dark {
+    position: relative;
+    z-index: 2; /* bring input above overlays */
+}
+.new-lead-checkbox {
+    position: relative;
+    z-index: 5;
+    cursor: pointer;
+}
+#newLeadsTable td {
+    position: relative;
+    z-index: 1;
+}
+.card-dark,
+.table-responsive {
+    position: relative;
+    z-index: 1;
+}
+
+</style>
+
+<div class="container-fluid mt-4">
+    <div class="row g-4">
+
+<div class="col-md-4">
+    <div class="dashboard-card" onclick="window.location.href='{% url 'telecaller_allLeads' %}'">
+        <i class="fas fa-phone-volume card-icon" style="color: rgb(28, 187, 36);"></i>
+        <h5 class="card-title">All Leads</h5>
+        <p class="card-count">{% if all_leads_count %} {{all_leads_count}} {% else %} 0 {% endif %}</p>
+        <p class="card-description">Total number of client calls made today</p>
+    </div>
+</div>
+
+<div class="col-md-4">
+    <div class="dashboard-card" onclick="window.location.href='{% url 'telecaller_followups' %}' ">
+        <i class="fas fa-user-plus card-icon" style="color: rgb(185, 131, 15);"></i>
+        <h5 class="card-title">FOLLOW UP - LEADS</h5>
+        <p class="card-count">{% if opened_count %} {{opened_count}} {% else %} 0 {% endif %}</p>
+        <p class="card-description">All Followup leads of Clients</p>
+    </div>
+</div>
+
+<div class="col-md-4">
+    <div class="dashboard-card" onclick="window.location.href='{% url 'telecaller_wasteLeads' %}' " >
+        <i class="fa-solid fa-trash-can card-icon" style="color: rgb(242, 60, 60);"></i>
+        <h5 class="card-title">WASTE - LEADS</h5>
+        <p class="card-count">{% if waste_count %} {{waste_count}} {% else %} 0 {% endif %} </p>
+        <p class="card-description">All Waste leads of Clients</p>
+    </div>
+</div>
+
+<div class="col-md-4">
+    <div class="dashboard-card" onclick="window.location.href='{% url 'telecaller_closedLeads' %}' " >
+        <i class="fa-solid fa-recycle card-icon" style="color: rgb(116, 192, 252);"></i>
+        <h5 class="card-title">CLOSED - LEADS</h5>
+        <p class="card-count">{% if closed_count %} {{closed_count}} {% else %} 0 {% endif %}</p>
+        <p class="card-description">All closed leads of Clients</p>
+    </div>
+</div>
+
+<div class="col-md-4">
+    <div class="dashboard-card" onclick="window.location.href='{% url 'telecaller_reportLeads' %}' " >
+        <i class="fa-solid fa-address-card card-icon" style="color: rgb(255, 212, 59);"></i>
+        <h5 class="card-title"> LEADS - REPORT</h5>
+        <p class="card-count">{% if all_leads_count %} {{all_leads_count}} {% else %} 0 {% endif %}</p>
+        <p class="card-description">Reports of leads based on Clients</p>
+    </div>
+</div>
+
+    </div>
+
+      <div class="mt-4">
+    <div class="card-dark p-3 mb-3">
+
+    <!-- 🔹 Row 1: Header + Filters -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+
+        <!-- Title -->
+        <h5 class="mb-0">
+            New Leads <span class="text-secondary">({{ new_leads|length }})</span>
+        </h5>
+
+        <!-- Filters -->
+        <div class="filter-row">
+    <input type="date" id="fromDate"
+           class="form-control form-control-dark filter-date">
+
+    <input type="date" id="toDate"
+           class="form-control form-control-dark filter-date">
+
+    <button class="btn btn-outline-light btn-sm search-btn" id="searchNewLeads">
+        <i class="fas fa-search"></i>
+    </button>
+</div>
+    </div>
+
+    <!-- 🔹 Row 2: Count + Accept Button -->
+    <div class="d-flex align-items-center gap-3 mb-2 flex-wrap">
+
+        <small class="text-secondary">
+            <span id="selectedCount">0</span>
+        </small>
+
+        <button class="btn btn-success btn-sm" id="acceptLeadsBtn">
+            Accept Leads
+        </button>
+
+    </div>
+
+    <!-- 🔹 Table -->
+    <div class="table-responsive">
+        <table class="table table-dark table-hover" id="newLeadsTable">
+            <thead>
+                <tr>
+                    <th><input type="checkbox" id="selectAllNew"></th>
+                    <th>Add Date</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Contact</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for lead in new_leads %}
+                <tr>
+                    <td>
+                        <input type="checkbox" class="new-lead-checkbox" value="{{ lead.id }}">
+                    </td>
+                    <td>{{ lead.created_at|date:"Y-m-d" }}</td>
+                    <td>{{ lead.full_name }}</td>
+                    <td>{{ lead.email }}</td>
+                    <td>{{ lead.contact }}</td>
+                    <td>
+                        <span class="badge bg-primary text-dark">New Lead</span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+</div>
+
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+    const checkboxes = document.querySelectorAll(".new-lead-checkbox");
+    const selectAll = document.getElementById("selectAllNew");
+    const countEl = document.getElementById("selectedCount");
+
+    function updateCount() {
+        const checked = document.querySelectorAll(".new-lead-checkbox:checked").length;
+        countEl.textContent = checked;
+    }
+
+    // Individual checkbox change
+    checkboxes.forEach(cb => {
+        cb.addEventListener("change", updateCount);
+    });
+
+    // Select All checkbox
+    if (selectAll) {
+        selectAll.addEventListener("change", function () {
+            checkboxes.forEach(cb => cb.checked = this.checked);
+            updateCount();
+        });
+    }
+
+document.getElementById("searchNewLeads").addEventListener("click", function () {
+
+    const fromDate = document.getElementById("fromDate").value;
+    const toDate = document.getElementById("toDate").value;
+
+    const rows = document.querySelectorAll("#newLeadsTable tbody tr");
+
+    rows.forEach(row => {
+        const dateText = row.cells[1].innerText.trim(); // Add Date column
+        const rowDate = new Date(dateText);
+
+        let show = true;
+
+        if (fromDate) {
+            show = show && (rowDate >= new Date(fromDate));
+        }
+
+        if (toDate) {
+            show = show && (rowDate <= new Date(toDate));
+        }
+
+        row.style.display = show ? "" : "none";
+    });
+
+});
+document.getElementById("acceptLeadsBtn").addEventListener("click", function () {
+
+    const selected = Array.from(document.querySelectorAll(".new-lead-checkbox:checked"))
+        .map(cb => cb.value);
+
+    if (selected.length === 0) {
+        alert("Select at least one lead");
+        return;
+    }
+
+    fetch("/accept-leads/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCSRFToken()
+        },
+        body: JSON.stringify({ ids: selected })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            location.reload(); // refresh page
+        }
+    });
+});
+
+});
+
+function getCSRFToken() {
+    let name = 'csrftoken';
+    let cookieValue = null;
+
+    if (document.cookie) {
+        document.cookie.split(';').forEach(cookie => {
+            cookie = cookie.trim();
+            if (cookie.startsWith(name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            }
+        });
+    }
+    return cookieValue;
+}
+</script>
+
+{% endblock %}

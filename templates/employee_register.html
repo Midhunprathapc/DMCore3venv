@@ -1,0 +1,846 @@
+{% extends "base.html" %}
+
+{% block title %}Employee Registration | DM Core{% endblock %}
+
+{% block content %}
+{% load static %}
+<style>
+    .alert {
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 10px;
+        font-weight: 500;
+    }
+    
+    .alert-error {
+        background-color: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    
+    .alert-success {
+        background-color: rgba(34, 197, 94, 0.1);
+        color: #22c55e;
+        border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+
+    .auth-section {
+        padding: 120px 0 80px;
+        background: radial-gradient(circle at top right, rgba(139, 92, 235, 0.15), transparent 50%),
+                    radial-gradient(circle at bottom left, rgba(0, 212, 255, 0.1), transparent 50%),
+                    var(--bg-color);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .auth-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%238b5ceb' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+        opacity: 0.5;
+    }
+    
+    .auth-container {
+        display: flex;
+        align-items: center;
+        max-width: 700px;
+        margin: 0 auto;
+        background-color: var(--card-bg);
+        border-radius: 20px;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+        border: 1px solid var(--gray);
+        position: relative;
+        z-index: 1;
+    }
+    
+    .auth-image {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--gradient);
+        padding: 60px 40px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .auth-image::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+        opacity: 0.3;
+    }
+    
+    .auth-image img {
+        max-width: 100%;
+        height: auto;
+        animation: float 6s ease-in-out infinite;
+        position: relative;
+        z-index: 1;
+        filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.2));
+    }
+    
+    .auth-form {
+        flex: 1;
+        padding: 60px 50px;
+    }
+    
+    .auth-header {
+        margin-bottom: 40px;
+        text-align: center;
+    }
+    
+    .auth-header h2 {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+    }
+    
+    .auth-header p {
+        color: var(--light-text);
+        font-size: 1.1rem;
+    }
+    
+    .form-row {
+        display: flex;
+        gap: 20px;
+      
+    }
+    
+    .form-group {
+        flex: 1;
+        margin-bottom: 0;
+    }
+    
+    .form-group.full-width {
+        width: 100%;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 10px;
+        font-weight: 500;
+        color: var(--text-color);
+        font-size: 0.95rem;
+    }
+    
+    .form-group input, .form-group select {
+        width: 100%;
+        padding: 10px 20px;
+        border: 1px solid var(--gray);
+        border-radius: 10px;
+        font-family: 'Poppins', sans-serif;
+        transition: all 0.3s ease;
+        background-color: var(--dark-gray);
+        color: var(--text-color);
+        font-size: 1rem;
+    }
+    
+    .form-group input:focus, .form-group select:focus {
+        border-color: var(--primary-color);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(139, 92, 235, 0.2);
+    }
+    
+    .form-group input:required:valid {
+        border-color: #10b981;
+    }
+    
+    .password-toggle {
+        position: relative;
+    }
+
+    .password-toggle input {
+        padding-right: 50px;
+    }
+
+    .toggle-password {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: var(--light-text);
+        cursor: pointer;
+        transition: color 0.3s ease;
+        padding: 0;
+        margin-top: 10px;
+    }
+
+    .toggle-password:hover {
+        color: var(--primary-color);
+    }
+    
+    .form-submit {
+        display: flex;
+        justify-content: center;
+        margin: 40px 0 30px;
+    }
+
+    .form-submit .cta-button {
+        width: 100%;
+        text-align: center;
+        padding: 16px;
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+    
+    .auth-footer {
+        text-align: center;
+        margin-top: 30px;
+        color: var(--light-text);
+        font-size: 1rem;
+    }
+    
+    .auth-footer a {
+        color: var(--primary-color);
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .auth-footer a:hover {
+        color: var(--accent-color);
+    }
+
+    .section-label {
+        margin: 30px 0 15px;
+        font-size: 1rem;
+    }
+
+    .section-label:first-child {
+        margin-top: 0;
+    }
+
+    .error-message {
+        color: #ef4444 !important;
+        font-size: 0.85rem !important;
+        margin-top: 5px !important;
+        display: block !important;
+        min-height: 18px !important;
+    }
+
+    .success-message {
+        color: #10b981 !important;
+        font-size: 0.85rem !important;
+        margin-top: 5px !important;
+        display: block !important;
+        min-height: 18px !important;
+    }
+
+    .form-group input.error, .form-group select.error {
+        border-color: #ef4444 !important;
+    }
+
+    .form-group input.success, .form-group select.success {
+        border-color: #10b981 !important;
+    }
+    
+    @media (max-width: 992px) {
+        .auth-container {
+            flex-direction: column;
+            margin: 0 20px;
+        }
+        .auth-section {
+            padding-top: 120px !important;
+        }
+        
+        .auth-image {
+            padding: 40px 30px;
+            width: 100%;
+        }
+        
+        .auth-form {
+            padding: 50px 40px;
+            width: 100%;
+        }
+        
+        .form-row {
+            flex-direction: column;
+            gap: 25px;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .auth-section {
+            padding: 100px 0 60px;
+        }
+        
+        .auth-form {
+            padding: 40px 30px;
+        }
+        
+        .auth-header h2 {
+            font-size: 2rem;
+        }
+        
+        .form-row {
+            gap: 20px;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .auth-section {
+            padding: 80px 0 40px;
+        }
+        
+        .auth-form {
+            padding: 30px 25px;
+        }
+        
+        .auth-header h2 {
+            font-size: 1.8rem;
+        }
+        
+        .form-group input, .form-group select {
+            padding: 12px 15px;
+        }
+        
+        .auth-image {
+            padding: 30px 20px;
+        }
+    }
+
+    @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-15px); }
+        100% { transform: translateY(0px); }
+    }
+
+    .form-group input[readonly] {
+        background-color: var(--dark-gray) !important;
+        cursor: not-allowed !important;
+        opacity: 0.8;
+    }
+    
+    .info-text {
+        color: #8b5ceb !important;
+        font-size: 0.85rem !important;
+        margin-top: 5px !important;
+        display: block !important;
+        font-style: italic;
+    }
+
+    .info-text i {
+        margin-right: 5px;
+    }
+    
+    .terms-text {
+        text-align: center;
+        color: var(--light-text);
+        font-size: 0.9rem;
+        margin-top: 20px;
+    }
+    
+    .terms-text a {
+        color: var(--primary-color);
+        text-decoration: underline;
+    }
+        @media (min-width: 1190px) {
+        .auth-container{
+            width: 800px !important;
+        }
+    }
+</style>
+
+<section class="auth-section">
+    <div class="auth-container">
+        <div class="auth-form">
+            <div class="auth-header">
+                <h2>Employee Registration</h2>
+                <p>Create your employee account with DM Core</p>
+            </div>
+            
+            {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="company_id">Company Identifier ID *</label>
+                        <input type="text" id="company_id" name="company_id" required value="{{ request.POST.company_id }}">
+                        <span class="error-message" id="company-id-error"></span>
+                        <!-- <span class="success-message" id="company-id-success"></span> -->
+                    </div>
+                    <div class="form-group">
+                        <label for="department">Department *</label>
+                        <select id="department" name="department" required>
+                            <option value="">Select Department</option>
+                        </select>
+                        <span class="error-message" id="department-error"></span>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <label for="designation">Designation *</label>
+                        <select id="designation" name="designation" required>
+                            <option value="">Select Designation</option>
+                        </select>
+                        <span class="error-message" id="designation-error"></span>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="employee_name">Employee Name *</label>
+                        <input type="text" id="employee_name" name="employee_name" required value="{{ request.POST.employee_name }}">
+                        <span class="error-message" id="employee-name-error"></span>
+                    </div>
+                    <div class="form-group">
+                        <label for="contact_number">Contact Number *</label>
+                        <input type="tel" id="contact_number" name="contact_number" required value="{{ request.POST.contact_number }}">
+                        <span class="error-message" id="phone-error"></span>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <label for="email">Email Address *</label>
+                        <input type="email" id="email" name="email" required value="{{ request.POST.email }}">
+                        <span class="error-message" id="email-error"></span>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <label for="username">Username *</label>
+                        <input type="text" id="username" name="username" required value="{{ request.POST.username }}" readonly>
+                        <small class="info-text">
+                            <i class="fas fa-info-circle"></i>Email will be used as username
+                        </small>
+                    </div>
+                </div>
+
+                <div class="form-row" style="padding-top: 10px;">
+                    <div class="form-group full-width password-toggle">
+                        <label for="password">Password *</label>
+                        <input type="password" id="password" name="password" required>
+                        <button type="button" class="toggle-password" id="togglePassword" style="padding-bottom: 30px;">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <span class="error-message" id="password-error"></span>
+                        <span class="success-message" id="password-success"></span>
+                    </div>
+                </div>
+
+                <div class="form-submit">
+                    <button type="submit" class="cta-button">Register Employee</button>
+                </div>
+            </form>
+            
+            <div class="auth-footer">
+                <p>Already have an account? <a href="{% url 'login' %}">Sign In</a></p>
+            </div>
+            
+            <div class="terms-text">
+                <p>By creating an account you are accepting our <a href="#">Terms and Conditions</a></p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('password');
+        
+        if (togglePassword && passwordInput) {
+            togglePassword.addEventListener('click', function() {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                
+                const icon = this.querySelector('i');
+                if (type === 'password') {
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                } else {
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                }
+            });
+        }
+
+        const phoneInput = document.getElementById('contact_number');
+        const phoneError = document.getElementById('phone-error');
+        
+        if (phoneInput && phoneError) {
+            phoneInput.addEventListener('input', function() {
+                const phoneValue = this.value.replace(/\D/g, ''); 
+                if (phoneValue.length !== 10 && phoneValue.length > 0) {
+                    phoneError.textContent = 'Number must have exactly 10 digits';
+                    this.classList.add('error');
+                    this.classList.remove('success');
+                } else {
+                    phoneError.textContent = '';
+                    if (phoneValue.length === 10) {
+                        this.classList.add('success');
+                        this.classList.remove('error');
+                    } else {
+                        this.classList.remove('error', 'success');
+                    }
+                }
+            });
+        }
+
+        const emailInput = document.getElementById('email');
+        const emailError = document.getElementById('email-error');
+        
+        const checkEmailUnique = debounce(function(email) {
+            if (email.trim() === '') return;
+            
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) return; 
+            
+            fetch(`/check-email-employee/?email=${encodeURIComponent(email)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.exists) {
+                        emailError.textContent = 'Email already registered. Please use a different email.';
+                        emailInput.classList.add('error');
+                        emailInput.classList.remove('success');
+                    } else {
+                        if (!emailError.textContent.includes('Invalid format')) {
+                            emailError.textContent = '';
+                            if (emailRegex.test(email)) {
+                                emailInput.classList.add('success');
+                                emailInput.classList.remove('error');
+                            }
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking email:', error);
+                });
+        }, 500);
+
+        if (emailInput && emailError) {
+            emailInput.addEventListener('input', function() {
+                const emailValue = this.value;
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                
+                if (emailValue.length > 0 && !emailRegex.test(emailValue)) {
+                    emailError.textContent = 'Invalid email format';
+                    this.classList.add('error');
+                    this.classList.remove('success');
+                } else {
+                    if (emailError.textContent.includes('Invalid format')) {
+                        emailError.textContent = '';
+                    }
+                    
+                    if (emailRegex.test(emailValue)) {
+                        this.classList.add('success');
+                        this.classList.remove('error');
+                        checkEmailUnique(emailValue);
+                    } else {
+                        this.classList.remove('error', 'success');
+                    }
+                }
+            });
+        }
+
+
+        const usernameInput = document.getElementById('username');
+        
+        if (emailInput && usernameInput) {
+            emailInput.addEventListener('input', function() {
+                usernameInput.value = this.value;
+            });
+        }
+
+  
+        const companyIdInput = document.getElementById('company_id');
+        const companyIdError = document.getElementById('company-id-error');
+        // const companyIdSuccess = document.getElementById('company-id-success');
+        const departmentSelect = document.getElementById('department');
+        const designationSelect = document.getElementById('designation');
+
+        const checkCompanyId = debounce(function(companyId) {
+            if (!companyId.trim()) {
+                companyIdError.textContent = '';
+                // companyIdSuccess.textContent = '';
+                companyIdInput.classList.remove('error', 'success');
+                clearDepartmentAndDesignation();
+                return;
+            }
+
+            fetch(`/check-company/?company_id=${encodeURIComponent(companyId)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.exists) {
+                        companyIdError.textContent = '';
+                        // companyIdSuccess.textContent = 'Company ID exists ✓';
+                        // companyIdInput.classList.add('success');
+                        companyIdInput.classList.remove('error');
+                        
+                        loadDepartments(companyId);
+                    } else {
+                        companyIdError.textContent = 'Company ID does not exist';
+                        // companyIdSuccess.textContent = '';
+                        companyIdInput.classList.add('error');
+                        companyIdInput.classList.remove('success');
+                        clearDepartmentAndDesignation();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking company ID:', error);
+                    companyIdError.textContent = 'Error checking company ID';
+                    companyIdInput.classList.add('error');
+                    companyIdInput.classList.remove('success');
+                });
+        }, 500);
+
+
+        function loadDepartments(companyId) {
+            fetch(`/get-departments/?company_id=${encodeURIComponent(companyId)}`)
+                .then(response => response.json())
+                .then(data => {
+                    departmentSelect.innerHTML = '<option value="">Select Department</option>';
+                    
+                    if (data.departments && data.departments.length > 0) {
+                        data.departments.forEach(dept => {
+                            const option = document.createElement('option');
+                            option.value = dept.id;
+                            option.textContent = dept.name;
+                            departmentSelect.appendChild(option);
+                        });
+                        departmentSelect.disabled = false;
+                    } else {
+                        departmentSelect.innerHTML = '<option value="">No departments found</option>';
+                        departmentSelect.disabled = true;
+                    }
+                    
+                    clearDesignation();
+                })
+                .catch(error => {
+                    console.error('Error loading departments:', error);
+                    departmentSelect.innerHTML = '<option value="">Error loading departments</option>';
+                    departmentSelect.disabled = true;
+                });
+        }
+
+        function loadDesignations(companyId, departmentId) {
+            fetch(`/get-designations/?company_id=${encodeURIComponent(companyId)}&department_id=${encodeURIComponent(departmentId)}`)
+                .then(response => response.json())
+                .then(data => {
+                    designationSelect.innerHTML = '<option value="">Select Designation</option>';
+                    
+                    if (data.designations && data.designations.length > 0) {
+                        data.designations.forEach(designation => {
+                            const option = document.createElement('option');
+                            option.value = designation.id;
+                            option.textContent = designation.name;
+                            designationSelect.appendChild(option);
+                        });
+                        designationSelect.disabled = false;
+                    } else {
+                        designationSelect.innerHTML = '<option value="">No designations found</option>';
+                        designationSelect.disabled = true;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading designations:', error);
+                    designationSelect.innerHTML = '<option value="">Error loading designations</option>';
+                    designationSelect.disabled = true;
+                });
+        }
+
+
+        function clearDepartmentAndDesignation() {
+            departmentSelect.innerHTML = '<option value="">Select Department</option>';
+            departmentSelect.disabled = true;
+            clearDesignation();
+        }
+
+
+        function clearDesignation() {
+            designationSelect.innerHTML = '<option value="">Select Designation</option>';
+            designationSelect.disabled = true;
+        }
+
+
+        if (companyIdInput) {
+            companyIdInput.addEventListener('input', function() {
+                const companyIdValue = this.value.trim();
+                
+                companyIdError.textContent = '';
+                // companyIdSuccess.textContent = '';
+                this.classList.remove('error', 'success');
+                
+                if (companyIdValue.length > 0) {
+                    checkCompanyId(companyIdValue);
+                } else {
+                    clearDepartmentAndDesignation();
+                }
+            });
+        }
+
+        if (departmentSelect) {
+            departmentSelect.addEventListener('change', function() {
+                const companyIdValue = companyIdInput.value.trim();
+                const departmentId = this.value;
+                
+                if (companyIdValue && departmentId) {
+                    loadDesignations(companyIdValue, departmentId);
+                } else {
+                    clearDesignation();
+                }
+            });
+        }
+
+
+        function validatePassword(password) {
+            const requirements = {
+                length: password.length >= 8,
+                uppercase: /[A-Z]/.test(password),
+                digit: /\d/.test(password),
+                special: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)
+            };
+
+            return requirements;
+        }
+
+        function updatePasswordValidation(requirements) {
+            const passwordError = document.getElementById('password-error');
+            const passwordSuccess = document.getElementById('password-success');
+            const errors = [];
+            
+            if (!requirements.length) errors.push('at least 8 characters');
+            if (!requirements.uppercase) errors.push('1 uppercase letter');
+            if (!requirements.digit) errors.push('1 digit');
+            if (!requirements.special) errors.push('1 special character');
+
+            if (errors.length > 0) {
+                passwordError.textContent = `Password must contain: ${errors.join(', ')}`;
+                passwordSuccess.textContent = '';
+                passwordInput.classList.add('error');
+                passwordInput.classList.remove('success');
+            } else {
+                passwordError.textContent = '';
+                passwordSuccess.textContent = 'Strong password ✓';
+                passwordInput.classList.add('success');
+                passwordInput.classList.remove('error');
+            }
+        }
+
+        if (passwordInput) {
+            passwordInput.addEventListener('input', function() {
+                const passwordValue = this.value;
+                
+                if (passwordValue.length > 0) {
+                    const requirements = validatePassword(passwordValue);
+                    updatePasswordValidation(requirements);
+                } else {
+                    document.getElementById('password-error').textContent = '';
+                    document.getElementById('password-success').textContent = '';
+                    passwordInput.classList.remove('error', 'success');
+                }
+            });
+        }
+
+
+        const form = document.querySelector('form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                const requiredFields = form.querySelectorAll('input[required], select[required]');
+                let isValid = true;
+
+                const phoneValue = phoneInput.value.replace(/\D/g, '');
+                if (phoneValue.length !== 10) {
+                    phoneError.textContent = 'Number must have exactly 10 digits';
+                    phoneInput.classList.add('error');
+                    isValid = false;
+                }
+
+                const emailValue = emailInput.value;
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(emailValue)) {
+                    emailError.textContent = 'Invalid email format';
+                    emailInput.classList.add('error');
+                    isValid = false;
+                }
+
+                const companyIdValue = companyIdInput.value.trim();
+                if (!companyIdValue) {
+                    companyIdError.textContent = 'Company ID is required';
+                    companyIdInput.classList.add('error');
+                    isValid = false;
+                }
+
+                const passwordValue = passwordInput.value;
+                if (passwordValue.length > 0) {
+                    const requirements = validatePassword(passwordValue);
+                    if (!requirements.length || !requirements.uppercase || !requirements.digit || !requirements.special) {
+                        updatePasswordValidation(requirements);
+                        isValid = false;
+                    }
+                }
+
+                requiredFields.forEach(field => {
+                    if (!field.value.trim()) {
+                        field.classList.add('error');
+                        isValid = false;
+                    }
+                });
+
+                if (!isValid) {
+                    e.preventDefault();
+
+                    const firstError = form.querySelector('.error');
+                    if (firstError) {
+                        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
+            });
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        const authContainer = document.querySelector('.auth-container');
+        if (authContainer) {
+            authContainer.style.opacity = '0';
+            authContainer.style.transform = 'translateY(30px)';
+            
+            setTimeout(() => {
+                authContainer.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
+                authContainer.style.opacity = '1';
+                authContainer.style.transform = 'translateY(0)';
+            }, 300);
+        }
+
+
+        departmentSelect.disabled = true;
+        designationSelect.disabled = true;
+    });
+</script>
+{% endblock %}

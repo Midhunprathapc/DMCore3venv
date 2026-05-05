@@ -1,0 +1,314 @@
+{% extends "data_manager_base.html" %}
+{% block content %}
+<style>
+    .leads-wrapper {
+        background-color: #000000;
+        min-height: 100vh;
+        padding: 20px;
+        color: #e2e8f0;
+    }
+
+    .breadcrumb-text {
+        color: #64748b;
+        font-size: 0.85rem;
+        margin-bottom: 20px;
+    }
+
+
+    .leads-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .leads-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+    }
+
+    .action-btns .btn {
+        font-size: 0.8rem;
+        padding: 5px 12px;
+        margin-left: 5px;
+        border: 1px solid #334155;
+        color: white;
+    }
+
+    .btn-pdf {
+        color: #ef4444 !important;
+        border-color: #ef4444 !important;
+    }
+
+    .btn-excel {
+        color: #3b82f6 !important;
+        border-color: #3b82f6 !important;
+    }
+
+
+    .filter-bar {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        background: #0a0e1a;
+        padding: 10px;
+        border-radius: 5px;
+    }
+
+    .filter-bar input {
+        background: #000000;
+        border: 1px solid #121820;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 0.9rem;
+    }
+
+    .search-input {
+        flex-grow: 1;
+    }
+
+    .btn-search {
+        background: #0b0f16;
+        border: none;
+        color: white;
+        padding: 5px 15px;
+        border-radius: 4px;
+    }
+
+
+    .custom-table-container {
+        background: #000000;
+        border-radius: 8px;
+        overflow: hidden;
+        padding: 10px;
+    }
+
+    .custom-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.85rem;
+    }
+
+    .custom-table th {
+        color: #94a3b8;
+        font-weight: 500;
+        text-align: left;
+        padding: 12px;
+        border-bottom: 1px solid #1e293b;
+    }
+
+    .custom-table td {
+        padding: 12px;
+        border-bottom: 1px solid #1e293b;
+        vertical-align: middle;
+        color: #cbd5e1;
+    }
+
+    .custom-table tr:hover {
+        background: rgba(255, 255, 255, 0.02);
+    }
+
+    .filter-bar {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        background: #161d31;
+        padding: 10px;
+        border-radius: 5px;
+        position: relative;
+        z-index: 10;
+    }
+
+    .filter-bar input[type="date"] {
+        cursor: pointer;
+        position: relative;
+        z-index: 11;
+    }
+
+
+    @media (max-width: 768px) {
+        .leads-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .action-btns {
+            width: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-left: 0;
+        }
+
+        .action-btns .btn {
+            flex-grow: 1;
+            margin-left: 0;
+            margin-bottom: 5px;
+        }
+
+        .filter-bar {
+            flex-direction: column;
+        }
+
+        .filter-bar input,
+        .btn-search {
+            width: 100%;
+        }
+
+        .leads-title {
+            font-size: 1.1rem;
+        }
+    }
+
+
+    .custom-table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .custom-table {
+        min-width: 800px;
+    }
+</style>
+<div class="container-fluid">
+    <ol class="breadcrumb breadcrumb-custom bg-transparent p-0 mb-3">
+        <li class="breadcrumb-item">
+            <a href="{% url 'data_manager_dashboard' %}" class="text-secondary fw-bold"
+                style="text-decoration: none">Dashboard</a>
+        </li>
+        <li class="breadcrumb-item active text-secondary" aria-current="page">{{ source_name }}</li>
+    </ol>
+</div>
+<div class="leads-wrapper">
+    <div class="leads-header">
+        <div class="leads-title">{{ source_name }} Leads List - ({{ leads_count }})</div>
+        <div class="action-btns">
+            <button type="button" class="btn btn-dark" onclick="clearFiltersAndReload()">
+                <i class="fas fa-list"></i> All Data
+            </button>
+
+            <button type="button" class="btn btn-pdf" onclick="exportData('pdf')">
+                <i class="fas fa-file-pdf"></i> Pdf
+            </button>
+
+            <button type="button" class="btn btn-excel" onclick="exportData('excel')">
+                <i class="fas fa-file-excel"></i> Excel
+            </button>
+        </div>
+    </div>
+
+    <div class="filter-bar flex-wrap">
+        <label>From date</label>
+        <input class="bg-secondary" type="date" id="startDate" value="{{ start_date }}" onchange="applyLeadFilters()">
+        <label>To date</label>
+        <input class="bg-secondary" type="date" id="endDate" value="{{ end_date }}" onchange="applyLeadFilters()">
+        <input type="text" id="searchInput" class="search-input" placeholder="search " value="{{ search_query }}">
+        <button type="button" class="btn-search" onclick="applyLeadFilters()">
+            <i class="fas fa-search"></i>
+        </button>
+    </div>
+
+    <div class="custom-table-container">
+        <div class="table-responsive">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Collected Date</th>
+                        <th>Full name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Client Name</th>
+                        <th>Collected For</th>
+                        <th>Collected By</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for lead in leads %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ lead.created_at|date:"M. d, Y" }}</td>
+                        <td>{{ lead.full_name }}</td>
+                        <td>{{ lead.email }}</td>
+                        <td>{{ lead.contact }}</td>
+                        <td>{{ lead.lead_collection.work_Id.clientId.client_name }}</td>
+                        <td>{{ lead.lead_collection.collection_head }}</td>
+                        <td>{{ lead.collected_by.name }}</td>
+                        <td>{{ lead.status }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center py-4">No data found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+
+        const currentSource = "{{ source_name|escapejs }}";
+
+        function applyLeadFilters() {
+            console.log("Applying filters...");
+            const params = new URLSearchParams(window.location.search);
+
+            const start = document.getElementById('startDate').value;
+            const end = document.getElementById('endDate').value;
+            const search = document.getElementById('searchInput').value.trim();
+
+            params.set('source', currentSource);
+
+            if (start) params.set('start_date', start); else params.delete('start_date');
+            if (end) params.set('end_date', end); else params.delete('end_date');
+            if (search) params.set('search', search); else params.delete('search');
+
+            params.delete('export');
+            window.location.href = window.location.pathname + '?' + params.toString();
+        }
+
+        function clearFiltersAndReload() {
+            try {
+                var sd = document.getElementById('startDate');
+                if (sd) sd.value = '';
+
+                var ed = document.getElementById('endDate');
+                if (ed) ed.value = '';
+
+                var si = document.getElementById('searchInput');
+                if (si) si.value = '';
+
+                window.location.href = window.location.pathname + '?source=' + encodeURIComponent(currentSource);
+            } catch (error) {
+                alert("Javascript Error: " + error.message);
+                console.error(error);
+            }
+        }
+
+
+        function exportData(format) {
+            try {
+                console.log("Exporting as: " + format);
+                const params = new URLSearchParams(window.location.search);
+                params.set('export', format);
+
+
+                const finalUrl = window.location.pathname + '?' + params.toString();
+                console.log("Redirecting to: " + finalUrl);
+                window.location.href = finalUrl;
+            } catch (error) {
+                alert("Export JS Error: " + error.message);
+                console.error(error);
+            }
+        }
+
+
+        document.getElementById('searchInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') applyLeadFilters();
+        });
+    </script>
+    {% endblock %}

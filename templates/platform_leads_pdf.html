@@ -1,0 +1,57 @@
+<html>
+
+<head>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+            font-size: 10px;
+        }
+
+        h2 {
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <table>
+        <thead>
+            <tr>
+                <th>No</th>
+                <th>Collected Date</th>
+                <th>Full Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Client Name</th>
+                <th>Collected For</th>
+                <th>Collected By</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for lead in leads %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ lead.created_at|date:"Y-m-d" }}</td>
+                <td>{{ lead.full_name }}</td>
+                <td>{{ lead.email }}</td>
+                <td>{{ lead.contact }}</td>
+                <td>{{ lead.lead_collection.work_Id.clientId.client_name }}</td>
+                <td>{{ lead.lead_collection.collection_head }}</td>
+                <td>{{ lead.collected_by.name }}</td>
+                <td>{{ lead.status }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+
+</html>

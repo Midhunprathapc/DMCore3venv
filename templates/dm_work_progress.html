@@ -1,0 +1,97 @@
+{% extends "head_base.html" %}
+{% block content %}
+
+<div class="row">
+
+  {% for client in clients %}
+  <div class="col-md-4 mb-4">
+
+    <a href="{% url 'client_work_details' client.id %}" style="text-decoration:none;">
+
+  <div class="client-box 
+    {% if client.has_work %}
+      active-client
+    {% else %}
+      inactive-client
+    {% endif %}
+  ">
+
+    <div class="status-icon">
+      {% if client.has_work %} 🟢 {% else %} 🔴 {% endif %}
+    </div>
+
+    <h6 class="client-title">
+      {{ client.client_name }}
+    </h6>
+
+    <p class="client-desc">
+      {% if client.has_work %}
+        Work Allocated
+      {% else %}
+        No Work Allocated
+      {% endif %}
+    </p>
+
+  </div>
+
+</a>
+  </div>
+  {% empty %}
+    <p>No clients found</p>
+  {% endfor %}
+
+</div>
+
+
+
+
+
+<style>
+
+
+.client-box {
+    position: relative;
+    background: #111827;
+    border-radius: 12px;
+    padding: 18px;
+    color: #cbd5e1;
+    transition: 0.3s ease;
+    border: 1px solid #1f2937;
+}
+
+.client-title {
+    color: #e5e7eb;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.client-desc {
+    font-size: 13px;
+    color: #9ca3af;
+}
+
+.status-icon {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    font-size: 14px;
+}
+
+.active-client {
+    border-left: 4px solid #22c55e;
+}
+
+.inactive-client {
+    border-left: 4px solid #ef4444;
+}
+
+
+.client-box:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+    border-color: #374151;
+}
+
+</style>
+
+{% endblock %}

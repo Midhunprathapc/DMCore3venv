@@ -1,0 +1,771 @@
+{% extends "base.html" %}
+
+{% block title %}Login | DM Core{% endblock %}
+
+{% block content %}
+{% load static %}
+<style>
+    .alert {
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 10px;
+        font-weight: 500;
+    }
+    
+    .alert-error {
+        background-color: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    
+    .alert-success {
+        background-color: rgba(34, 197, 94, 0.1);
+        color: #22c55e;
+        border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+
+    .auth-section {
+        padding: 120px 0 80px;
+        background: radial-gradient(circle at top right, rgba(139, 92, 235, 0.15), transparent 50%),
+        radial-gradient(circle at bottom left, rgba(0, 212, 255, 0.1), transparent 50%),
+        var(--bg-color);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .auth-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%238b5ceb' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+        opacity: 0.5;
+    }
+    
+    .auth-container {
+        display: flex;
+        align-items: center;
+        max-width: 600px;
+        margin: 0 auto;
+        background-color: var(--card-bg);
+        border-radius: 20px;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+        border: 1px solid var(--gray);
+        position: relative;
+        z-index: 1;
+        width: 95%;
+    }
+    
+    .auth-image {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--gradient);
+        padding: 60px 40px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .auth-image::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+        opacity: 0.3;
+    }
+    
+    .auth-image img {
+        max-width: 100%;
+        height: auto;
+        animation: float 6s ease-in-out infinite;
+        position: relative;
+        z-index: 1;
+        filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.2));
+    }
+    
+    .auth-form {
+        flex: 1;
+        padding: 30px 60px;
+    }
+    
+    .auth-header {
+        margin-bottom: 40px;
+        text-align: center;
+    }
+    
+    .auth-header h2 {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+    }
+    
+    .auth-header p {
+        color: var(--light-text);
+        font-size: 1.1rem;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 10px;
+        font-weight: 500;
+        color: var(--text-color);
+    }
+    
+    .form-group input {
+        width: 100%;
+        padding: 10px 20px;
+        border: 1px solid var(--gray);
+        border-radius: 10px;
+        font-family: 'Poppins', sans-serif;
+        transition: all 0.3s ease;
+        background-color: var(--dark-gray);
+        color: var(--text-color);
+        font-size: 1rem;
+    }
+    
+    .form-group input:focus {
+        border-color: var(--primary-color);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(139, 92, 235, 0.2);
+    }
+    
+    .form-options {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 25px 0;
+    }
+    
+    .remember-me {
+        display: flex;
+        align-items: center;
+    }
+    
+    .remember-me input {
+        margin-right: 10px;
+        accent-color: var(--primary-color);
+        width: 18px;
+        height: 18px;
+    }
+    
+    .remember-me label {
+        margin-bottom: 0;
+        color: var(--light-text);
+        font-size: 0.95rem;
+    }
+    
+    .form-options a {
+        color: var(--primary-color);
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+    
+    .form-options a:hover {
+        color: var(--accent-color);
+    }
+    
+    .form-submit {
+        display: flex;
+        justify-content: center;
+        margin-top: 30px;
+    }
+
+    .form-submit .cta-button {
+        width: 100%;
+        text-align: center;
+        padding: 13px;
+        font-size: 1.1rem;
+    }
+    
+    .social-login {
+        margin: 30px 0;
+        text-align: center;
+    }
+    
+    .social-login p {
+        color: var(--light-text);
+        margin-bottom: 20px;
+        position: relative;
+        font-size: 0.95rem;
+    }
+    
+    .social-login p::before,
+    .social-login p::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        width: 30%;
+        height: 1px;
+        background-color: var(--gray);
+    }
+    
+    .social-login p::before {
+        left: 0;
+    }
+    
+    .social-login p::after {
+        right: 0;
+    }
+    
+    .social-buttons {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+    }
+    
+    .social-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 12px 24px;
+        border-radius: 50px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: 1px solid var(--gray);
+        background: var(--card-bg);
+        color: var(--text-color);
+        flex: 1;
+        max-width: 290px;
+    }
+    
+    .social-button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        border-color: var(--primary-color);
+    }
+    
+    .social-button.business:hover {
+        background: rgba(72, 109, 188, 0.1);
+    }
+    
+    .social-button.employee:hover {
+        background: rgba(72, 109, 188, 0.1);
+    }
+    
+    .auth-footer {
+        text-align: center;
+        margin-top: 30px;
+        color: var(--light-text);
+    }
+    
+    .auth-footer a {
+        color: var(--primary-color);
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .auth-footer a:hover {
+        color: var(--accent-color);
+    }
+
+    .password-toggle {
+        position: relative;
+    }
+
+    .password-toggle input {
+        padding-right: 50px;
+    }
+
+    .toggle-password {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: var(--light-text);
+        cursor: pointer;
+        transition: color 0.3s ease;
+    }
+
+    .toggle-password:hover {
+        color: var(--primary-color);
+    }
+
+    @media (max-width: 1200px) {
+        .auth-container {
+            max-width: 1000px;
+        }
+        
+        .auth-form {
+            padding: 30px 50px;
+        }
+    }
+    
+    @media (max-width: 992px) {
+        .auth-container {
+            flex-direction: column;
+            margin: 0 20px;
+            max-width: 600px;
+        }
+        .auth-section {
+padding-top: 120px !important;
+        }
+        
+        
+        .auth-image {
+            padding: 40px 30px;
+            width: 100%;
+        }
+        
+        .auth-form {
+            padding: 50px 40px;
+            width: 100%;
+        }
+        
+        .social-buttons {
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .social-button {
+            max-width: 100%;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .auth-section {
+            padding: 100px 0 60px;
+        }
+        
+        .auth-container {
+            margin: 0 15px;
+            border-radius: 15px;
+        }
+        
+        .auth-form {
+            padding: 40px 30px;
+        }
+        
+        .auth-header h2 {
+            font-size: 2.2rem;
+        }
+        
+        .form-options {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .auth-image {
+            padding: 30px 20px;
+        }
+        
+        .social-buttons {
+            gap: 10px;
+        }
+        
+        .social-button {
+            padding: 10px 20px;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .auth-section {
+            padding: 90px 0 40px;
+        }
+        
+        .auth-container {
+            margin: 0 10px;
+            border-radius: 12px;
+        }
+        
+        .auth-form {
+            padding: 30px 20px;
+        }
+        
+        .auth-header h2 {
+            font-size: 2rem;
+        }
+        
+        .auth-header p {
+            font-size: 1rem;
+        }
+        
+        .form-group input {
+            padding: 12px 15px;
+            font-size: 16px;
+        }
+        
+        .form-options {
+            margin: 20px 0;
+        }
+        
+        .social-login {
+            margin: 25px 0;
+        }
+        
+        .social-login p::before,
+        .social-login p::after {
+            width: 25%;
+        }
+        
+        .auth-footer {
+            margin-top: 25px;
+            font-size: 0.9rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .auth-section {
+            padding: 80px 0 30px;
+        }
+        
+        .auth-container {
+            margin: 0 8px;
+        }
+        
+        .auth-form {
+            padding: 25px 15px;
+        }
+        
+        .auth-header h2 {
+            font-size: 1.8rem;
+        }
+        
+        .auth-header p {
+            font-size: 0.95rem;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+        
+        .social-button {
+            padding: 10px 15px;
+            font-size: 0.9rem;
+        }
+        
+        .form-submit .cta-button {
+            padding: 12px;
+            font-size: 1rem;
+        }
+    }
+
+    @media (max-width: 360px) {
+        .auth-section {
+            padding: 70px 0 20px;
+        }
+        
+        .auth-form {
+            padding: 20px 12px;
+        }
+        
+        .auth-header h2 {
+            font-size: 1.6rem;
+        }
+        
+        .social-login p::before,
+        .social-login p::after {
+            width: 20%;
+        }
+        
+        .social-button {
+            padding: 8px 12px;
+            font-size: 0.85rem;
+        }
+    }
+
+    @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-15px); }
+        100% { transform: translateY(0px); }
+    }
+    .registration-success-card {
+    position: fixed;
+    top: 100px;
+    right: 20px;
+    background: #16a34a;
+    color: white;
+    border-radius: 12px;
+
+    padding: 20px;
+    max-width: 380px;
+    z-index: 1000;
+    animation: slideInRight 0.5s ease-out;
+    border-left: 4px solid #15803d;
+}
+
+.success-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+}
+
+.success-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.success-message h4 {
+    margin: 0 0 5px 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.success-message p {
+    margin: 0;
+    font-size: 0.9rem;
+    opacity: 0.9;
+    line-height: 1.4;
+}
+
+.close-message {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 16px;
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+    flex-shrink: 0;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.close-message:hover {
+    opacity: 1;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+.registration-success-card.hiding {
+    animation: slideOutRight 0.5s ease-in forwards;
+}
+
+/* Responsive adjustments for the success card */
+@media (max-width: 768px) {
+    .registration-success-card {
+        top: 15px;
+        right: 15px;
+        left: 15px;
+        max-width: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .registration-success-card {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        padding: 15px;
+    }
+    
+    .success-content {
+        gap: 12px;
+    }
+    
+    .success-message h4 {
+        font-size: 1rem;
+    }
+    
+    .success-message p {
+        font-size: 0.85rem;
+    }
+}
+</style>
+
+<section class="auth-section">
+    {% for message in messages %}
+        {% if 'registration_success' in message.tags %}
+        <div class="registration-success-card" id="registrationSuccessCard">
+            <div class="success-content">
+                <div class="success-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="success-message">
+                    <h4>Registration Submitted</h4>
+                    <p>{{ message }}</p>
+                </div>
+                <button class="close-message" onclick="closeRegistrationSuccess()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+        {% endif %}
+    {% endfor %}
+    <div class="auth-container">
+        <!-- <div class="auth-image">
+            <img src="{% static 'image/reg.webp' %}" alt="Login">
+        </div> -->
+        <div class="auth-form">
+            <div class="auth-header">
+                <h2>Welcome</h2>
+                <p>Login to your DM Core account</p>
+            </div>
+            
+            {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    {% if 'registration_success' not in message.tags %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="username">Username or Email</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="form-group password-toggle">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required>
+                    <button type="button" class="toggle-password" id="togglePassword" style="padding-top: 35px;">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+                <div class="form-options">
+                    <div class="remember-me">
+                        <!-- <input type="checkbox" id="remember" name="remember">
+                        <label for="remember">Remember me</label> -->
+                    </div>
+                    <a href="/forgot-password">Forgot password?</a>
+                </div>
+                <div class="form-submit">
+                    <button type="submit" class="cta-button">Login to Account</button>
+                </div>
+            </form>
+
+            <div class="social-login">
+                <p>Don't have an Account?</p>
+                <div class="social-buttons">
+                    <a href="{% url 'business_register' %}" class="social-button business">
+                        <i class="fas fa-user-plus"></i>
+                        <span>Business Register</span>
+                    </a>
+                    <a href="{% url 'employee_register' %}" class="social-button employee">
+                        <i class="fas fa-id-card"></i>
+                        <span>Employee Register</span>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="auth-footer">
+                <p>Register as Business distributor? <a href="">Sign Up</a></p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+      
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('password');
+        
+        if (togglePassword && passwordInput) {
+            togglePassword.addEventListener('click', function() {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                
+             
+                const icon = this.querySelector('i');
+                if (type === 'password') {
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                } else {
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                }
+            });
+        }
+
+       
+        const authContainer = document.querySelector('.auth-container');
+        if (authContainer) {
+            authContainer.style.opacity = '0';
+            authContainer.style.transform = 'translateY(30px)';
+            
+            setTimeout(() => {
+                authContainer.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
+                authContainer.style.opacity = '1';
+                authContainer.style.transform = 'translateY(0)';
+            }, 300);
+        }
+
+    
+        const formInputs = document.querySelectorAll('.form-group input');
+        formInputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.classList.add('focused');
+            });
+            
+            input.addEventListener('blur', function() {
+                if (this.value === '') {
+                    this.parentElement.classList.remove('focused');
+                }
+            });
+        });
+    });
+
+    function closeRegistrationSuccess() {
+    const card = document.getElementById('registrationSuccessCard');
+    if (card) {
+        card.classList.add('hiding');
+        setTimeout(() => {
+            card.remove();
+        }, 10000);
+    }
+}
+
+// document.addEventListener('DOMContentLoaded', function() {
+//     const successCard = document.getElementById('registrationSuccessCard');
+//     if (successCard) {
+//         setTimeout(() => {
+//             closeRegistrationSuccess();
+//         }, 8000);
+//     }
+
+// });
+</script>
+{% endblock %}

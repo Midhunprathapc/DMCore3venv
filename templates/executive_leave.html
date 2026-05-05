@@ -1,0 +1,361 @@
+{% extends 'executive_base.html' %}
+{% block content %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+
+<style>
+    .form-control-dark,.form-control-dark:active,.form-control-dark:hover,.form-control-dark:focus{
+        outline-color: rgba(146, 140, 140, 0.288);
+        border-color: rgba(199, 199, 199, 0.341);
+        background-color: rgba(0, 0, 0, 0.173);
+        color: white;
+    
+    }
+   
+    .form-control-dark::placeholder {
+        color: #888; /* A more suitable light gray for dark backgrounds */
+        opacity: 1; /* For Firefox compatibility */
+    }
+    textarea{
+        height: 8rem;
+        resize: none;
+
+    }
+    .h-full{
+        height: 100%;
+    }
+   
+    .form-group{
+        margin-bottom: 10px;
+    }
+    .border{
+        border-color: #8888888f !important;
+    }
+    th{
+        text-wrap: nowrap;
+    }
+    .nowrap{
+        text-wrap: nowrap;
+    }
+    th,td{
+        color: #ffffffa5 !important;
+    }
+    .w-75{
+    width: 75% !important;
+  }
+
+  .alert-success {
+    color: rgb(45, 247, 45);
+     border: rgba(55, 255, 0, 0.985);
+    background-color: #4c4b4bb6;
+}
+.alert-error {
+    color: rgb(247, 27, 27);
+    border: rgba(255, 0, 0, 0.521);
+    background-color: #4c4b4bb6;
+}
+  @media (width < 500px) {
+    .w-75{
+
+      width: 100% !important;}
+
+    .w-100{
+        width: fit-content !important;
+    }
+    
+  }
+
+  
+
+.rel{
+    position: relative;
+}
+
+ .alert-success {
+    color: rgb(45, 247, 45);
+     border: rgba(55, 255, 0, 0.985);
+    background-color: #4c4b4bb6;
+}
+.alert-error {
+    color: rgb(247, 27, 27);
+    border: rgba(255, 0, 0, 0.521);
+    background-color: #4c4b4bb6;
+}
+
+.error{
+    position: absolute;
+    top:-10px;
+    right:0px;
+    width: fit-content;
+
+}
+@media(width < 500px){
+    .error{
+        top:20px;
+        z-index: 10;
+        font-size: small;
+
+    }
+}
+.schedule-alert{
+    animation: alertFadeIn 0.35s ease-out;
+    
+}
+
+.hover{
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out;
+}
+
+.hover:hover{
+    transform: translateY(-5px);
+    background-color: #9d9b9b2b !important;
+}
+.movedown{
+    transform: translateY(4px);
+}
+
+.i{
+    position: absolute;
+    right:20px;
+    font-size: 30px;
+    transform: rotate(-45deg);
+}
+@keyframes alertFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+</style>
+
+
+
+<div class="container-fluid rel">
+
+    <div class=" error">
+    {% if messages %}
+    <div class="row mb-4">
+        <div class="col-12">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible   fade show schedule-alert" role="alert" >
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+     <!--  bread crumbs -->
+      <div class=" text-white mb-4">
+        <small><a href="{% url 'executive_dashboard' %}" class="text-decoration-none text-white-50">Dashboard</a></small> / <small> Leave</small>
+      </div>
+      
+      <div class="row">
+        <div class="col-sm-4 mb-3">
+            <div class="card bg-dark text-white hover" id="togle_apply">
+                <div class="card-header">Apply Leave</div>
+                <div class="card-body text-white-50 rel" ><small>Apply here for leaves</small> <i class="fa-solid fa-arrow-right-long i" style="color: rgb(38, 157, 252);"></i></div>
+            </div>
+
+            <div class="card bg-dark text-white mt-3 hover" id="togle_leave">
+                <div class="card-header">View Leave</div>
+                <div class="card-body text-white-50 rel"><small>View your all leaves status</small> <i class="fa-solid fa-arrow-right-long i" style="color: rgb(38, 157, 252);"></i></div>
+
+            </div>
+        </div>
+
+
+        <div class="col-sm-8">
+            <!-- Leave form -->
+
+            <div class="card bg-dark text-white p-3 {% if show_view_leave %}d-none{% endif %}" id="apply_Leave">
+                <h4>Leave Apply</h4>
+
+                <form action="{% url 'executive_leave' %}" method="post" enctype="multipart/form-data " class="p-2">
+                    {% csrf_token %}
+
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="">From Date</label>
+                                <input type="date" name="from_date" id="from_date" class="form-control form-control-dark " required>
+
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="">To Date</label>
+                                <input type="date" name="to_date" id="to_date" class="form-control form-control-dark " required>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group ">
+                        <label for="">Leave Type</label>
+                        
+                            <div class="border p-2 rounded ">
+                                <div class="">
+                                <div class="form-check form-check-inline " id="half_leave">
+                                <input class="form-check-input" type="radio" name="leave_type" id="leave_type1" value="Half day" required>
+                                <label class="form-check-label" for="leave_type">Half day</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="leave_type" id="leave_type2" value="Full day" required>
+                                <label class="form-check-label" for="leave_type">Full day</label>
+                            </div>
+                            </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="">Reason</label>
+                            <textarea name="reason" id="reason" class="form-control form-control-dark " placeholder="Reason.." required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="">Leave Request File</label>
+                            <input type="file" name="file" class="form-control form-control-dark ">
+                        </div>
+
+                        <div class="d-flex justify-content-center"><button type="submit" class="btn btn-primary " value="Leave Request" required>Leave Request</button></div>
+                        <input type="text" value="no" name="search" hidden>
+                
+                </form>
+            </div>
+
+            <!-- view leave -->
+
+            <div class="card p-3 bg-dark text-white {% if not show_view_leave %}d-none{% endif %}" id="view_Leave">
+                <h4>My Leave</h4>
+
+
+                <form action="{% url 'executive_leave' %}" method="post">
+                    {% csrf_token %}
+                <div class="row">
+                    
+                    <div class="col-sm-5">
+                        <div class="form-group">
+                            <label for="">From Date</label>
+                            <input type="date" class="form-control form-control-dark " name="from_date" id="from_date2">
+                        </div>
+                    </div>
+                    <div class="col-sm-5">
+                        <div class="form-group">
+                            <label for="">To Date</label>
+                            <input type="date" class="form-control form-control-dark " name="to_date" id="to_date2">
+                        </div>
+                    </div>
+                    <div class="col-sm-2 d-flex p-0 align-items-center justify-content-center  ">
+                           <div class="form-group pt-3 w-100 movedown ">
+
+                             <button type="submit" class="btn btn-outline-primary d-block  w-75"><i class="fa-solid fa-magnifying-glass" style="color: rgb(38, 157, 252);"></i> search </button>
+
+                           </div>
+                        </div>
+                </div>
+                <input type="text" hidden value="yes" name="search">
+                </form>
+
+                <div class="table-responsive text-justify mt-3 " style="font-size: small; ">
+                    <table class="table table-dark">
+                        <thead>
+                            <tr>
+                                <th>Si No</th>
+                                <th>From Date</th>
+                                <th>To Date</th>
+                                <th>Leave Type</th>
+                                <th style="min-width: 250px;">Reason</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if leave %}
+                            {% for j in leave reversed %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td class="nowrap">{{j.start_date}}</td>
+                                <td class="nowrap">{{j.end_date}}</td>
+                                <td  class="nowrap">{{j.leave_type}}</td>
+                                <td>{{j.leave_reason}}</td>
+                                <td>{% if j.leave_status == 0 %} <button class="btn btn-outline-warning btn-sm">Pending</button> {% elif j.leave_status == 1 %} <button class="btn btn-outline-primary btn-sm">Approved</button> {% else %} <button class="btn btn-outline-danger btn-sm">Rejected</button>{% endif %}</td>
+
+                            </tr>
+                            {% endfor %}
+                            {% endif %}
+                        </tbody>
+
+
+                    </table>
+                </div>
+
+                        
+
+            </div>
+        </div>
+      </div>
+
+
+</div>
+
+<script>
+    const today = new Date().toISOString().split("T")[0];
+    const fromDateInput = document.getElementById("from_date");
+    const toDateInput = document.getElementById("to_date");
+
+    fromDateInput.setAttribute("min", today);
+    toDateInput.setAttribute("min", today);
+
+    function hideCheckBox() {
+        if (!fromDateInput.value || !toDateInput.value) {
+            $('#half_leave').removeClass('d-none');
+            return;
+        }
+
+        const startDate = new Date(fromDateInput.value);
+        const endDate = new Date(toDateInput.value);
+        const diffInDays = (endDate - startDate) / (1000 * 60 * 60 * 24);
+
+        if (diffInDays >= 1) {
+            $('#half_leave').addClass('d-none');
+        } else {
+            $('#half_leave').removeClass('d-none');
+        }
+    }
+
+    fromDateInput.addEventListener("change", hideCheckBox);
+    toDateInput.addEventListener("change", hideCheckBox);
+
+
+
+togle_apply.addEventListener("click", function () {
+    apply_Leave.classList.remove("d-none");
+    view_Leave.classList.add("d-none");
+})
+togle_leave.addEventListener("click", function () {
+    view_Leave.classList.remove("d-none");
+    apply_Leave.classList.add("d-none");
+})
+
+
+function autoDismissAlerts() {
+    document.querySelectorAll('.schedule-alert').forEach((alert) => {
+        const delay = alert.classList.contains('alert-success') ? 3000 : 5000;
+
+        setTimeout(() => {
+            if (alert.classList.contains('show')) {
+                bootstrap.Alert.getOrCreateInstance(alert).close();
+            }
+        }, delay);
+    });
+}
+
+autoDismissAlerts();
+</script>
+{% endblock %}

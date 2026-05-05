@@ -1,0 +1,385 @@
+{% extends "head_base.html" %}
+{% block title %}Tasks for {{ lead.name }}{% endblock %}
+
+{% block content %}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb breadcrumb-custom bg-transparent p-0 mb-3">
+        <li class="breadcrumb-item">
+            <a href="{% url 'head_dashboard' %}" class="bread-link">Dashboard</a>
+        </li>
+        <li class="breadcrumb-item active text-secondary">/</li>
+        <li class="breadcrumb-item active text-secondary">Task Allocated - Team Lead</li>
+    </ol>
+</nav>
+
+<div class="dmh-card">
+    <div class="dmh-header">
+        <h5>Task Allocated - Team Lead</h5>
+        <input type="text" id="searchInput" class="dmh-search" placeholder="Search...">
+    </div>
+
+    {% if allocations %}
+    <div class="table-responsive dmh-table-wrap">
+        <table class="dmh-table" id="taskTable">
+            <thead>
+                <tr>
+                    <th>Delete/No</th>
+                    <th>Assigned Date</th>
+                    <th>Start Date</th>
+                    <th>Due Date</th>
+                    <th>Target</th>
+                    <th>Work Type</th>
+                    <th>Task List</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for a in allocations %}
+            <tr>
+                <td>
+                    <form method="POST" action="{% url 'delete_work_allocation' a.id %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger btn-sm">
+                            Assigned Work - {{ forloop.counter }}
+                        </button>
+                    </form>
+                </td>
+                <td>{{ a.allocated_date|date:"M d, Y" }}</td>
+                <td>{{ a.start_date|date:"M d, Y" }}</td>
+                <td>{{ a.end_date|date:"M d, Y" }}</td>
+                <td>{{ a.target }}</td>
+                <td>{{ a.work_type|capfirst }}</td>
+                <td>
+                    <ul class="task-mini-list">
+                        {% if a.task %}
+                            <li>
+                                {{ a.task.task_name }}
+                                <a href="{% url 'delete_task_allocation' a.id %}" class="delete-task-icon" title="Delete task" onclick="return confirm('Delete this task?')">✖</a>
+                            </li>
+                        {% endif %}
+
+                            {% if a.lead_collection %}
+<li class="lead-category">
+    <div class="lead-sub-item">
+
+        <span class="category-text">
+            ↳ {{ a.display_name }}
+        </span>
+
+        <a href="#" class="edit-btn"
+           data-bs-toggle="modal"
+           data-bs-target="#editLeadModal{{ a.id }}">✏️</a>
+
+        <a href="{% url 'delete_category_allocation' a.id %}" 
+   class="delete-task-icon"
+   onclick="return confirm('Delete this category?')">
+   ✖
+</a>
+    </div>
+</li>
+{% endif %}
+                    </ul>
+                </td>
+            </tr>
+
+            {% if a.lead_collection %}
+            
+
+<div class="modal fade" id="editLeadModal{{ a.id }}" tabindex="-1"
+     aria-labelledby="editLeadModalLabel{{ a.id }}" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content bg-dark text-white">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editLeadModalLabel{{ a.id }}">Edit Lead Category</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="POST" action="{% url 'edit_lead_collection' a.id %}" enctype="multipart/form-data">
+    {% csrf_token %}
+        <div class="modal-body">
+
+          <div class="mb-3">
+            <label class="form-label">Team Lead</label>
+            <input type="text" class="form-control bg-dark text-white" value="{{ a.team_lead.name }}" readonly>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Lead Category</label>
+            <input type="text" class="form-control bg-dark text-white" name="collection_head" value="{{ a.display_name }}" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Total Target</label>
+            <input type="number" name="target" class="form-control bg-dark text-white" value="{{ a.target }}">
+          </div>
+ 
+          <div class="mb-3">
+            <label class="form-label">Start Date</label>
+            <input type="date" name="start_date" class="form-control bg-dark text-white" value="{{ a.start_date|date:'Y-m-d' }}">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">End Date</label>
+            <input type="date" name="end_date" class="form-control bg-dark text-white" value="{{ a.end_date|date:'Y-m-d' }}">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea name="description"class="form-control bg-dark text-white">{{ a.description }}</textarea>
+          </div>
+
+          <div class="mb-3">
+
+<label class="form-label">
+<input type="checkbox"
+       id="instaCheck{{ a.id }}"
+       onchange="toggleInstagram({{ a.id }})"
+       {% if a.instagram %}checked{% endif %}>
+Instagram
+</label>
+
+<input type="text"
+       name="instagram"
+       id="instaInput{{ a.id }}"
+       class="form-control bg-dark text-white mt-2"
+       value="{{ a.instagram }}"
+       {% if not a.instagram %}style="display:none"{% endif %}>
+
+</div>
+
+          <div class="mb-3">
+
+<label class="form-label">
+<input type="checkbox"
+       id="fbCheck{{ a.id }}"
+       onchange="toggleFacebook({{ a.id }})"
+       {% if a.facebook %}checked{% endif %}>
+Facebook
+</label>
+
+<input type="text"
+       name="facebook"
+       id="fbInput{{ a.id }}"
+       class="form-control bg-dark text-white mt-2"
+       value="{{ a.facebook }}"
+       {% if not a.facebook %}style="display:none"{% endif %}>
+
+</div>
+
+          <div class="mb-3">
+            <label class="form-label">File</label>
+            <input type="file" name="file" class="form-control bg-dark text-white">
+            {% if a.file %}
+<p class="mt-2">
+Current file:
+<a href="{{ a.file.url }}" target="_blank">
+View File
+</a>
+</p>
+{% endif %}
+          </div>
+        </div>
+        <div class="modal-footer">
+            <button type="reset" class="btn btn-warning">Clear</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Back</button>
+            <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-box">🚫 No tasks assigned to this team lead</div>
+    {% endif %}
+
+
+
+
+
+<script>
+document.getElementById("searchInput").addEventListener("keyup", function() {
+    let value = this.value.toLowerCase()
+    let rows = document.querySelectorAll("#taskTable tbody tr")
+    rows.forEach(row => {
+        row.style.display = row.innerText.toLowerCase().includes(value) ? "" : "none"
+    })
+})
+</script>
+
+
+<style>
+
+.dmh-card{
+background:#111827;
+border-radius:14px;
+padding:25px;
+color:#cbd5e1;
+box-shadow:0 10px 30px rgba(0,0,0,.35);
+}
+
+.dmh-header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:20px;
+flex-wrap:wrap;
+gap:10px;
+}
+
+.dmh-header h5{
+color:white;
+font-weight:600;
+}
+
+.dmh-search{
+background:#1f2937;
+border:none;
+padding:10px 14px;
+border-radius:8px;
+color:white;
+width:260px;
+}
+
+.dmh-table-wrap{
+max-height:520px;
+overflow:auto;
+}
+
+.dmh-table{
+width:100%;
+border-collapse:collapse;
+min-width:800px;
+}
+
+.dmh-table thead{
+background:#0f172a;
+position:sticky;
+top:0;
+}
+
+.dmh-table th{
+padding:14px;
+color:#94a3b8;
+font-size:13px;
+text-transform:uppercase;
+}
+
+.dmh-table td{
+padding:16px 14px;
+border-top:1px solid rgba(255,255,255,0.05);
+}
+
+.dmh-table tbody tr:hover{
+background:#0b1220;
+}
+
+.task-mini-list{
+margin:0;
+padding-left:18px;
+font-size:13px;
+}
+
+.delete-btn{
+color:#ef4444;
+font-size:15px;
+}
+
+.delete-btn:hover{
+transform:scale(1.2);
+color:#f87171;
+}
+
+.due-date{
+color:#fb7185;
+font-weight:500;
+}
+
+.empty-box{
+text-align:center;
+padding:40px;
+font-size:18px;
+color:#64748b;
+}
+
+.bread-link{
+text-decoration:none;
+font-weight:600;
+color:#60a5fa;
+}
+
+@media(max-width:768px){
+
+.dmh-search{
+width:100%;
+}
+
+.dmh-header{
+flex-direction:column;
+align-items:flex-start;
+}
+
+}
+.delete-task-icon {
+    color: #ef4444;   
+    font-size: 14px;  
+    text-decoration: none;
+    margin-left: 6px; 
+}
+
+.delete-task-icon:hover {
+    transform: scale(1.2);
+    color: #f87171;
+}
+.lead-sub-item{
+margin-left:25px;
+padding:4px 8px;
+display:flex;
+align-items:center;
+gap:8px;
+margin-top:4px;
+}
+
+.category-text{
+color:#94a3b8;
+font-size:13px;
+}
+.task-mini-list{
+list-style:none;
+padding-left:0;
+margin:0;
+}
+</style>
+<script>
+
+function toggleInstagram(id){
+
+    let input = document.getElementById("instaInput"+id)
+    let check = document.getElementById("instaCheck"+id)
+
+    if(check.checked){
+        input.style.display = "block"
+    }else{
+        input.style.display = "none"
+        input.value = ""      // ⭐ VERY IMPORTANT
+    }
+}
+
+function toggleFacebook(id){
+
+    let input = document.getElementById("fbInput"+id)
+    let check = document.getElementById("fbCheck"+id)
+
+    if(check.checked){
+        input.style.display = "block"
+    }else{
+        input.style.display = "none"
+        input.value = ""      // ⭐ VERY IMPORTANT
+    }
+}
+
+</script>
+
+{% endblock %}

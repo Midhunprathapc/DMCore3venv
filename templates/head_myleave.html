@@ -1,0 +1,368 @@
+{% extends "head_base.html" %}
+
+{% block title %}DigitalMarketing Head MyLeave{% endblock %}
+
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+    .schedule-container {
+        background: #1e1f26;
+        border-radius: 8px;
+        padding: 20px;
+        color: #fff;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        position: relative;
+        z-index: 1;
+    }
+    .schedule-header {
+        border-bottom: 1px solid #2a2b33;
+        padding-bottom: 15px;
+        margin-bottom: 20px;
+    }
+    .action-btn {
+        border-radius: 20px;
+        padding: 6px 16px;
+        font-size: 14px;
+        border: 1px solid;
+        transition: all 0.3s ease;
+    }
+    .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    .search-input {
+        background: #2a2b33;
+        border: 1px solid #3a3b44;
+        color: #fff;
+        border-radius: 6px;
+    }
+    .search-input:focus {
+        background: #2a2b33;
+        border-color: #007bff;
+        color: #fff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    .modal-dark .modal-content {
+        background: #1e1f26;
+        color: #fff;
+        border: 1px solid #2a2b33;
+    }
+    .modal-dark .modal-header {
+        border-bottom: 1px solid #2a2b33;
+    }
+    .modal-dark .modal-footer {
+        border-top: 1px solid #2a2b33;
+    }
+    .form-control-dark {
+        background: #2a2b33;
+        border: 1px solid #3a3b44;
+        color: #fff;
+    }
+    .form-control-dark:focus {
+        background: #2a2b33;
+        border-color: #007bff;
+        color: #fff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    ::placeholder {
+        color: #999 !important;
+    }
+    .completed-text {
+        color: red !important;
+        text-decoration: line-through !important;
+    }
+</style>
+
+{% if messages %}
+    <script>
+        {% for message in messages %}
+            Swal.fire({
+                icon: "{{ message.tags }}",
+                title: "{{ message.tags|title }}",
+                text: "{{ message }}",
+                timer: 2000,
+                showConfirmButton: false
+            });
+        {% endfor %}
+    </script>
+{% endif %}
+
+<div class="container-fluid py-3">
+    <div class="text-white mb-4">
+        <small class="">Dashboard / </small>
+        <small class="text-white-50">My Leave List</small>
+    </div>
+
+    <div class="schedule-container">
+        <div class="schedule-header">
+            <div class="row align-items-center">
+                <div class="col-md-3 mt-2">
+                    <i class="fas fa-calendar-alt me-2"></i>My Applied Leave List
+                </div>
+                <div class="col-md-2"></div>
+                <div class="col-md-4 mt-2">
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-primary action-btn" id="allLeaveBtn">
+                            <i class="fas fa-calendar-day me-1"></i> All Leave
+                        </button>
+                        <div class="col-md-2"></div>
+                        <button class="btn btn-outline-success action-btn" id="openLeaveModalBtn">
+                            <i class="fas fa-calendar-plus me-1"></i> Apply Leave
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-3 text-end mt-2">
+                    <input type="text" class="form-control form-control-sm search-input" id="searchfilter" placeholder="Search here...">
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-12 col-md-8 col-lg-6">
+                <div class="row g-2 g-md-3 align-items-end">
+                    <div class="col-12 col-sm-5">
+                        <input type="date" class="form-control form-control-sm form-control-dark" id="startDate">
+                    </div>
+                    <div class="col-12 col-sm-5">
+                        <input type="date" class="form-control form-control-sm form-control-dark" id="endDate">
+                    </div>
+                    <div class="col-12 col-sm-2">
+                        <button class="btn btn-primary btn-sm w-50" id="filterBtn">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Leave Table -->
+        <div class="table-responsive">
+            <table class="table table-sm table-dark">
+                <thead>
+                    <tr>
+                        <th>Status</th>
+                        <th>From Date</th>
+                        <th>To Date</th>
+                        <th>Leave Type</th>
+                        <th>Reason</th>
+                        <th>Approved/Rejected Date</th>
+                    </tr>
+                </thead>
+                <tbody id="LeaveTableBody">
+                    {% for e in empl %}
+                    <tr>
+                        <td>
+                            {% if e.leave_status == 0 %}
+                            <button class="btn btn-outline-primary">Pending</button>
+                            {% elif e.leave_status == 1 %}
+                            <button class="btn btn-outline-success">Approved</button>
+                            {% else %}
+                            <button class="btn btn-outline-danger">Rejected</button>
+                            {% endif %}
+                        </td>
+                        <td>{{ e.start_date }}</td>
+                        <td>{{ e.end_date }}</td>
+                        <td>{{ e.leave_type }}</td>
+                        <td>{{ e.leave_reason }}</td>
+                        <td>{{ e.leave_statuChange_date }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Leave Modal -->
+<div class="modal fade modal-dark" id="LeaveModal" tabindex="-1" aria-labelledby="LeaveModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title" id="LeaveModalLabel">
+                    <i class="fas fa-calendar-plus me-2"></i>Leave Apply Form
+                </h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="leaveForm" method="post" action="{% url 'save_leave' %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label class="form-label">From Date*</label>
+                            <input type="date" class="form-control form-control-dark" id="leaveFromDate" name="leave_from_date" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">To Date*</label>
+                            <input type="date" class="form-control form-control-dark" id="leaveToDate" name="leave_to_date" required>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <label for="" class="form-label">Leave Type*</label>
+                        </div>
+                        <div class="col-md-6" id="halfDayWrapper">
+                            <input type="radio" name="leave_type" value="Half Day" id="halfDay" class=""> Half Day
+                        </div>
+                        <div class="col-md-6">
+                            <input type="radio" name="leave_type" value="Full Day" id="fullDay" class=""> Full Day
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <label class="form-label">Leave for?*</label>
+                            <textarea class="form-control form-control-dark" id="leaveFor" name="leave_for" placeholder="Add reason..." rows="4" style="resize: none;" required></textarea>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <label class="form-label">Request Form*</label>
+                            <input type="file" class="form-control form-control-dark" name="leave_file" id="" required>
+                        </div>
+                    </div>
+                    <div class="text-center mb-4 mt-4">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" id="clearBtn">Clear</button>
+                        <button type="submit" class="btn btn-outline-success btn-sm">Apply Leave</button>
+                        <button type="button" class="btn btn-outline-danger btn-sm" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Open Leave Modal
+    document.getElementById("openLeaveModalBtn").addEventListener("click", function () {
+        var modal = new bootstrap.Modal(document.getElementById("LeaveModal"));
+        modal.show();
+    });
+
+    // Disable past dates
+    document.addEventListener("DOMContentLoaded", function () {
+        let today = new Date().toISOString().split("T")[0];
+        document.getElementById("leaveFromDate").setAttribute("min", today);
+        document.getElementById("leaveToDate").setAttribute("min", today);
+    });
+
+    // Clear button → Reset modal form
+    document.getElementById("clearBtn").addEventListener("click", function () {
+        // Reset form
+        document.getElementById("leaveForm").reset();
+        // Reapply today's min-date (because reset() removes it visually)
+        let today = new Date().toISOString().split("T")[0];
+        document.getElementById("leaveFromDate").setAttribute("min", today);
+        document.getElementById("leaveToDate").setAttribute("min", today);
+    });
+
+    // Reset modal when closed
+    document.getElementById("LeaveModal").addEventListener("hidden.bs.modal", function () {
+        // Reset the form
+        document.getElementById("leaveForm").reset();
+        // Reapply today's min date
+        let today = new Date().toISOString().split("T")[0];
+        document.getElementById("leaveFromDate").setAttribute("min", today);
+        document.getElementById("leaveToDate").setAttribute("min", today);
+    });
+</script>
+<script>
+function toggleHalfDayOption() {
+    let fromDate = document.getElementById("leaveFromDate").value;
+    let toDate = document.getElementById("leaveToDate").value;
+    let halfDayWrapper = document.getElementById("halfDayWrapper");
+    let halfDayRadio = document.getElementById("halfDay");
+    let fullDayRadio = document.getElementById("fullDay");
+    // If both dates are selected
+    if (fromDate && toDate) {
+        if (fromDate !== toDate) {
+            // Hide Half Day option
+            halfDayWrapper.style.display = "none";
+            halfDayRadio.checked = false;       // Uncheck if active
+            fullDayRadio.checked = true;        // Default to full day
+        } else {
+            // Show Half Day option again
+            halfDayWrapper.style.display = "block";
+        }
+    }
+}
+// Trigger check on date change
+document.getElementById("leaveFromDate").addEventListener("change", toggleHalfDayOption);
+document.getElementById("leaveToDate").addEventListener("change", toggleHalfDayOption);
+// Also check when the modal opens
+document.getElementById("LeaveModal").addEventListener("shown.bs.modal", toggleHalfDayOption);
+
+// Search filter
+document.getElementById("searchfilter").addEventListener("keyup", function () {
+    let searchValue = this.value.toLowerCase().trim();
+    let rows = document.querySelectorAll("#LeaveTableBody tr");
+
+    rows.forEach(row => {
+        let text = row.innerText.toLowerCase();
+        
+        if (text.includes(searchValue)) {
+            row.style.display = "";
+        } else {
+            row.style.display = "none";
+        }
+    });
+});
+
+// Show all leave + clear date filters
+document.getElementById("allLeaveBtn").addEventListener("click", function () {
+    // Clear the date inputs
+    document.getElementById("startDate").value = "";
+    document.getElementById("endDate").value = "";
+    // Show all rows in the table
+    let rows = document.querySelectorAll("#LeaveTableBody tr");
+    rows.forEach(row => {
+        row.style.display = "";
+    });
+});
+
+// Filter by startDate and endDate
+function normalize(d) {
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+function parseAnyDate(dateStr) {
+    if (!dateStr) return null;
+    let cleaned = dateStr.trim();
+    // Remove commas (e.g., "Jan 15, 2025" → "Jan 15 2025")
+    cleaned = cleaned.replace(/,/g, "");
+    // CASE 1: "15 Jan 2025" or "Jan 15 2025"
+    if (/[a-zA-Z]/.test(cleaned)) {
+        return new Date(cleaned); 
+    }
+    // Split using "-", "/", or space
+    let parts = cleaned.split(/[-/\s]+/);
+    if (parts.length === 3) {
+        let [a, b, c] = parts;
+        // CASE 2: "YYYY-MM-DD" or "YYYY/MM/DD"
+        if (a.length === 4) {
+            return new Date(`${a}-${b}-${c}`);
+        }
+        // CASE 3: "DD-MM-YYYY" or "DD/MM/YYYY"
+        if (c.length === 4) {
+            return new Date(`${c}-${b}-${a}`);
+        }
+    }
+    // Fallback
+    return new Date(cleaned);
+}
+document.getElementById("filterBtn").addEventListener("click", function () {
+    let startDate = document.getElementById("startDate").value;
+    let endDate = document.getElementById("endDate").value;
+    let start = startDate ? normalize(new Date(startDate)) : null;
+    let end = endDate ? normalize(new Date(endDate)) : null;
+    let rows = document.querySelectorAll("#LeaveTableBody tr");
+    rows.forEach(row => {
+        let rowDateText = row.cells[1].innerText.trim(); // from date column
+        let rowDate = normalize(parseAnyDate(rowDateText));
+        let show = true;
+        if (start && rowDate < start) show = false;
+        if (end && rowDate > end) show = false;
+        row.style.display = show ? "" : "none";
+    });
+});
+
+</script>
+{% endblock %}

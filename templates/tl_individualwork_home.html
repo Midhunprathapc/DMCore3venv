@@ -1,0 +1,49 @@
+{% extends "teamlead_base.html" %}
+
+{% block title %}Team Lead Work Dashboard{% endblock %}
+
+
+
+{% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb breadcrumb-custom bg-transparent p-0 mb-3">
+        <li class="breadcrumb-item">
+            <a href="{% url 'teamlead_dashboard' %}" class="text-secondary fw-bold" style="text-decoration: none">Dashboard</a>
+        </li>
+         
+        <li class="breadcrumb-item active text-secondary" aria-current="page">
+            Work
+        </li>
+    </ol>
+</nav>
+<div class="container-fluid mt-4">
+    <div class="row g-4">
+
+        
+      
+        <div class="col-md-4">
+            <a href="{% url 'tl_individualwork' %}" style="text-decoration: none; color:white;">
+            <div class="dashboard-card">
+                    <i class="fas fa-user-check card-icon" style="color: #4caf50;"></i>
+                    <h5 class="card-title">New Works</h5>
+                    <p class="card-description">View All your Assigned Works and Accept them to start work.</p>
+                </div>
+            </a>
+        </div>
+      
+        <div class="col-md-4">
+            <a href="{% url 'tl_task_ongoing' %}" style="text-decoration: none; color:white;">
+                <div class="dashboard-card">
+                    <i class="fas fa-hourglass-half card-icon" style="color: #ff5722;"></i>
+                    <h5 class="card-title">Ongoing Works</h5>
+                    <p class="card-description">Add Daily Works and view your progress details of your ongoing works</p>
+                </div>
+            </a>
+        </div>
+
+
+    </div>
+
+    </div>
+</div>
+{% endblock %}
