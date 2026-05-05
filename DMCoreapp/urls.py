@@ -235,6 +235,8 @@ urlpatterns = [
 
    
    
+    path('tasks-to-assign/', views.tasks_to_assign_view, name='tasks_to_assign'),
+    
     re_path(r'^static/(?P<path>.*)$', serve,{'document_root': settings.STATIC_ROOT}),
    
 

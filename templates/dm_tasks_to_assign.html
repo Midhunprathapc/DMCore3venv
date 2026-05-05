@@ -1,0 +1,275 @@
+{% extends "head_base.html" %}
+{% load static %}
+{% block title %}Tasks To Assign | DM Core{% endblock %}
+
+{% block content %}
+<style>
+    .page-container {
+        background: #000000;
+        padding: 25px;
+        border-radius: 12px;
+        color: #fff;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, .35);
+    }
+
+    .page-header {
+        margin-bottom: 25px;
+    }
+
+    .page-header h5 {
+        color: #fff;
+        font-weight: 600;
+        margin-bottom: 0;
+    }
+
+    .breadcrumb-custom {
+        font-size: 14px;
+    }
+
+    .breadcrumb-item a {
+        color: #60a5fa;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .search-container {
+        margin-bottom: 20px;
+    }
+
+    .search-box {
+        width: 100%;
+        padding: 12px 20px;
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 8px;
+        color: #fff;
+        font-size: 14px;
+        transition: all 0.3s ease;
+    }
+
+    .search-box:focus {
+        outline: none;
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
+    }
+
+    .table-container {
+        overflow-x: auto;
+    }
+
+    .custom-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .custom-table th {
+        text-align: left;
+        font-size: 13px;
+        color: #94a3b8;
+        padding: 15px;
+        border-bottom: 1px solid #1e293b;
+        text-transform: capitalize;
+    }
+
+    .custom-table td {
+        padding: 15px;
+        border-bottom: 1px solid #1e293b;
+        font-size: 14px;
+        vertical-align: middle;
+    }
+
+    .custom-table tbody tr:hover {
+        background: rgba(30, 41, 59, 0.5);
+    }
+
+    .client-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .client-img {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .view-btn {
+        background: transparent;
+        border: 1px solid #3b82f6;
+        color: #3b82f6;
+        padding: 4px 12px;
+        border-radius: 4px;
+        font-size: 13px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .view-btn:hover {
+        background: #3b82f6;
+        color: #fff;
+    }
+
+    .assign-btn-sm {
+        background: transparent;
+        border: 1px solid #3b82f6;
+        color: #3b82f6;
+        padding: 6px 16px;
+        border-radius: 4px;
+        font-size: 13px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: inline-block;
+    }
+
+    .assign-btn-sm:hover {
+        background: #3b82f6;
+        color: #fff;
+    }
+
+    .task-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        font-size: 13px;
+        color: #94a3b8;
+    }
+
+    .task-list li {
+        position: relative;
+        padding-left: 0;
+        margin-bottom: 4px;
+    }
+
+    .task-list li::before {
+        position: absolute;
+        left: 0;
+        color: #64748b;
+    }
+
+    .sub-task {
+        margin-left: 15px;
+        font-size: 12px;
+        color: #64748b;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 40px;
+        color: #64748b;
+    }
+</style>
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb breadcrumb-custom bg-transparent p-0 mb-3">
+        <li class="breadcrumb-item">
+            <a href="{% url 'dm_work_allocate' %}">Work</a>
+        </li>
+
+        <li class="breadcrumb-item active text-secondary" aria-current="page">
+            Task Assign View
+        </li>
+    </ol>
+</nav>
+
+<div class="container-fluid">
+    <div class="page-container">
+        <div class="page-header">
+            <h5>Tasks To Assign</h5>
+        </div>
+
+        <div class="search-container">
+            <input type="text" id="taskSearch" placeholder="search here.." class="search-box">
+        </div>
+
+        <div class="table-container">
+            <table class="custom-table" id="assignmentTable">
+                <thead>
+                    <tr>
+                        <th>Client Name</th>
+                        <th>Start Date</th>
+                        <th>Due Date</th>
+                        <th>Team Lead</th>
+                        <th>Task Details</th>
+                        <th>Tasks</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for work in works %}
+                    {% for alloc in work.allocations %}
+                    <tr>
+                        <td>
+                            <div class="client-info">
+                                {% if work.clientId.client_profile %}
+                                <img src="{{ work.clientId.client_profile.url }}" class="client-img" alt="">
+                                {% else %}
+                                <img src="/static/default-user.png" class="client-img" alt="">
+                                {% endif %}
+                                <span>{{ work.clientId.client_name }}</span>
+                            </div>
+                        </td>
+                        <td>{{ alloc.start_date|date:"M d" }}</td>
+                        <td>{{ alloc.end_date|date:"M d, Y" }}</td>
+                        <td>
+                            <span style="font-weight: 500;">{{ alloc.team_lead.name }}</span>
+                        </td>
+                        <td>
+                            <a href="#" class="view-btn">View</a>
+                        </td>
+                        <td>
+                            <ul class="task-list" style="list-style: disc; padding-left: 12px;">
+                                <li style="color: #94a3b8; font-weight: 500;">Lead Collection
+                                    <ul style="list-style: disc; padding-left: 12px; margin-top: 5px;">
+                                        {% if alloc.lead_collection %}
+                                        <li style="color: #64748b; font-weight: normal;">
+                                            {{alloc.lead_collection.collection_head }}</li>
+
+                                        {% endif %}
+                                    </ul>
+                                </li>
+                            </ul>
+                        </td>
+                        <td>
+                            <a href="#" class="assign-btn-sm">Assign</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="empty-state">
+                            No assigned works available.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const searchInput = document.getElementById('taskSearch');
+        const table = document.getElementById('assignmentTable');
+        const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+
+        searchInput.addEventListener('keyup', function () {
+            const filter = searchInput.value.toLowerCase();
+
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                if (row.classList.contains('empty-state')) continue;
+
+                const text = row.textContent.toLowerCase();
+                if (text.includes(filter)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

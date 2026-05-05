@@ -3975,6 +3975,47 @@ def dm_work_allocate(request):
         "head_name": employee.name if employee else ""
     })
 
+def tasks_to_assign_view(request):
+    user_id = request.session.get('user_id')
+    user = LogRegister_Details.objects.filter(id=user_id).first()
+    employee = EmployeeRegister_Details.objects.filter(login=user).first()
+    
+    if not employee or request.session.get('position') != 'Digital_Marketing_Head':
+        return redirect('login')
+        
+    comp_id = employee.company.id if employee and employee.company else None
+    
+    # Fetch works that have at least one team lead allocation
+    works = WorkRegister.objects.filter(
+        wcompId_id=comp_id,
+        leadallocation__isnull=False
+    ).distinct().select_related('clientId').prefetch_related(
+        'allocated_emp', 
+        'clienttask_register_set', 
+        'leadcollection_set',
+        'leadallocation_set',
+        'leadallocation_set__team_lead'
+    )
+    
+    # Prepare data for the template
+    for work in works:
+        # Get team lead names (fallback)
+        work.team_lead_names = ", ".join([emp.name for emp in work.allocated_emp.all()])
+        
+        # Combine all tasks and lead collections into a single list
+        tasks = list(work.clienttask_register_set.all())
+        leads = list(work.leadcollection_set.all())
+        work.all_tasks = tasks + leads
+        
+        # Specific allocations for group work / lead collection
+        work.allocations = work.leadallocation_set.all()
+
+    return render(request, "dm_tasks_to_assign.html", {
+        "works": works,
+        "employee": employee,
+        "head_name": employee.name
+    })
+
 def remove_allocation(request, work_id, emp_id):
 
     user_id = request.session.get('user_id')
