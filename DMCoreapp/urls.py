@@ -236,7 +236,14 @@ urlpatterns = [
    
    
     path('tasks-to-assign/', views.tasks_to_assign_view, name='tasks_to_assign'),
+    path('executive_lead_categories/<int:id>/', views.executive_lead_categories, name='executive_lead_categories'),
+    path('executive_lead_collection/<int:id>/', views.executive_lead_collection, name='executive_lead_collection'),
+    path('executive_all_leads/', views.executive_all_leads, name='executive_all_leads'),
     
+    path('check-lead-exists/', views.check_lead_exists, name='check_lead_exists'),
+    path('check-excel-leads/', views.check_excel_leads, name='check_excel_leads'),
+    path('get-lead-activity/', views.get_lead_activity, name='get_lead_activity'),
+    path('delete_lead_row/<int:id>/', views.delete_lead_row, name='delete_lead_row'),
     re_path(r'^static/(?P<path>.*)$', serve,{'document_root': settings.STATIC_ROOT}),
    
 

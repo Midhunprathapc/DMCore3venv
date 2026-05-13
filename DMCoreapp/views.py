@@ -253,6 +253,94 @@ def check_email(request):
     return JsonResponse({'exists': exists})
 
 
+@csrf_exempt
+def check_lead_exists(request):
+    lead_collection_id = request.GET.get('lead_collection_id')
+    contact = request.GET.get('contact', '').strip()
+    email = request.GET.get('email', '').strip()
+    
+    if not lead_collection_id:
+        return JsonResponse({'exists': False})
+
+    # Build conditions: either contact matches or email matches
+    conditions = Q()
+    if contact:
+        conditions |= Q(contact=contact)
+    if email:
+        conditions |= Q(email=email)
+        
+    if not conditions:
+        return JsonResponse({'exists': False})
+
+    existing_leads = LeadRow.objects.filter(
+        Q(lead_collection_id=lead_collection_id) & conditions
+    ).select_related('collected_by')
+    
+    if existing_leads.exists():
+        details_list = []
+        for lead in existing_leads:
+            details_list.append({
+                'full_name': lead.full_name,
+                'email': lead.email or '-',
+                'contact': lead.contact,
+                'created_at': lead.created_at.strftime('%Y-%m-%d'),
+                'collected_by': lead.collected_by.name if lead.collected_by else 'Unknown'
+            })
+        return JsonResponse({
+            'exists': True,
+            'details': details_list
+        })
+    
+    return JsonResponse({'exists': False})
+
+
+
+@csrf_exempt
+def check_excel_leads(request):
+    lead_collection_id = request.POST.get('lead_collection_id')
+    file = request.FILES.get('excel_file')
+    
+    if not lead_collection_id or not file:
+        return JsonResponse({'error': 'Missing data'}, status=400)
+
+    try:
+        workbook = openpyxl.load_workbook(file)
+        sheet = workbook.active
+        duplicates = []
+        
+       
+        for excel_row in sheet.iter_rows(min_row=2, values_only=True):
+            if not excel_row[0]: continue 
+            
+            email_val = str(excel_row[1]).strip() if len(excel_row) > 1 and excel_row[1] else ""
+            contact_val = str(excel_row[2]).strip() if len(excel_row) > 2 and excel_row[2] else ""
+            
+            if not email_val and not contact_val: continue
+
+            conditions = Q()
+            if contact_val:
+                conditions |= Q(contact=contact_val)
+            if email_val:
+                conditions |= Q(email=email_val)
+
+            existing = LeadRow.objects.filter(
+                Q(lead_collection_id=lead_collection_id) & conditions
+            ).first()
+            
+            if existing:
+                duplicates.append({
+                    'full_name': existing.full_name,
+                    'email': existing.email or '-',
+                    'contact': existing.contact,
+                    'created_at': existing.created_at.strftime('%Y-%m-%d')
+                })
+        
+        return JsonResponse({'exists': len(duplicates) > 0, 'duplicates': duplicates})
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
 def head_dashboard(request):
     user_id = request.session.get('user_id')
     
@@ -3968,7 +4056,8 @@ def dm_work_allocate(request):
     ).select_related('clientId').prefetch_related('allocated_emp')
 
     for work in works:
-        work.is_allocated = work.allocated_emp.exists()  
+        work.team_leads = work.allocated_emp.filter(designation__dashboard_id='Team_Lead')
+        work.is_allocated = work.team_leads.exists()  
 
     return render(request, "dm_work_allocate.html", {
         "works": works,
@@ -3985,7 +4074,6 @@ def tasks_to_assign_view(request):
         
     comp_id = employee.company.id if employee and employee.company else None
     
-    # Fetch works that have at least one team lead allocation
     works = WorkRegister.objects.filter(
         wcompId_id=comp_id,
         leadallocation__isnull=False
@@ -3997,22 +4085,25 @@ def tasks_to_assign_view(request):
         'leadallocation_set__team_lead'
     )
     
-    # Prepare data for the template
     for work in works:
-        # Get team lead names (fallback)
-        work.team_lead_names = ", ".join([emp.name for emp in work.allocated_emp.all()])
+        work.team_leads_only = work.allocated_emp.filter(designation__dashboard_id='Team_Lead')
+        work.team_lead_names = ", ".join([emp.name for emp in work.team_leads_only])
         
-        # Combine all tasks and lead collections into a single list
         tasks = list(work.clienttask_register_set.all())
         leads = list(work.leadcollection_set.all())
         work.all_tasks = tasks + leads
         
-        # Specific allocations for group work / lead collection
-        work.allocations = work.leadallocation_set.all()
+        work.allocations = work.leadallocation_set.filter(team_lead__designation__dashboard_id='Team_Lead')
+
+    executives = EmployeeRegister_Details.objects.filter(
+        company_id=comp_id,
+        designation__dashboard_id='Executive'
+    )
 
     return render(request, "dm_tasks_to_assign.html", {
         "works": works,
         "employee": employee,
+        "executives": executives,
         "head_name": employee.name
     })
 
@@ -4089,33 +4180,51 @@ def work_allocate_page(request, id):
     )
 
     if request.method == "POST":
-        emp_id = request.POST.get("team_lead")
+        emp_ids = request.POST.getlist("team_lead")
         task_id = request.POST.get("task")
         work_type = request.POST.get("type", "single")
         lead_collection_id = request.POST.get("lead_collection")
 
-        if emp_id and task_id:
-            emp = EmployeeRegister_Details.objects.get(id=emp_id)
+        if emp_ids and task_id:
             task = ClientTask_Register.objects.get(id=task_id)
-            work.allocated_emp.add(emp)
-
             lead_collection = LeadCollection.objects.get(id=lead_collection_id) if lead_collection_id else None
+            
+            for emp_id in emp_ids:
+                emp = EmployeeRegister_Details.objects.get(id=emp_id)
+                work.allocated_emp.add(emp)
 
-            LeadAllocation.objects.create(
-                team_lead=emp,
-                work=work,
-                task=task,
-                lead_collection=lead_collection,
-                display_name=lead_collection.collection_head if lead_collection else "",
-                description=request.POST.get("description"),
-                instagram=request.POST.get("instagram_link"),
-                facebook=request.POST.get("facebook_link"),
-                file=request.FILES.get("file"),
-                target=request.POST.get("target") or 0,
-                work_type=work_type,
-                start_date=request.POST.get("start_date") or None,
-                end_date=request.POST.get("end_date") or None,
-            )
+            
+                if emp.designation.dashboard_id == 'Executive':
+                    teamleadallocation.objects.create(
+                        team_lead=employee, 
+                        assigned_to=emp,
+                        work=work,
+                        task=task,
+                        lead_collection=lead_collection,
+                        display_name=lead_collection.collection_head if lead_collection else "",
+                        description=request.POST.get("description"),
+                        target=request.POST.get("target") or 0,
+                        start_date=request.POST.get("start_date") or None,
+                        end_date=request.POST.get("end_date") or None,
+                        file=request.FILES.get("file"),
+                        status='Pending'
+                    )
+                else:
+                    LeadAllocation.objects.create(
+                        team_lead=emp,
+                        work=work,
+                        task=task,
+                        lead_collection=lead_collection,
+                        display_name=lead_collection.collection_head if lead_collection else "",
+                        description=request.POST.get("description"),
+                        instagram=request.POST.get("instagram_link"),
+                        facebook=request.POST.get("facebook_link"),
+                        file=request.FILES.get("file"),
+                        target=request.POST.get("target") or 0,
+                        work_type=work_type,
+                        start_date=request.POST.get("start_date") or None,
+                        end_date=request.POST.get("end_date") or None,
+                    )
 
             work.work_status = 1
             work.work_allocate_status = 1
@@ -5406,7 +5515,332 @@ def executive_new_work(request):
     except (LogRegister_Details.DoesNotExist, EmployeeRegister_Details.DoesNotExist):
         messages.error(request, "User not found")
         return redirect('login')
+
+def executive_lead_categories(request, id):
+    user_id = request.session.get('user_id')
+
+    if not user_id or request.session.get('position', '').lower() != 'executive':
+        return redirect('login')
+
+    try:
+        user = LogRegister_Details.objects.get(id=user_id)
+        employee = EmployeeRegister_Details.objects.get(login=user)
+        
+        allocation = get_object_or_404(
+            teamleadallocation.objects.select_related('work', 'lead_collection'),
+            id=id,
+            assigned_to=employee
+        )
+
+        achieved_count = LeadRow.objects.filter(
+            lead_collection=allocation.lead_collection,
+            collected_by=employee
+        ).count()
+
+        allocation.achieved_target = achieved_count
+
+        context = {
+            'executive_name': employee.name,
+            'allocation': allocation,
+            'employee': employee,
+            'user': user
+        }
+
+        return render(request, 'executive_lead_categories.html', context)
+
+    except (LogRegister_Details.DoesNotExist, EmployeeRegister_Details.DoesNotExist):
+        messages.error(request, "User not found")
+        return redirect('login')
+
+import openpyxl
+from .models import Platform
+
+def executive_lead_collection(request, id):
+    user_id = request.session.get('user_id')
+    if not user_id or request.session.get('position', '').lower() != 'executive':
+        return redirect('login')
+
+    try:
+        user = LogRegister_Details.objects.get(id=user_id)
+        employee = EmployeeRegister_Details.objects.get(login=user)
+        allocation = get_object_or_404(
+            teamleadallocation.objects.select_related('work', 'lead_collection'),
+            id=id,
+            assigned_to=employee
+        )
+
+        lead_collection = allocation.lead_collection
+        fields = list(lead_collection.fields.all())
+        platforms = Platform.objects.filter(company=employee.company)
+        today_date = date.today()
+
+        if request.method == "POST":
+            form_type = request.POST.get("form_type")
+            if form_type == "single":
+                source_name = request.POST.get("lead_source", "").strip()
+                if source_name:
+                    Platform.objects.get_or_create(company=employee.company, name=source_name)
+                
+                email = request.POST.get("email")
+                contact = request.POST.get("contact")
+                
+                conditions = Q()
+                if contact:
+                    conditions |= Q(contact=contact)
+                if email:
+                    conditions |= Q(email=email)
+                
+                is_repeated = False
+                if conditions:
+                    is_repeated = LeadRow.objects.filter(
+                        Q(lead_collection=lead_collection) & conditions
+                    ).exists()
+
+                row = LeadRow.objects.create(
+                    lead_collection=lead_collection,
+                    full_name=request.POST.get("full_name"),
+                    email=request.POST.get("email"),
+                    contact=contact,
+                    source=request.POST.get("lead_source"),
+                    collected_by=employee,
+                    status="Unverified",
+                    is_repeated=is_repeated
+                )
+                for field in fields:
+                    value = request.POST.get(f"field_{field.id}")
+                    if value:
+                        LeadRowValue.objects.create(lead_row=row, field=field, value=value)
+                
+                messages.success(request, "Lead added successfully")
+                return redirect("executive_lead_collection", id=id)
+
+            elif form_type == "excel":
+                file = request.FILES.get("excel_file")
+                if file:
+                    workbook = openpyxl.load_workbook(file)
+                    sheet = workbook.active
+                    for excel_row in sheet.iter_rows(min_row=2, values_only=True):
+                        if not excel_row[0]: continue 
+                        
+                        source_val = str(excel_row[3]).strip() if len(excel_row) > 3 and excel_row[3] else "Manual"
+                        Platform.objects.get_or_create(company=employee.company, name=source_val)
+                        
+                        email_val = excel_row[1] if len(excel_row) > 1 else ""
+                        contact_val = str(excel_row[2]) if len(excel_row) > 2 else ""
+                        
+                        conditions = Q()
+                        if contact_val:
+                            conditions |= Q(contact=contact_val)
+                        if email_val:
+                            conditions |= Q(email=email_val)
+                            
+                        is_repeated = False
+                        if conditions:
+                            is_repeated = LeadRow.objects.filter(
+                                Q(lead_collection=lead_collection) & conditions
+                            ).exists()
+
+                        row = LeadRow.objects.create(
+                            lead_collection=lead_collection,
+                            full_name=excel_row[0] if len(excel_row) > 0 else "",
+                            email=excel_row[1] if len(excel_row) > 1 else "",
+                            contact=contact_val,
+                            source=source_val,
+                            collected_by=employee,
+                            is_repeated=is_repeated
+                        )
+                        for i, field in enumerate(fields, start=4):
+                            if len(excel_row) > i:
+                                LeadRowValue.objects.create(
+                                    lead_row=row,
+                                    field=field,
+                                    value=str(excel_row[i]) if excel_row[i] else ""
+                                )
+                    messages.success(request, "Leads uploaded successfully")
+                return redirect("executive_lead_collection", id=id)
+
+            elif form_type == "remove_duplicates":
+                latest_repeated = LeadRow.objects.filter(
+                    lead_collection=lead_collection,
+                    collected_by=employee,
+                    is_repeated=True
+                ).order_by('-id').first()
+                if latest_repeated:
+                    latest_repeated.delete()
+                    messages.success(request, "Latest duplicate lead removed.")
+                else:
+                    messages.info(request, "No duplicate leads found to remove.")
+                return redirect("executive_lead_collection", id=id)
+
+        page_size = request.GET.get('page_size', 10)
+        try:
+            page_size = int(page_size)
+        except ValueError:
+            page_size = 10
+
+        rows = LeadRow.objects.filter(lead_collection=lead_collection, collected_by=employee).order_by("-id")
+        leads_count = rows.count()
+
+        paginator = Paginator(rows, page_size)
+        page_number = request.GET.get('page')
+        rows_obj = paginator.get_page(page_number)
+
+        context = {
+            'executive_name': employee.name,
+            'allocation': allocation,
+            'lead_collection': lead_collection,
+            'rows': rows_obj,
+            'leads_count': leads_count,
+            'employee': employee,
+            'user': user,
+            'platforms': platforms,
+            'today_date': today_date,
+            'page_size': page_size
+        }
+
+        return render(request, 'executive_lead_collection.html', context)
+
+    except (LogRegister_Details.DoesNotExist, EmployeeRegister_Details.DoesNotExist):
+        messages.error(request, "User not found")
+        return redirect('login')
+
+def executive_all_leads(request):
+    user_id = request.session.get('user_id')
+    if not user_id or request.session.get('position', '').lower() != 'executive':
+        return redirect('login')
+
+    try:
+        user = LogRegister_Details.objects.get(id=user_id)
+        employee = EmployeeRegister_Details.objects.get(login=user)
+
+        sort_order = request.GET.get('sort', 'desc')
+        sort_by = request.GET.get('sort_by', 'no')  
+        field_map = {'name': 'full_name', 'email': 'email', 'no': 'id'}
+        db_field = field_map.get(sort_by, 'id')
+        order_field = db_field if sort_order == 'asc' else f'-{db_field}'
+        leads_qs = LeadRow.objects.filter(collected_by=employee).order_by(order_field)
+
+        search_query = request.GET.get('search')
+        client_id = request.GET.get('client')
+        category_id = request.GET.get('category')
+        status = request.GET.get('status')
+        from_date = request.GET.get('from_date')
+        to_date = request.GET.get('to_date')
+
+        if search_query:
+            leads_qs = leads_qs.filter(full_name__icontains=search_query)
+        if client_id:
+            leads_qs = leads_qs.filter(lead_collection__work_Id__clientId_id=client_id)
+        if category_id:
+            leads_qs = leads_qs.filter(lead_collection_id=category_id)
+        if status == 'Repeated':
+            leads_qs = leads_qs.filter(is_repeated=True)
+        elif status == 'Transferred':
+            leads_qs = leads_qs.filter(is_transferred=True)
+        elif status == 'Updated':
+            leads_qs = leads_qs.filter(followupupdates__isnull=False).distinct()
+        elif status:
+            leads_qs = leads_qs.filter(status=status)
+        if from_date:
+            leads_qs = leads_qs.filter(created_at__date__gte=from_date)
+        if to_date:
+            leads_qs = leads_qs.filter(created_at__date__lte=to_date)
+
+        leads_count = leads_qs.count()
+
+        from django.core.paginator import Paginator
+        page_size = request.GET.get('page_size', 10)
+        try:
+            page_size = int(page_size)
+        except ValueError:
+            page_size = 10
+            
+        paginator = Paginator(leads_qs, page_size)
+        page_number = request.GET.get('page')
+        leads_page = paginator.get_page(page_number)
+
+        allocations = teamleadallocation.objects.filter(assigned_to=employee)
+        clients = ClientRegister.objects.filter(id__in=allocations.values_list('work__clientId_id', flat=True)).distinct()
+        
+        categories_qs = LeadCollection.objects.filter(id__in=allocations.values_list('lead_collection_id', flat=True))
+        if client_id:
+            categories_qs = categories_qs.filter(work_Id__clientId_id=client_id)
+        categories = categories_qs.distinct()
+
+        context = {
+            'executive_name': employee.name,
+            'leads': leads_page,
+            'leads_count': leads_count,
+            'clients': clients,
+            'categories': categories,
+            'status_choices': LeadRow.STATUS_CHOICES,
+            'page_size': page_size,
+            'sort_order': sort_order,
+            'sort_by': sort_by,
+        }
+        return render(request, 'executive_all_leads.html', context)
+
+    except (LogRegister_Details.DoesNotExist, EmployeeRegister_Details.DoesNotExist):
+        messages.error(request, "User not found")
+        return redirect('login')
+
+from django.http import JsonResponse
+def get_lead_activity(request):
+    lead_id = request.GET.get('lead_id')
+    try:
+        lead = LeadRow.objects.get(id=lead_id)
+        
+        followups = followUpUpdates.objects.filter(lead=lead, response__isnull=False).select_related('response', 'user').order_by('-updated')
+        followup_list = []
+        for f in followups:
+            followup_list.append({
+                'connected_on': timezone.localtime(f.updated).strftime('%B %d, %Y') if f.updated else 'No date',
+                'contact_by': f.user.name if f.user else 'No user',
+                'response': f.response.name if f.response else 'No response',
+                'reason': f.reason ,
+                'status': lead.status,
+                'note': f.notes or f.reason
+            })
+            
+        collections = LeadRowValue.objects.filter(lead_row=lead).select_related('field')
+        collections_list = []
+        for c in collections:
+            collections_list.append({
+                'field': c.field.field_name,
+                'value': c.value
+            })
+
+        data = {
+            'success': True,
+            'name': lead.full_name,
+            'email': lead.email,
+            'contact': lead.contact,
+            'client': lead.lead_collection.work_Id.clientId.client_name,
+            'task': lead.lead_collection.collection_head,
+            'collected_by': lead.collected_by.name if lead.collected_by else 'No user',
+            'collected_date': timezone.localtime(lead.created_at).strftime('%B %d, %Y') if lead.created_at else 'No date',
+            'collected_time': timezone.localtime(lead.created_at).strftime('%I:%M %p') if lead.created_at else 'No time',
+            'waste_reason': lead.waste_reason ,
+            'is_waste': lead.is_waste,
+            'is_transferred': lead.is_transferred,
+            'transfer_date': timezone.localtime(lead.transfer_date).strftime('%B %d, %Y') if lead.transfer_date else 'No date',
+            'followups': followup_list,
+            'collections': collections_list,
+        }
+        return JsonResponse(data)
+    except LeadRow.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Lead not found'})
+
+def delete_lead_row(request, id):
+    try:
+        lead = LeadRow.objects.get(id=id)
+        lead.delete()
+        messages.success(request, "Lead deleted successfully")
+    except LeadRow.DoesNotExist:
+        messages.error(request, "Lead not found")
     
+    return redirect(request.META.get('HTTP_REFERER', 'executive_all_leads'))
+
 def accept_task(request, id):
     task = get_object_or_404(teamleadallocation, id=id)
 
@@ -5475,7 +5909,7 @@ def executive_adddaily_work(request, id):
         allocation = get_object_or_404(
             teamleadallocation.objects.select_related(
                 'work', 'task', 'assigned_to', 'lead_collection'
-            ),
+            ).prefetch_related('lead_collection__fields'),
             id=id,
             assigned_to=employee
         )
@@ -5516,7 +5950,7 @@ from .models import DailyWork
 def executive_adddailywork(request, id):
     user_id = request.session.get('user_id')
 
-    # 🔐 Check login + role
+
     if not user_id or request.session.get('position', '').lower() != 'executive':
         return redirect('login')
 

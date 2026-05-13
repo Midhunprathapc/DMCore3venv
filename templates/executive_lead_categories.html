@@ -1,0 +1,141 @@
+{% extends "executive_base.html" %}
+{% block title %} Lead Categories {% endblock %}
+
+{% block content %}
+<style>
+    .page-header-custom {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 30px;
+        color: #94a3b8;
+        font-size: 14px;
+    }
+
+    .page-header-custom a {
+        color: #94a3b8;
+        text-decoration: none;
+    }
+
+    .page-header-custom .separator {
+        color: #475569;
+    }
+
+    .category-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 20px;
+    }
+
+    .category-card {
+        background: #1e1e2d;
+        border-radius: 8px;
+        padding: 25px;
+        border: 1px solid #2b2b40;
+        transition: transform 0.2s, border-color 0.2s;
+        cursor: pointer;
+        text-decoration: none;
+        display: block;
+        color: inherit;
+    }
+
+    .category-card:hover {
+        transform: translateY(-5px);
+        border-color: #3699ff;
+        background: #232334;
+    }
+
+    .category-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #ffffff;
+        margin-bottom: 12px;
+        display: block;
+    }
+
+    .category-info {
+        font-size: 13px;
+        color: #94a3b8;
+        margin-bottom: 8px;
+        display: flex;
+        gap: 15px;
+    }
+
+    .category-target {
+        margin-top: 15px;
+        font-size: 13px;
+        color: #94a3b8;
+        display: flex;
+        gap: 20px;
+    }
+
+    .target-val {
+        color: #3699ff;
+        font-weight: 500;
+    }
+
+    .achieved-val {
+        color: #10b981;
+        font-weight: 500;
+    }
+
+    @media (max-width: 768px) {
+        .category-grid {
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        .category-card {
+            padding: 18px;
+            margin-bottom: 5px;
+        }
+
+        .category-title {
+            font-size: 16px;
+        }
+
+        .category-info {
+            flex-direction: column;
+            gap: 6px;
+            font-size: 12px;
+        }
+
+        .category-target {
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 12px;
+            font-size: 12px;
+        }
+
+        .page-header-custom {
+            font-size: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            line-height: 1.5;
+        }
+    }
+</style>
+
+<div class="page-header-custom">
+    <a href="{% url 'executive_task_ongoing' %}">Ongoing Works</a>
+    <span class="separator">/</span>
+    <span>Lead Categories</span>
+</div>
+
+<div class="category-grid">
+    <a href="{% url 'executive_lead_collection' allocation.id %}" class="category-card">
+        <span class="category-title">{{ allocation.lead_collection.collection_head }}</span>
+
+        <div class="category-info">
+            <span>From: {{ allocation.start_date|date:"d-m-Y" }}</span>
+            <span>To: {{ allocation.end_date|date:"d-m-Y" }}</span>
+        </div>
+
+        <div class="category-target">
+            <span>Target: <span class="target-val">{{ allocation.target }}</span></span>
+            <span>Achieved Target: <span class="achieved-val">{{ allocation.achieved_target }}</span></span>
+        </div>
+    </a>
+</div>
+
+{% endblock %}

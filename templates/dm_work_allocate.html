@@ -12,6 +12,7 @@
     color: #fff;
 }
 
+
 .page-header {
     display: flex;
     justify-content: space-between;
@@ -211,8 +212,8 @@
 
 
 <td style="vertical-align:middle;">
-{% if work.allocated_emp.all %}
-    {% for emp in work.allocated_emp.all %}
+{% if work.team_leads %}
+    {% for emp in work.team_leads %}
     <div style="
         display:flex;
         align-items:center;   /* vertical alignment */

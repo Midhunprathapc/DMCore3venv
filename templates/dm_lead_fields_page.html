@@ -3,13 +3,14 @@
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb breadcrumb-custom bg-transparent p-0 mb-3">
         <li class="breadcrumb-item">
-            <a href="{% url 'head_dashboard' %}" class="text-secondary fw-bold" style="text-decoration: none">Dashboard</a>
+            <a href="{% url 'head_dashboard' %}" class="text-secondary fw-bold"
+                style="text-decoration: none">Dashboard</a>
         </li>
-         <li class="breadcrumb-item active text-secondary" aria-current="page">
+        <li class="breadcrumb-item active text-secondary" aria-current="page">
             /
         </li>
         <li class="breadcrumb-item active text-secondary" aria-current="page">
-         Lead Collection Task
+            Lead Collection Task
         </li>
     </ol>
 </nav>
@@ -19,336 +20,329 @@
 
         <div class="d-flex justify-content-between align-items-center mb-3">
 
-    <h5 class="mb-0">Clients For Lead Collection</h5>
+            <h5 class="mb-0">Clients For Lead Collection</h5>
 
-    <input type="text" id="searchBox"
-           placeholder="Search here..."
-           class="search-box"
-           style="max-width: 250px;">
+            <input type="text" id="searchBox" placeholder="Search here..." class="search-box" style="max-width: 250px;">
 
-</div>
+        </div>
         <div class="table-container">
-<table class="custom-table">
+            <table class="custom-table">
 
-    <thead>
-        <tr>
-            <th>No</th>
-            <th>Client Name</th>
-            <th>Lead Collection For</th>
-            <th>Target</th>
-            <th>Achieved Target</th>
-            <th>Progress</th>
-            <th>Required Fields</th>
-        </tr>
-    </thead>
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Client Name</th>
+                        <th>Lead Collection For</th>
+                        <th>Target</th>
+                        <th>Achieved Target</th>
+                        <th>Progress</th>
+                        <th>Required Fields</th>
+                    </tr>
+                </thead>
 
-    <tbody>
-        {% for item in data %}
-        <tr>
+                <tbody>
+                    {% for item in data %}
+                    <tr>
 
-            <td>{{ forloop.counter }}</td>
-
-
-            <td>{{ item.lead.work_Id.clientId.client_name }}</td>
-
-            <td>{{ item.lead.collection_head }}</td>
+                        <td>{{ forloop.counter }}</td>
 
 
-            <td>{{ item.lead.target }}</td>
+                        <td>{{ item.lead.work_Id.clientId.client_name }}</td>
+
+                        <td>{{ item.lead.collection_head }}</td>
 
 
-            <td>{{ item.achieved }}</td>
+                        <td>{{ item.lead.target }}</td>
 
 
-            <td>
-                <div class="progress-bar-bg">
-                    <div class="progress-bar-fill"
-                         style="width: {{ item.progress }}%;">
+                        <td>{{ item.achieved }}</td>
+
+
+                        <td>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar-fill" style="width: {{ item.progress }}%;">
+                                </div>
+                            </div>
+                            <small>{{ item.progress }}%</small>
+                        </td>
+                        <td>
+
+
+                            <div class="field-header">
+                                <span class="field-text">
+                                    Add Fields to collect data
+                                </span>
+
+                                <span class="small-pill add-field-btn" data-bs-toggle="modal"
+                                    data-bs-target="#addFieldModal" data-id="{{ item.lead.id }}"
+                                    data-client="{{ item.lead.work_Id.clientId.client_name }}"
+                                    data-lead="{{ item.lead.collection_head }}">
+                                    +
+                                </span>
+                            </div>
+                            <p style="margin:5px 0; font-size:0.8rem; color:#94a3b8;">
+                                First Name, Email, Contact Number, Source are fixed fields
+                            </p>
+
+
+                            <ol style="margin-top:5px; padding-left:18px; font-size:0.8rem;">
+
+                                {% for f in item.lead.fields.all %}
+                                <li>{{ f.field_name }}</li>
+                                {% endfor %}
+                            </ol>
+
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+
+            </table>
+        </div>
+
+
+        <div class="modal fade" id="addFieldModal" tabindex="-1">
+            <div class="modal-dialog modal-md">
+                <div class="modal-content bg-dark text-white">
+
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add Required Field</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
+
+                    <form id="addFieldForm" method="POST" action="{% url 'add_required_field' %}">
+                        {% csrf_token %}
+
+                        <div class="modal-body">
+
+
+                            <input type="hidden" name="lead_id" id="fieldLeadId">
+
+                            <div class="mb-2">
+                                <label>Client Name</label>
+                                <input type="text" id="fieldClient" class="form-control bg-dark text-white" readonly>
+                            </div>
+
+                            <div class="mb-2">
+                                <label>Lead Collection For</label>
+                                <input type="text" id="fieldCategory" class="form-control bg-dark text-white" readonly>
+                            </div>
+
+                            <div class="mb-2">
+                                <label>Field Name*</label>
+                                <input type="text" name="field_name" class="form-control bg-dark text-white"
+                                    placeholder="eg: Company Name">
+                            </div>
+
+                            <div class="mb-2">
+                                <label>Field Description</label>
+                                <textarea name="field_description" class="form-control bg-dark text-white" rows="3"
+                                    placeholder="Optional..."></textarea>
+                            </div>
+
+                        </div>
+
+                        <div class="modal-footer">
+
+                            <button type="button" class="btn btn-warning" onclick="clearForm()">Clear</button>
+
+                            <button type="submit" class="btn btn-success">Add Field</button>
+
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                Close
+                            </button>
+
+
+                        </div>
+
+                    </form>
+
                 </div>
-                <small>{{ item.progress }}%</small>
-            </td>
-            <td>
-
-
-   <div class="field-header">
-    <span class="field-text">
-        Add Fields to collect data
-    </span>
-
-    <span class="small-pill add-field-btn"
-          data-bs-toggle="modal"
-          data-bs-target="#addFieldModal"
-          data-id="{{ item.lead.id }}"
-          data-client="{{ item.lead.work_Id.clientId.client_name }}"
-          data-lead="{{ item.lead.collection_head }}">
-        +
-    </span>
-</div>
-<p style="margin:5px 0; font-size:0.8rem; color:#94a3b8;">
-    First Name, Email, Contact Number, Source are fixed fields
-</p>
-
-
-    <ol style="margin-top:5px; padding-left:18px; font-size:0.8rem;">
-
-        {% for f in item.lead.fields.all %}
-            <li>{{ f.field_name }}</li>
-        {% endfor %}
-    </ol>
-
-</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-
-</table>
-</div>
-
-
-<div class="modal fade" id="addFieldModal" tabindex="-1">
-  <div class="modal-dialog modal-md">
-    <div class="modal-content bg-dark text-white">
-
-      <div class="modal-header">
-        <h5 class="modal-title">Add Required Field</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-      </div>
-
-      <form id="addFieldForm" method="POST" action="{% url 'add_required_field' %}">
-        {% csrf_token %}
-
-        <div class="modal-body">
-
-     
-          <input type="hidden" name="lead_id" id="fieldLeadId">
-
-          <div class="mb-2">
-            <label>Client Name</label>
-            <input type="text" id="fieldClient"
-                   class="form-control bg-dark text-white" readonly>
-          </div>
-
-          <div class="mb-2">
-            <label>Lead Collection For</label>
-            <input type="text" id="fieldCategory"
-                   class="form-control bg-dark text-white" readonly>
-          </div>
-
-          <div class="mb-2">
-            <label>Field Name*</label>
-            <input type="text" name="field_name"
-                   class="form-control bg-dark text-white"
-                   placeholder="eg: Company Name">
-          </div>
-
-          <div class="mb-2">
-            <label>Field Description</label>
-            <textarea name="field_description"
-                      class="form-control bg-dark text-white"
-                      rows="3"
-                      placeholder="Optional..."></textarea>
-          </div>
-
+            </div>
         </div>
-
-        <div class="modal-footer">
-
-          <button type="button" class="btn btn-warning" onclick="clearForm()">Clear</button>
-
-          <button type="submit" class="btn btn-success">Add Field</button>
-
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-    Close
-</button>
-        
-
-        </div>
-
-      </form>
-
-    </div>
-  </div>
-</div>
 
     </div>
 </div>
 <style>
-
-.page-container {
-    background: #0f172a;
-    padding: 20px;
-    border-radius: 12px;
-    color: #fff;
-}
-
-
-.custom-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: transparent;
-}
+    .page-container {
+        background: #0f172a;
+        padding: 20px;
+        border-radius: 12px;
+        color: #fff;
+    }
 
 
-.custom-table th {
-    text-align: left;
-    font-size: 13px;
-    color: #94a3b8;   
-    padding: 10px;
-    border-bottom: 1px solid #1e293b; 
-}
+    .custom-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: transparent;
+    }
 
 
-.custom-table td {
-    padding: 12px 10px;
-    border-bottom: 1px solid #1e293b;  
-    font-size: 14px;
-    color: #ffffff;
-    background: transparent;  
-}
+    .custom-table th {
+        text-align: left;
+        font-size: 13px;
+        color: #94a3b8;
+        padding: 10px;
+        border-bottom: 1px solid #1e293b;
+    }
 
 
-.custom-table tr:hover {
-    background: #1e293b;   
-}
+    .custom-table td {
+        padding: 12px 10px;
+        border-bottom: 1px solid #1e293b;
+        font-size: 14px;
+        color: #ffffff;
+        background: transparent;
+    }
 
 
-.progress-bar-bg {
-    background: #1e293b;
-    border-radius: 5px;
-    height: 6px;
-    width: 100px;
-}
-
-.progress-bar-fill {
-    background: #3b82f6;
-    height: 100%;
-    border-radius: 5px;
-}
+    .custom-table tr:hover {
+        background: #1e293b;
+    }
 
 
-.small-pill {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    .progress-bar-bg {
+        background: #1e293b;
+        border-radius: 5px;
+        height: 6px;
+        width: 100px;
+    }
 
-    width: 22px;
-    height: 22px;
-
-    border: 1px solid #00e5a8;
-    color: #00e5a8;
-
-    border-radius: 50%;
-    font-size: 14px;
-    font-weight: bold;
-
-    cursor: pointer;
-    transition: 0.2s;
-}
-
-.small-pill:hover {
-    background: #00e5a8;
-    color: #0f172a;
-    transform: scale(1.1);
-}
-.table-container {
-    width: 100%;
-    overflow-x: auto;   
-}
+    .progress-bar-fill {
+        background: #3b82f6;
+        height: 100%;
+        border-radius: 5px;
+    }
 
 
-.table-container::-webkit-scrollbar {
-    height: 6px;
-}
-.table-container::-webkit-scrollbar-thumb {
-    background: #374151;
-    border-radius: 10px;
-}
-.search-box {
-    width: 100%;
-    padding: 8px;
-    margin-bottom: 15px;
-    border-radius: 6px;
-    border: none;
-    background-color: #1e293b;
-    color: white;
-}
+    .small-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
 
-.search-box::placeholder {
-    color: #94a3b8;
-}
+        width: 22px;
+        height: 22px;
 
-.search-box:focus {
-    outline: none;
-    border: 1px solid #3b82f6;
-}
-.breadcrumb-item a {
-    position: relative;
-    z-index: 5;  
-    cursor: pointer;
-    text-decoration: underline;
-    color: #2563eb; 
-}
-.field-header {
-    display: flex;
-    align-items: center;
-    gap: 6px;          
-    flex-wrap: wrap;   
-}
+        border: 1px solid #00e5a8;
+        color: #00e5a8;
+
+        border-radius: 50%;
+        font-size: 14px;
+        font-weight: bold;
+
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .small-pill:hover {
+        background: #00e5a8;
+        color: #0f172a;
+        transform: scale(1.1);
+    }
+
+    .table-container {
+        width: 100%;
+        overflow-x: auto;
+    }
 
 
-.field-text {
-    font-size: 0.8rem;
-    color: #94a3b8;
-}
+    .table-container::-webkit-scrollbar {
+        height: 6px;
+    }
+
+    .table-container::-webkit-scrollbar-thumb {
+        background: #374151;
+        border-radius: 10px;
+    }
+
+    .search-box {
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 15px;
+        border-radius: 6px;
+        border: none;
+        background-color: #1e293b;
+        color: white;
+    }
+
+    .search-box::placeholder {
+        color: #94a3b8;
+    }
+
+    .search-box:focus {
+        outline: none;
+        border: 1px solid #3b82f6;
+    }
+
+    .breadcrumb-item a {
+        position: relative;
+        z-index: 5;
+        cursor: pointer;
+        text-decoration: underline;
+        color: #2563eb;
+    }
+
+    .field-header {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
 
 
-.add-field-btn {
-    flex-shrink: 0;
-}
+    .field-text {
+        font-size: 0.8rem;
+        color: #94a3b8;
+    }
+
+
+    .add-field-btn {
+        flex-shrink: 0;
+    }
 </style>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
 
-    const searchInput = document.getElementById('searchBox');
-    const rows = document.querySelectorAll('.custom-table tbody tr');
+        const searchInput = document.getElementById('searchBox');
+        const rows = document.querySelectorAll('.custom-table tbody tr');
 
-    searchInput.addEventListener('keyup', function() {
+        searchInput.addEventListener('keyup', function () {
 
-        const keywords = this.value.toLowerCase().split(" "); 
+            const keywords = this.value.toLowerCase().split(" ");
 
-        rows.forEach(row => {
+            rows.forEach(row => {
 
-            const text = row.textContent.toLowerCase();
+                const text = row.textContent.toLowerCase();
 
-           
-            const match = keywords.every(word => text.includes(word));
 
-            row.style.display = match ? "" : "none";
+                const match = keywords.every(word => text.includes(word));
+
+                row.style.display = match ? "" : "none";
+            });
+
         });
 
     });
-
-});
 </script>
 <script>
-var modal = document.getElementById('addFieldModal');
+    var modal = document.getElementById('addFieldModal');
 
-modal.addEventListener('show.bs.modal', function (event) {
+    modal.addEventListener('show.bs.modal', function (event) {
 
-    var button = event.relatedTarget;
+        var button = event.relatedTarget;
 
-    document.getElementById('fieldLeadId').value = button.getAttribute('data-id');
-    document.getElementById('fieldClient').value = button.getAttribute('data-client');
-    document.getElementById('fieldCategory').value = button.getAttribute('data-lead');
+        document.getElementById('fieldLeadId').value = button.getAttribute('data-id');
+        document.getElementById('fieldClient').value = button.getAttribute('data-client');
+        document.getElementById('fieldCategory').value = button.getAttribute('data-lead');
 
-});
+    });
 </script>
 <script>
-function clearForm() {
-    
-    document.querySelector('input[name="field_name"]').value = '';
-    document.querySelector('textarea[name="field_description"]').value = '';
-}
+    function clearForm() {
+
+        document.querySelector('input[name="field_name"]').value = '';
+        document.querySelector('textarea[name="field_description"]').value = '';
+    }
 </script>
 {% endblock %}

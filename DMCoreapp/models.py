@@ -375,8 +375,9 @@ class LeadRow(models.Model):
     waste_reason = models.TextField(null=True, blank=True)
     waste_marked_date = models.DateTimeField(null=True, blank=True)
     
-    waste_status = models.BooleanField(default=False)  # false -> pending , true -> approv
+    waste_status = models.BooleanField(default=False)  
     is_recall= models.BooleanField(default=False)
+    is_repeated = models.BooleanField(default=False)
     
 
 

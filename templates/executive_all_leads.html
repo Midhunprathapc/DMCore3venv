@@ -1,0 +1,997 @@
+{% extends "executive_base.html" %}
+{% load static %}
+{% block title %} All Leads {% endblock %}
+
+{% block content %}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+    .leads-container {
+        background: #000000;
+        border-radius: 12px;
+        padding: 25px;
+        border: 1px solid #08080c;
+    }
+
+    .leads-header {
+        margin-bottom: 25px;
+    }
+
+    .leads-title {
+        font-size: 18px;
+        font-weight: 500;
+        color: #ffffff;
+        margin-bottom: 20px;
+    }
+
+    .filter-row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #2b2b40;
+    }
+
+    .filter-select,
+    .filter-input {
+        background: #0f172a;
+        border: 1px solid #2b2b40;
+        color: #94a3b8;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 13px;
+        outline: none;
+        min-width: 120px;
+    }
+
+    .search-btn {
+        background: rgba(124, 58, 237, 0.1);
+        color: #a78bfa;
+        border: 1px solid rgba(124, 58, 237, 0.2);
+        padding: 8px 15px;
+        border-radius: 6px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .data-table th {
+        text-align: left;
+        color: #94a3b8;
+        font-size: 12px;
+        font-weight: 500;
+        padding: 15px 10px;
+        border-bottom: 1px solid #12121b;
+        background: rgba(255, 255, 255, 0.01);
+    }
+
+    .data-table td {
+        padding: 15px 10px;
+        border-bottom: 1px solid #2b2b40;
+        color: #e2e8f0;
+        font-size: 13px;
+        vertical-align: middle;
+    }
+
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 500;
+    }
+
+    .status-unverify {
+        background: rgba(14, 165, 233, 0.2);
+        color: #0ea5e9;
+    }
+
+    .status-verified {
+        background: rgba(168, 85, 247, 0.2);
+        color: #a855f7;
+    }
+
+    .status-transferred {
+        background: rgba(16, 185, 129, 0.2);
+        color: #10b981;
+    }
+
+    .action-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #2b2b40;
+        background: rgba(255, 255, 255, 0.05);
+        color: white;
+        text-decoration: none;
+        margin-right: 5px;
+        transition: 0.2s;
+    }
+
+    .action-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .page-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 20px;
+        color: #64748b;
+        font-size: 13px;
+    }
+
+    .pagination-custom {
+        display: flex;
+        gap: 5px;
+    }
+
+    .page-link-custom {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        background: #2b2b40;
+        color: white;
+        text-decoration: none;
+    }
+
+    .page-link-custom.active {
+        background: #3b82f6;
+    }
+
+    .breadcrumb-custom {
+        color: #94a3b8;
+        font-size: 14px;
+        margin-bottom: 20px;
+    }
+
+    .lead-detail-modal {
+        display: none;
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        width: 350px;
+        background: #1e1e2d;
+        border: 1px solid #2b2b40;
+        border-radius: 12px;
+        z-index: 1000;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        color: white;
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 20px;
+        border-bottom: 1px solid #2b2b40;
+    }
+
+    .modal-title {
+        font-size: 16px;
+        font-weight: 500;
+        margin: 0;
+    }
+
+    .close-modal {
+        background: #ef4444;
+        border: none;
+        color: white;
+        width: 24px;
+        height: 24px;
+        border-radius: 4px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+    }
+
+    .modal-body {
+        padding: 20px;
+    }
+
+    .section-title {
+        color: #94a3b8;
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 15px;
+        text-transform: uppercase;
+    }
+
+    .detail-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+        font-size: 13px;
+        color: #e2e8f0;
+    }
+
+    .detail-item i {
+        color: #64748b;
+        width: 16px;
+    }
+
+    .status-indicators {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 15px;
+    }
+
+    .indicator {
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .indicator.red {
+        color: #ef4444;
+    }
+
+    .indicator.white {
+        color: white;
+    }
+
+    .more-details-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 13px;
+        margin-top: 10px;
+    }
+
+    .more-details-row span:first-child {
+        color: #94a3b8;
+    }
+
+    .activity-tracker-modal {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-40%, -50%);
+        width: 850px;
+        background: #1e1e2d;
+        border: 1px solid #2b2b40;
+        border-radius: 8px;
+        z-index: 1001;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+        color: white;
+    }
+
+    .tracker-header {
+        padding: 15px 25px;
+        border-bottom: 1px solid #2b2b40;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .close-tracker {
+        background: none;
+        border: none;
+        color: #94a3b8;
+        font-size: 20px;
+        cursor: pointer;
+    }
+
+    .tracker-body {
+        padding: 30px;
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+
+    .tracker-section-title {
+        color: #e2e8f0;
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 20px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #2b2b40;
+    }
+
+    .tracker-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+        font-size: 13px;
+        color: #94a3b8;
+    }
+
+    .tracker-info i {
+        width: 16px;
+    }
+
+    .panel-subtitle {
+        color: #ffffff;
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 15px;
+        text-decoration: underline;
+        text-underline-offset: 4px;
+    }
+
+    .panel-info {
+        font-size: 12px;
+        margin-bottom: 8px;
+        color: #ffffff;
+    }
+
+    .tracker-footer {
+        padding: 15px 25px;
+        border-top: 1px solid #2b2b40;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    .btn-print {
+        background: #3b82f6;
+        color: white;
+        border: none;
+        padding: 6px 15px;
+        border-radius: 4px;
+        font-size: 12px;
+        cursor: pointer;
+    }
+
+    .btn-pdf {
+        background: #ef4444;
+        color: white;
+        border: none;
+        padding: 6px 15px;
+        border-radius: 4px;
+        font-size: 12px;
+        cursor: pointer;
+    }
+
+    @page {
+        margin: 0;
+    }
+
+    @media print {
+        body * {
+            visibility: hidden;
+        }
+
+        #activityTrackerModal,
+        #activityTrackerModal * {
+            visibility: visible;
+        }
+
+        #activityTrackerModal {
+            padding: 10mm !important;
+            box-sizing: border-box !important;
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            transform: none !important;
+            width: 100% !important;
+            height: auto !important;
+            display: block !important;
+            border: none !important;
+            box-shadow: none !important;
+            background: white !important;
+            color: black !important;
+            z-index: 9999;
+        }
+
+        #activityTrackerModal .tracker-body {
+            background: white !important;
+            color: black !important;
+            max-height: none !important;
+            overflow: visible !important;
+            padding: 20px !important;
+        }
+
+        #activityTrackerModal .row {
+            display: flex !important;
+            flex-direction: row !important;
+            flex-wrap: wrap !important;
+        }
+
+        #activityTrackerModal .col-4 {
+            width: 35% !important;
+            flex: 0 0 35% !important;
+            border-right: 1px solid #2b2b40 !important;
+        }
+
+        #activityTrackerModal .col-8 {
+            width: 65% !important;
+            flex: 0 0 65% !important;
+        }
+
+        #activityTrackerModal .tracker-info,
+        #activityTrackerModal .panel-info,
+        #activityTrackerModal .tracker-section-title,
+        #activityTrackerModal .modal-title,
+        #activityTrackerModal .panel-subtitle,
+        #activityTrackerModal span,
+        #activityTrackerModal i {
+            color: black !important;
+        }
+
+        #activityTrackerModal .tracker-footer,
+        #activityTrackerModal .close-tracker {
+            display: none !important;
+        }
+    }
+
+    /* Mobile Responsiveness */
+    @media (max-width: 991px) {
+        .activity-tracker-modal {
+            width: 95%;
+            left: 50%;
+            top: 2%;
+            transform: translateX(-50%);
+            max-height: 96vh;
+            z-index: 2000;
+        }
+
+        .activity-tracker-modal .tracker-header {
+            padding: 12px 20px;
+        }
+
+        .activity-tracker-modal .tracker-body {
+            max-height: calc(96vh - 140px);
+            padding: 20px;
+        }
+
+        .activity-tracker-modal .tracker-footer {
+            padding: 15px;
+            display: flex !important;
+            justify-content: center;
+            gap: 15px;
+            border-top: 1px solid #2b2b40;
+        }
+
+        .activity-tracker-modal .tracker-footer button {
+            padding: 10px 20px;
+            font-size: 14px;
+            flex: 1;
+            max-width: 150px;
+        }
+
+        .activity-tracker-modal .row>div {
+            width: 100% !important;
+            padding-left: 15px !important;
+            padding-right: 15px !important;
+            border-right: none !important;
+            border-bottom: 1px solid #2b2b40;
+            margin-bottom: 15px;
+        }
+
+        .activity-tracker-modal .row>div:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .lead-detail-modal {
+            width: 95%;
+            right: auto;
+            left: 50%;
+            transform: translateX(-50%);
+            top: 5%;
+            z-index: 2000;
+        }
+    }
+</style>
+
+<div class="breadcrumb-custom">
+    Dashboard / <span style="color: white;">Leads</span>
+</div>
+
+<div class="leads-container">
+    <div class="leads-header">
+        <h5 class="leads-title">Leads List ( {{ leads_count }} )</h5>
+    </div>
+
+    <form method="GET" class="filter-row">
+        <select name="page_size" class="filter-select" style="min-width: 60px;">
+            <option value="10" {% if page_size == 10 %}selected{% endif %}>10</option>
+            <option value="20" {% if page_size == 20 %}selected{% endif %}>20</option>
+            <option value="50" {% if page_size == 50 %}selected{% endif %}>50</option>
+            <option value="100" {% if page_size == 100 %}selected{% endif %}>100</option>
+            <option value="150" {% if page_size == 150 %}selected{% endif %}>150</option>
+            <option value="250" {% if page_size == 250 %}selected{% endif %}>250</option>
+            <option value="500" {% if page_size == 500 %}selected{% endif %}>500</option>
+            <option value="1000" {% if page_size == 1000 %}selected{% endif %}>1000</option>
+        </select>
+
+        <select name="client" class="filter-select">
+            <option value="">Client</option>
+            {% for client in clients %}
+            <option value="{{ client.id }}" {% if request.GET.client == client.id|stringformat:"s" %}selected{% endif %}>
+                {{ client.client_name }}</option>
+            {% endfor %}
+        </select>
+
+        <select name="category" class="filter-select">
+            <option value="">Category</option>
+            {% for cat in categories %}
+            <option value="{{ cat.id }}" {% if request.GET.category == cat.id|stringformat:"s" %}selected{% endif %}>
+                {{cat.collection_head }}</option>
+            {% endfor %}
+        </select>
+
+        <select name="status" class="filter-select">
+            <option value="">Lead status</option>
+            <option value="Unverified" {% if request.GET.status == 'Unverified' %}selected{% endif %}>Unverify</option>
+            <option value="Repeated" {% if request.GET.status == 'Repeated' %}selected{% endif %}>Reapted</option>
+            <option value="Transferred" {% if request.GET.status == 'Transferred' %}selected{% endif %}>Transfered
+            </option>
+            <option value="Waste" {% if request.GET.status == 'Waste' %}selected{% endif %}>Waste</option>
+        </select>
+
+        <input type="text" name="search" class="filter-input" placeholder="Search Lead Name"
+            value="{{ request.GET.search|default:'' }}">
+        <input type="date" name="from_date" class="filter-input" placeholder="dd-mm-yyyy"
+            value="{{ request.GET.from_date }}">
+        <input type="date" name="to_date" class="filter-input" placeholder="dd-mm-yyyy"
+            value="{{ request.GET.to_date }}">
+
+        <button type="submit" class="search-btn">
+            <i class="fas fa-search"></i>
+        </button>
+    </form>
+
+    <div style="overflow-x: auto;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>
+                        <a href="#" onclick="toggleSort(event,'no')"
+                            style="color: {% if sort_by == 'no' %}#38bdf8{% else %}inherit{% endif %}; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; user-select: none;">
+                            No
+                            <span style="font-size: 11px;">
+                                {% if sort_by == 'no' %}{% if sort_order == 'asc' %}▴{% else %}▾{% endif %}{% else %}⇅{% endif %}
+                            </span>
+                        </a>
+                    </th>
+                    <th>Collected By | Created On</th>
+                    <th>
+                        <a href="#" onclick="toggleSort(event,'name')"
+                            style="color: {% if sort_by == 'name' %}#38bdf8{% else %}inherit{% endif %}; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; user-select: none;">
+                            Name
+                            <span style="font-size: 11px;">
+                                {% if sort_by == 'name' %}{% if sort_order == 'asc' %}▴{% else %}▾{% endif %}{% else %}⇅{% endif %}
+                            </span>
+                        </a>
+                    </th>
+                    <th>
+                        <a href="#" onclick="toggleSort(event,'email')"
+                            style="color: {% if sort_by == 'email' %}#38bdf8{% else %}inherit{% endif %}; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; user-select: none;">
+                            Email
+                            <span style="font-size: 11px;">
+                                {% if sort_by == 'email' %}{% if sort_order == 'asc' %}▴{% else %}▾{% endif %}{% else %}⇅{% endif %}
+                            </span>
+                        </a>
+                    </th>
+                    <th>Contact </th>
+                    <th>Status </th>
+                    <th>Quick Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for lead in leads %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-user-circle" style="color: #64748b; font-size: 16px;"></i>
+                            {{ executive_name }} ({{ lead.created_at|date:"d-m-y | H:i:s" }})
+                        </div>
+                    </td>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-user-circle" style="color: #64748b; font-size: 16px;"></i>
+                            {{ lead.full_name }}
+                        </div>
+                    </td>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-envelope" style="color: #64748b; font-size: 14px;"></i>
+                            {{ lead.email }}
+                        </div>
+                    </td>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-phone-alt" style="color: #64748b; font-size: 14px;"></i>
+                            {{ lead.contact }}
+                        </div>
+                    </td>
+                    <td>
+                        {% if lead.is_transferred %}
+                        <span class="status-badge status-transferred">Transfered</span>
+                        {% elif lead.status == 'Unverified' %}
+                        <span class="status-badge status-unverify">Unverify</span>
+                        {% elif lead.status == 'Verified' %}
+                        <span class="status-badge status-verified">Verified</span>
+                        {% elif lead.status == 'Transferred' %}
+                        <span class="status-badge status-transferred">Transfered</span>
+                        {% else %}
+                        <span class="status-badge status-unverify">{{ lead.status }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="javascript:void(0)" class="action-btn"
+                            onclick="openLeadDetails('{{ lead.full_name }}', '{{ lead.contact }}', '{{ lead.email }}', '{{ lead.status }}', '{{ lead.is_waste }}', '{{ lead.source }}')">
+                            <i class="fas fa-plus" style="font-size: 12px;"></i>
+                        </a>
+                        <a href="javascript:void(0)" class="action-btn" onclick="openActivityTracker('{{ lead.id }}')">
+                            <i class="far fa-file-alt" style="font-size: 12px;"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" style="text-align: center; padding: 40px; color: #64748b;">No leads found</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="page-info">
+        <div>Showing {{ leads.start_index }} to {{ leads.end_index }} of {{ leads_count }} entries</div>
+        <div class="pagination-custom">
+            {% if leads.has_previous %}
+            <a href="?page={{ leads.previous_page_number }}&page_size={{ page_size }}&client={{ request.GET.client }}&category={{ request.GET.category }}&status={{ request.GET.status }}&from_date={{ request.GET.from_date }}&to_date={{ request.GET.to_date }}&search={{ request.GET.search }}"
+                class="page-link-custom"><i class="fas fa-chevron-left"></i></a>
+            {% endif %}
+
+            {% for num in leads.paginator.page_range %}
+            {% if leads.number == num %}
+            <a href="#" class="page-link-custom active">{{ num }}</a>
+            {% elif num > leads.number|add:'-3' and num < leads.number|add:'3' %} <a
+                href="?page={{ num }}&page_size={{ page_size }}&client={{ request.GET.client }}&category={{ request.GET.category }}&status={{ request.GET.status }}&from_date={{ request.GET.from_date }}&to_date={{ request.GET.to_date }}&search={{ request.GET.search }}"
+                class="page-link-custom">{{ num }}</a>
+                {% endif %}
+                {% endfor %}
+
+                {% if leads.has_next %}
+                <a href="?page={{ leads.next_page_number }}&page_size={{ page_size }}&client={{ request.GET.client }}&category={{ request.GET.category }}&status={{ request.GET.status }}&from_date={{ request.GET.from_date }}&to_date={{ request.GET.to_date }}&search={{ request.GET.search }}"
+                    class="page-link-custom"><i class="fas fa-chevron-right"></i></a>
+                {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal structure -->
+<div id="leadDetailModal" class="lead-detail-modal">
+    <div class="modal-header">
+        <h5 class="modal-title">Lead Details</h5>
+        <button class="close-modal" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+        <div class="detail-section mb-4">
+            <h6 class="section-title">Basic Details</h6>
+            <div class="detail-item">
+                <i class="fas fa-user"></i>
+                <span id="modal_name"></span>
+            </div>
+            <div class="detail-item">
+                <i class="fas fa-phone"></i>
+                <span id="modal_contact"></span>
+            </div>
+            <div class="detail-item">
+                <i class="fas fa-envelope"></i>
+                <span id="modal_email"></span>
+            </div>
+
+            <div class="status-indicators">
+                <div class="indicator red" id="modal_status_text"></div>
+                <div class="indicator white" id="modal_waste_text"></div>
+                <div class="indicator white" id="modal_incomplete_text"></div>
+            </div>
+        </div>
+
+        <div class="detail-section">
+            <h6 class="section-title">More Details</h6>
+            <div class="more-details-row">
+                <span>Source</span>
+                <span id="modal_source"></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Activity Tracker Modal -->
+<div id="activityTrackerModal" class="activity-tracker-modal">
+    <div class="tracker-header">
+        <h5 class="modal-title">Activity Tracker</h5>
+        <button class="close-tracker" onclick="closeTracker()">&times;</button>
+    </div>
+    <div class="tracker-body">
+        <div class="row">
+            <div class="col-4 pe-4" style="border-right: 1px solid #2b2b40;">
+                <div class="mb-4">
+                    <h6 class="tracker-section-title">Lead Details</h6>
+                    <div class="tracker-info">
+                        <i class="fas fa-user"></i> <span id="track_name"></span>
+                    </div>
+                    <div class="tracker-info">
+                        <i class="fas fa-envelope"></i> <span id="track_email"></span>
+                    </div>
+                    <div class="tracker-info">
+                        <i class="fas fa-phone"></i> <span id="track_contact"></span>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <h6 class="tracker-section-title">Client Details</h6>
+                    <div class="tracker-info">
+                        <i class="fas fa-user-tie"></i> <span id="track_client"></span>
+                    </div>
+                    <div class="tracker-info">
+                        <i class="fas fa-file-alt"></i> <span id="track_task"></span>
+                    </div>
+                </div>
+                <div>
+                    <h6 class="tracker-section-title">Lead More Details</h6>
+                    <div id="lead_more_details_container"></div>
+                </div>
+            </div>
+
+
+            <div class="col-8 ps-4">
+                <h6 class="tracker-section-title">Activity Panel</h6>
+                <div class="row mb-4">
+                    <div class="col-6">
+                        <p class="panel-subtitle">Followup Track</p>
+                        <div id="followup_list_container">
+
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <p class="panel-subtitle">Lead Collected By</p>
+                        <div class="tracker-info mb-1">
+                            <i class="fas fa-user-circle"></i> <span id="track_collected_by"></span>
+                        </div>
+                        <div class="panel-info ps-4" id="track_collected_date"></div>
+                        <div class="panel-info ps-4" id="track_collected_time"></div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <p class="panel-subtitle">History Track</p>
+                        <div id="history_list_container">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-4 pt-3" style="border-top: 1px solid #2b2b40;">
+            <h6 class="tracker-section-title">Waste Lead Reason</h6>
+            <div class="indicator" style="color: #10b981; font-size: 13px;">
+                <i class="fas fa-circle" style="font-size: 10px;"></i> Head
+            </div>
+            <div class="panel-info mt-2">Reason : <span id="track_waste_reason"></span></div>
+        </div>
+    </div>
+    <div class="tracker-footer">
+        <button class="btn-print" onclick="printTracker()"><i class="fas fa-print"></i> Print</button>
+        <button class="btn-pdf" onclick="downloadTrackerPDF()"><i class="fas fa-file-pdf"></i> PDF</button>
+    </div>
+</div>
+
+<script>
+    // ---- Column sort toggle ----
+    function toggleSort(e, col) {
+        e.preventDefault();
+        const params = new URLSearchParams(window.location.search);
+        const currentCol = params.get('sort_by') || 'no';
+        const currentOrder = params.get('sort') || 'desc';
+        if (currentCol === col) {
+            // Same column — flip direction
+            params.set('sort', currentOrder === 'asc' ? 'desc' : 'asc');
+        } else {
+            // New column — start ascending
+            params.set('sort_by', col);
+            params.set('sort', 'asc');
+        }
+        params.delete('page');
+        window.location.search = params.toString();
+    }
+
+    function openActivityTracker(leadId) {
+        fetch(`/get-lead-activity/?lead_id=${leadId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('track_name').innerText = data.name;
+                    document.getElementById('track_contact').innerText = data.contact;
+                    document.getElementById('track_email').innerText = data.email;
+                    document.getElementById('track_client').innerText = data.client;
+                    document.getElementById('track_task').innerText = data.task;
+                    document.getElementById('track_collected_by').innerText = data.collected_by;
+                    document.getElementById('track_collected_date').innerText = data.collected_date;
+                    document.getElementById('track_collected_time').innerText = data.collected_time;
+                    document.getElementById('track_waste_reason').innerText = data.waste_reason;
+
+
+                    const followupContainer = document.getElementById('followup_list_container');
+                    followupContainer.innerHTML = '';
+                    if (data.followups.length > 0) {
+                        const f = data.followups[0];
+                        followupContainer.innerHTML = `
+                            <div class="mb-3">
+                                <div class="panel-info">Connected On : <span class="text-secondary">${f.connected_on}</span></div>
+                                <div class="panel-info">Contact By : <span class="text-secondary">${f.contact_by}</span></div>
+                                <div class="panel-info">Response : <span class="text-secondary">${f.reason}</span></div>
+                                <div class="panel-info">Status : <span class="text-secondary">${f.response}</span></div>
+                            </div>
+                        `;
+                    } else {
+                        followupContainer.innerHTML = '<div class="panel-info text-secondary">No followups yet</div>';
+                    }
+
+
+                    const historyContainer = document.getElementById('history_list_container');
+                    const allocatedOn = data.is_transferred ? data.transfer_date : 'No allocated';
+                    const allocatedTo = data.is_transferred ? 'Telecaller' : 'No allocated';
+                    const note = data.is_transferred ? 'Lead status changed' : 'No allocated';
+
+                    historyContainer.innerHTML = `
+                        <div class="mb-3">
+                            <div class="panel-info">Allocated On : <span class="text-secondary">${allocatedOn}</span></div>
+                            <div class="panel-info">Allocated To : <span class="text-secondary">${allocatedTo}</span></div>
+                            <div class="panel-info">Note : <span class="text-secondary">${note}</span></div>
+                            <div class="panel-info">Final Status : <span class="text-secondary">${data.followups.length > 0 ? data.followups[0].response : 'Pending'}</span></div>
+                        </div>
+                    `;
+
+
+                    const detailsContainer = document.getElementById('lead_more_details_container');
+                    if (detailsContainer) {
+                        detailsContainer.innerHTML = '';
+                        if (data.collections && data.collections.length > 0) {
+                            data.collections.forEach(c => {
+                                detailsContainer.innerHTML += `
+                                    <div class="more-details-row">
+                                        <span>${c.field}</span>
+                                        <span>: ${c.value}</span>
+                                    </div>
+                                `;
+                            });
+                        } else {
+                            detailsContainer.innerHTML = '<div class="panel-info text-secondary ps-4">No extra details</div>';
+                        }
+                    }
+
+                    document.getElementById('activityTrackerModal').style.display = 'block';
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            });
+    }
+
+    function closeTracker() {
+        document.getElementById('activityTrackerModal').style.display = 'none';
+    }
+    function openLeadDetails(name, contact, email, status, is_waste, source) {
+        document.getElementById('modal_name').innerText = name;
+        document.getElementById('modal_contact').innerText = contact;
+        document.getElementById('modal_email').innerText = email;
+        document.getElementById('modal_source').innerText = ': ' + source;
+
+        const statusText = document.getElementById('modal_status_text');
+        statusText.innerHTML = `<i class="fas fa-circle-exclamation"></i> Lead is ${status}`;
+
+        const wasteText = document.getElementById('modal_waste_text');
+        const wasteIcon = is_waste === 'True' ? 'fa-trash' : 'fa-flag';
+        const wasteLabel = is_waste === 'True' ? 'Lead is marked as waste' : 'Lead is not a waste';
+        wasteText.innerHTML = `<i class="fas ${wasteIcon}"></i> ${wasteLabel}`;
+
+        const incompleteText = document.getElementById('modal_incomplete_text');
+        incompleteText.innerHTML = `<i class="fas fa-triangle-exclamation"></i> Not Marked as Incompleted`;
+
+        document.getElementById('leadDetailModal').style.display = 'block';
+    }
+
+    function closeModal() {
+        document.getElementById('leadDetailModal').style.display = 'none';
+    }
+
+    document.querySelectorAll('.filter-select').forEach(select => {
+        select.addEventListener('change', () => {
+            if (select.name === 'client') {
+                const categorySelect = document.querySelector('select[name="category"]');
+                if (categorySelect) {
+                    categorySelect.value = '';
+                }
+            }
+            select.closest('form').submit();
+        });
+    });
+
+    function printTracker() {
+        window.print();
+    }
+
+    function downloadTrackerPDF() {
+        const originalElement = document.getElementById('activityTrackerModal');
+        const leadName = document.getElementById('track_name').innerText || 'Lead';
+        const isMobile = window.innerWidth <= 991;
+
+        const wrapper = document.createElement('div');
+        wrapper.style.position = 'absolute';
+        wrapper.style.left = '-9999px';
+        wrapper.style.top = '0';
+
+        const clone = originalElement.cloneNode(true);
+        clone.style.position = 'relative';
+        clone.style.transform = 'none';
+        clone.style.top = 'auto';
+        clone.style.left = 'auto';
+        clone.style.display = 'block';
+        clone.style.width = isMobile ? '780px' : '850px';
+        clone.style.margin = '0';
+        if (isMobile) {
+            clone.style.marginLeft = '-155px';
+        }
+
+        const trackerBody = clone.querySelector('.tracker-body');
+        if (trackerBody) {
+            trackerBody.style.maxHeight = 'none';
+            trackerBody.style.overflow = 'visible';
+            trackerBody.style.background = 'white';
+            trackerBody.style.color = 'black';
+        }
+
+        clone.style.background = 'white';
+        clone.style.color = 'black';
+        clone.style.border = 'none';
+        clone.style.boxShadow = 'none';
+
+        const textElements = clone.querySelectorAll('.tracker-info, .panel-info, .tracker-section-title, .modal-title, .panel-subtitle, span, i');
+        textElements.forEach(el => {
+            el.style.color = 'black';
+        });
+
+        const footer = clone.querySelector('.tracker-footer');
+        const closeBtn = clone.querySelector('.close-tracker');
+        if (footer) footer.style.display = 'none';
+        if (closeBtn) closeBtn.style.display = 'none';
+
+        wrapper.appendChild(clone);
+        document.body.appendChild(wrapper);
+
+        const options = {
+            margin: isMobile ? [10, 5, 10, 5] : 10,
+            filename: `Lead_Activity_${leadName.replace(/\s+/g, '_')}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: {
+                scale: 2,
+                useCORS: true
+            },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        if (isMobile) {
+            options.html2canvas.windowWidth = 1200;
+        }
+
+        html2pdf().from(clone).set(options).save().then(() => {
+            document.body.removeChild(wrapper);
+        });
+    }
+</script>
+{% endblock %}

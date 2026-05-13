@@ -1,0 +1,776 @@
+{% extends "executive_base.html" %}
+{% load static %}
+{% block title %} Lead Collection {% endblock %}
+
+{% block content %}
+<style>
+    .page-header-custom {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+        color: #94a3b8;
+        font-size: 14px;
+    }
+
+    .page-header-custom a {
+        color: #94a3b8;
+        text-decoration: none;
+    }
+
+    .collection-container {
+        background: #1e1e2d;
+        border-radius: 12px;
+        padding: 25px;
+        border: 1px solid #2b2b40;
+    }
+
+    .collection-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 25px;
+    }
+
+    .collection-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #ffffff;
+    }
+
+    .button-group {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+
+    .btn-custom {
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        border: 1px solid transparent;
+        transition: 0.2s;
+        text-decoration: none;
+    }
+
+    .btn-leads {
+        background: rgba(124, 58, 237, 0.1);
+        color: #a78bfa;
+        border-color: rgba(124, 58, 237, 0.2);
+    }
+
+    .btn-form {
+        background: rgba(255, 255, 255, 0.05);
+        color: #ffffff;
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-duplicates {
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+        border-color: rgba(16, 185, 129, 0.2);
+    }
+
+    .btn-download {
+        background: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+        border-color: rgba(239, 68, 68, 0.2);
+    }
+
+    .btn-upload {
+        background: rgba(59, 130, 246, 0.1);
+        color: #3b82f6;
+        border-color: rgba(59, 130, 246, 0.2);
+    }
+
+    .btn-custom:hover {
+        opacity: 0.8;
+    }
+
+    .table-controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        font-size: 13px;
+        color: #94a3b8;
+    }
+
+    .search-input {
+        background: #0f172a;
+        border: 1px solid #2b2b40;
+        color: white;
+        padding: 6px 12px;
+        border-radius: 6px;
+        outline: none;
+        width: 200px;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+
+    .data-table th {
+        text-align: left;
+        color: #94a3b8;
+        font-size: 12px;
+        font-weight: 500;
+        padding: 12px 10px;
+        border-bottom: 1px solid #2b2b40;
+    }
+
+    .data-table td {
+        padding: 12px 10px;
+        border-bottom: 1px solid #2b2b40;
+        color: #e2e8f0;
+        font-size: 13px;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 40px;
+        color: #64748b;
+    }
+
+    .page-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 20px;
+        color: #64748b;
+        font-size: 13px;
+    }
+
+    .pagination-custom {
+        display: flex;
+        gap: 5px;
+    }
+
+    .page-link-custom {
+        min-width: 32px;
+        height: 32px;
+        padding: 0 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid #2b2b40;
+        color: #94a3b8;
+        text-decoration: none;
+        transition: 0.2s;
+        font-size: 13px;
+    }
+
+    .page-link-custom:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+    }
+
+    .page-link-custom.active {
+        background: #3b82f6;
+        color: white;
+        border-color: #3b82f6;
+    }
+
+    .filter-select {
+        background: #0f172a;
+        border: 1px solid #2b2b40;
+        color: #94a3b8;
+        padding: 4px 8px;
+        border-radius: 6px;
+        outline: none;
+        font-size: 13px;
+    }
+
+
+    .custom-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 2000;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-box {
+        background: #1e1e2d;
+        width: 100%;
+        max-width: 500px;
+        padding: 30px;
+        border-radius: 12px;
+        border: 1px solid #2b2b40;
+    }
+
+    .modal-box h4 {
+        margin-bottom: 20px;
+        color: white;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-group label {
+        display: block;
+        color: #94a3b8;
+        font-size: 12px;
+        margin-bottom: 5px;
+    }
+
+    .form-group input,
+    .form-group select {
+        width: 100%;
+        background: #0f172a;
+        border: 1px solid #2b2b40;
+        color: white;
+        padding: 8px 12px;
+        border-radius: 6px;
+        outline: none;
+    }
+
+    .submit-btn {
+        background: #3b82f6;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 6px;
+        width: 100%;
+        margin-top: 10px;
+        cursor: pointer;
+    }
+
+    /* Live Validation Styles */
+    .form-group input:focus {
+        border-color: #ee1e1e !important;
+    }
+
+    .form-group input.is-invalid {
+        border-color: #ef4444 !important;
+    }
+
+    .form-group input.is-valid {
+        border-color: #b9102c !important;
+    }
+
+    .error-msg {
+        display: none;
+        color: #ef4444;
+        font-size: 11px;
+        margin-top: 4px;
+    }
+
+    /* Mobile Responsiveness */
+    @media (max-width: 768px) {
+        .custom-modal {
+            align-items: flex-start;
+            padding: 40px 10px;
+            overflow-y: auto;
+        }
+
+        .modal-box {
+            width: 100% !important;
+            max-width: none !important;
+            padding: 20px !important;
+            margin: 0;
+            max-height: none;
+        }
+
+        .collection-container {
+            padding: 15px;
+        }
+
+        .collection-header {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .button-group {
+            gap: 8px;
+        }
+
+        .btn-custom {
+            padding: 6px 12px;
+            font-size: 12px;
+            flex: 1 1 calc(50% - 10px);
+            justify-content: center;
+        }
+
+        .table-controls {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .search-input {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="page-header-custom">
+    <a href="{% url 'executive_lead_categories' allocation.id %}">Lead Category</a>
+    <span class="separator">/</span>
+    <span>Lead Collection</span>
+</div>
+
+<div class="collection-container">
+    <div class="collection-header">
+        <h5 class="collection-title">{{ lead_collection.work_Id.clientId.client_name }} - Lead List</h5>
+    </div>
+
+    <div class="button-group">
+        <div class="btn-custom btn-leads">Leads - {{ leads_count }}</div>
+        <div class="btn-custom btn-form" onclick="toggleModal('addModal')">📄 Data Form</div>
+        <form method="POST" style="margin:0;">
+            {% csrf_token %}
+            <input type="hidden" name="form_type" value="remove_duplicates">
+            <button type="submit" class="btn-custom btn-duplicates" style="border:none;">📄 Remove Duplicates</button>
+        </form>
+        <a href="{% url 'download_lead_format' lead_collection.id %}" class="btn-custom btn-download">📄 File
+            Download</a>
+        <div class="btn-custom btn-upload" onclick="toggleModal('uploadModal')">📄 File Upload</div>
+    </div>
+
+    <div class="table-controls">
+        <div>
+            <form method="GET" style="display: inline-flex; align-items: center; gap: 8px;">
+                Show
+                <select name="page_size" class="filter-select" onchange="this.form.submit()">
+                    <option value="10" {% if page_size == 10 %}selected{% endif %}>10</option>
+                    <option value="20" {% if page_size == 20 %}selected{% endif %}>20</option>
+                    <option value="50" {% if page_size == 50 %}selected{% endif %}>50</option>
+                    <option value="100" {% if page_size == 100 %}selected{% endif %}>100</option>
+                </select>
+                entries
+            </form>
+        </div>
+        <div>Search: <input type="text" class="search-input" id="tableSearch"></div>
+    </div>
+
+    <div style="overflow-x: auto;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Action</th>
+                    <th>Collected Date</th>
+                    <th>Lead Full Name</th>
+                    <th>Email id</th>
+                    <th>Contact No</th>
+                    <th>Lead Source</th>
+                    <th>Details</th>
+                    <th>Status</th>
+                    <th>Repeated ?</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>
+                        <a href="{% url 'delete_lead_row' row.id %}"
+                            onclick="return confirm('Are you sure you want to delete this lead?')"
+                            style="display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; background: #ef4444; border-radius: 4px; color: white; text-decoration: none; transition: background 0.2s;">
+                            <i class="fas fa-trash-alt" style="font-size: 12px;"></i>
+                        </a>
+                    </td>
+                    <td>{{ row.created_at|date:"M d, Y " }}</td>
+                    <td>{{ row.full_name }}</td>
+                    <td>{{ row.email }}</td>
+                    <td>{{ row.contact }}</td>
+                    <td>{{ row.source }}</td>
+                    <td>
+                        <div class="btn-custom btn-form" style="padding: 4px 8px; font-size: 11px;">📄 Details</div>
+                    </td>
+                    <td>
+                        {% if row.status == 'Verified' %}
+                        <span
+                            style="background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 2px 8px; border-radius: 4px; font-size: 11px; border: 1px solid rgba(16, 185, 129, 0.2);">Verified</span>
+                        {% elif row.status == 'Incomplete' %}
+                        <span
+                            style="background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 2px 8px; border-radius: 4px; font-size: 11px; border: 1px solid rgba(239, 68, 68, 0.2);">Incomplete</span>
+                        {% elif row.status == 'Waste' %}
+                        <span
+                            style="background: rgba(100, 116, 139, 0.1); color: #64748b; padding: 2px 8px; border-radius: 4px; font-size: 11px; border: 1px solid rgba(100, 116, 139, 0.2);">Waste</span>
+                        {% else %}
+                        <span
+                            style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; padding: 2px 8px; border-radius: 4px; font-size: 11px; border: 1px solid rgba(245, 158, 11, 0.2);">
+                            {{row.status|default:"Pending" }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if row.is_repeated %}
+                        <span style="color: #ef4444; font-weight: 500;">Yes</span>
+                        {% else %}
+                        No
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="10" class="empty-state">No leads found</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="page-info">
+        <div>Showing {{ rows.start_index }} to {{ rows.end_index }} of {{ leads_count }} entries</div>
+        <div class="pagination-custom">
+            {% if rows.has_previous %}
+            <a href="?page={{ rows.previous_page_number }}&page_size={{ page_size }}" class="page-link-custom">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+            {% endif %}
+
+            {% for num in rows.paginator.page_range %}
+            {% if rows.number == num %}
+            <a href="#" class="page-link-custom active">{{ num }}</a>
+            {% elif num > rows.number|add:'-3' and num < rows.number|add:'3' %} <a
+                href="?page={{ num }}&page_size={{ page_size }}" class="page-link-custom">{{ num }}</a>
+                {% endif %}
+                {% endfor %}
+
+                {% if rows.has_next %}
+                <a href="?page={{ rows.next_page_number }}&page_size={{ page_size }}" class="page-link-custom">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+                {% endif %}
+        </div>
+    </div>
+</div>
+
+
+<div class="custom-modal" id="addModal">
+    <div class="modal-box">
+        <div id="formSection">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h4 style="margin: 0;">Add Lead</h4>
+                <span onclick="toggleModal('addModal')" style="cursor: pointer; color: #94a3b8;">✖</span>
+            </div>
+            <form id="leadForm" method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="form_type" value="single">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" name="full_name" id="field_name" required>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" name="email" id="field_email"
+                        oninput="validateEmail(this); checkExistingLead();" placeholder="example@mail.com">
+                    <small class="error-msg" id="email-error">Invalid email format</small>
+                </div>
+                <div class="form-group">
+                    <label>Contact Number</label>
+                    <input type="text" name="contact" id="field_contact" required
+                        oninput="validateContact(this); checkExistingLead();" placeholder="10-digit number">
+                    <small class="error-msg" id="contact-error">Please enter exactly 10 digits</small>
+                </div>
+                <div class="form-group">
+                    <label>Lead Source</label>
+                    <input type="text" name="lead_source" id="field_source" list="platform_list">
+                    <datalist id="platform_list">
+                        {% for plat in platforms %}
+                        <option value="{{ plat.name }}">
+                            {% endfor %}
+                    </datalist>
+                </div>
+                {% for field in lead_collection.fields.all %}
+                <div class="form-group">
+                    <label>{{ field.field_name }}</label>
+                    <input type="text" name="field_{{ field.id }}">
+                </div>
+                {% endfor %}
+
+                <div id="confirmationArea" style="display: none; margin-top: 20px;">
+                    <p
+                        style="color: #ffffff; font-size: 14px; margin-bottom: 15px; font-weight: 500; text-align: center;">
+                        Are you confirmed?</p>
+                    <div id="existingLeadDetails"
+                        style="display: none; background: rgba(239,68,68,0.05); padding: 15px; border-radius: 8px; border: 1px solid rgba(239,68,68,0.25); margin-bottom: 15px;">
+                        <p style="color: #ef4444; font-size: 13px; margin-bottom: 10px; font-weight: 500;">⚠️ Lead(s) already exist with the same email / contact!</p>
+                        <div style="overflow-x:auto; max-height: 180px; overflow-y: auto;">
+                            <table style="width:100%; font-size:12px; border-collapse:collapse;">
+                                <thead>
+                                    <tr style="border-bottom:1px solid #2b2b40;">
+                                        <th style="text-align:left; padding:6px 8px; color:#94a3b8; font-weight:500;">Name</th>
+                                        <th style="text-align:left; padding:6px 8px; color:#94a3b8; font-weight:500;">Email</th>
+                                        <th style="text-align:left; padding:6px 8px; color:#94a3b8; font-weight:500;">Contact</th>
+                                        <th style="text-align:left; padding:6px 8px; color:#94a3b8; font-weight:500;">Added Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="existingLeadsTableBody">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; justify-content: center;">
+                        <button type="submit" class="btn-custom btn-upload" style="width: auto; padding: 10px 30px;">
+                            Add
+                        </button>
+                        <button type="button" class="btn-custom btn-form" style="width: auto; padding: 10px 30px;"
+                            onclick="cancelConfirmation()">
+                            No
+                        </button>
+                    </div>
+                </div>
+
+                <div id="initialAction" style="text-align: center; margin-top: 20px;">
+                    <button type="button" class="btn-custom btn-form"
+                        style="display: inline-flex; width: auto; padding: 10px 30px;" onclick="showConfirmation()">
+                        + Add Lead
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="custom-modal" id="uploadModal">
+    <div class="modal-box" style="max-width: 600px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h4 style="margin: 0;">Upload Data File</h4>
+            <span onclick="toggleModal('uploadModal')"
+                style="cursor: pointer; color: #ef4444; font-size: 20px;">✖</span>
+        </div>
+
+        <p style="color: #94a3b8; font-size: 13px; margin-bottom: 20px;">* You can upload only excel file data here</p>
+
+        <form id="excelUploadForm" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" name="form_type" value="excel">
+
+            <div class="form-group">
+                <label style="margin-bottom: 10px; display: block; color: white;">Upload Yor Data File Here..</label>
+                <div
+                    style="background: #0f172a; border: 1px solid #2b2b40; border-radius: 6px; padding: 10px; display: flex; align-items: center; gap: 10px;">
+                    <input type="file" name="excel_file" id="excel_file_input" accept=".xlsx, .xls" required
+                        style="background: transparent; border: none; padding: 0; color: #94a3b8;">
+                </div>
+            </div>
+
+            <div id="excelDataArea" style="margin-top: 25px;">
+                <p id="excelDuplicateMsg"
+                    style="display: none; color: #ffffff; font-size: 14px; margin-bottom: 15px; font-weight: 500; text-align: center;">
+                    existing data. Are you confirmed?
+                </p>
+                <table style="width: 100%; border-collapse: collapse; font-size: 13px; color: #94a3b8;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid #2b2b40;">
+                            <th style="text-align: left; padding: 10px; font-weight: 500;">Name</th>
+                            <th style="text-align: left; padding: 10px; font-weight: 500;">Email</th>
+                            <th style="text-align: left; padding: 10px; font-weight: 500;">Contact</th>
+                            <th style="text-align: left; padding: 10px; font-weight: 500;">Added Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="excelDataBody">
+                    </tbody>
+                </table>
+
+                <div id="excelActions" style="display: none; gap: 10px; margin-top: 20px;">
+                    <button type="button" class="btn-custom btn-upload" style="padding: 6px 15px; width: auto;"
+                        onclick="finalSubmitExcel()">
+                        <span style="font-size: 16px;">⇡</span> Add
+                    </button>
+                    <button type="button" class="btn-custom btn-upload" style="padding: 6px 15px; width: auto;"
+                        onclick="toggleModal('uploadModal')">
+                        <span style="font-size: 16px;">⇡</span> No
+                    </button>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 30px;">
+                <button type="button" class="btn-custom btn-upload"
+                    style="display: inline-flex; width: auto; padding: 10px 40px;" onclick="checkExcelFile()">
+                    <span style="font-size: 18px;">⇡</span> Upload
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function toggleModal(id) {
+        const modal = document.getElementById(id);
+        modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+        if (id === 'addModal') {
+            document.getElementById('leadForm').reset();
+            cancelConfirmation();
+        }
+        if (id === 'uploadModal') {
+            document.getElementById('excelUploadForm').reset();
+            document.getElementById('excelDataBody').innerHTML = '';
+            document.getElementById('excelActions').style.display = 'none';
+            document.getElementById('excelDuplicateMsg').style.display = 'none';
+        }
+    }
+
+    let hasExistingLead = false;
+
+    function validateEmail(input) {
+        const error = document.getElementById('email-error');
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (input.value && !re.test(input.value)) {
+            input.classList.add('is-invalid');
+            input.classList.remove('is-valid');
+            error.style.display = 'block';
+        } else if (input.value) {
+            input.classList.remove('is-invalid');
+            input.classList.add('is-valid');
+            error.style.display = 'none';
+        } else {
+            input.classList.remove('is-invalid', 'is-valid');
+            error.style.display = 'none';
+        }
+    }
+
+    function validateContact(input) {
+        const error = document.getElementById('contact-error');
+        const re = /^\d{10}$/;
+        if (input.value && !re.test(input.value)) {
+            input.classList.add('is-invalid');
+            input.classList.remove('is-valid');
+            error.style.display = 'block';
+        } else if (input.value) {
+            input.classList.remove('is-invalid');
+            input.classList.add('is-valid');
+            error.style.display = 'none';
+        } else {
+            input.classList.remove('is-invalid', 'is-valid');
+            error.style.display = 'none';
+        }
+    }
+
+    function checkExistingLead() {
+        const contact = document.getElementById('field_contact').value.trim();
+        const email = document.getElementById('field_email').value.trim();
+
+        if (contact.length === 10 || email.length > 0) {
+            fetch(`/check-lead-exists/?contact=${contact}&email=${email}&lead_collection_id={{ lead_collection.id }}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.exists) {
+                        // Build rows for each existing lead
+                        const tbody = document.getElementById('existingLeadsTableBody');
+                        tbody.innerHTML = '';
+                        data.details.forEach(lead => {
+                            const tr = document.createElement('tr');
+                            tr.style.borderBottom = '1px solid #2b2b40';
+                            tr.innerHTML = `
+                                <td style="padding:6px 8px; color:#e2e8f0;">${lead.full_name}</td>
+                                <td style="padding:6px 8px; color:#e2e8f0;">${lead.email}</td>
+                                <td style="padding:6px 8px; color:#e2e8f0;">${lead.contact}</td>
+                                <td style="padding:6px 8px; color:#e2e8f0;">${lead.created_at}</td>
+                            `;
+                            tbody.appendChild(tr);
+                        });
+                        hasExistingLead = true;
+                    } else {
+                        hasExistingLead = false;
+                    }
+                })
+                .catch(error => console.error('Error checking lead:', error));
+        } else {
+            hasExistingLead = false;
+        }
+    }
+
+    function showConfirmation() {
+        const name = document.getElementById('field_name').value;
+        const contact = document.getElementById('field_contact').value;
+
+        if (!name || !contact) {
+            alert("Name and Contact are required!");
+            return;
+        }
+
+        document.getElementById('initialAction').style.display = 'none';
+        document.getElementById('confirmationArea').style.display = 'block';
+
+        if (hasExistingLead) {
+            document.getElementById('existingLeadDetails').style.display = 'block';
+        } else {
+            document.getElementById('existingLeadDetails').style.display = 'none';
+        }
+    }
+
+    function cancelConfirmation() {
+        document.getElementById('confirmationArea').style.display = 'none';
+        document.getElementById('initialAction').style.display = 'block';
+        document.getElementById('existingLeadDetails').style.display = 'none';
+    }
+
+    function checkExcelFile() {
+        const fileInput = document.getElementById('excel_file_input');
+        if (!fileInput.files[0]) {
+            alert("Please select a file first.");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('excel_file', fileInput.files[0]);
+        formData.append('lead_collection_id', '{{ lead_collection.id }}');
+
+        fetch('/check-excel-leads/', {
+            method: 'POST',
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                const body = document.getElementById('excelDataBody');
+                body.innerHTML = '';
+
+                if (data.exists) {
+                    data.duplicates.forEach(row => {
+                        const tr = document.createElement('tr');
+                        tr.style.color = 'white';
+                        tr.innerHTML = `
+                        <td style="padding: 10px;">${row.full_name}</td>
+                        <td style="padding: 10px;">${row.email}</td>
+                        <td style="padding: 10px;">${row.contact}</td>
+                        <td style="padding: 10px;">${row.created_at}</td>
+                    `;
+                        body.appendChild(tr);
+                    });
+                    document.getElementById('excelDuplicateMsg').style.display = 'block';
+                } else {
+                    document.getElementById('excelDuplicateMsg').style.display = 'none';
+                }
+
+                document.getElementById('excelActions').style.display = 'flex';
+            })
+            .catch(error => console.error('Error checking excel:', error));
+    }
+
+    function finalSubmitExcel() {
+        document.getElementById('excelUploadForm').submit();
+    }
+
+    // Basic Search
+    document.getElementById('tableSearch').addEventListener('keyup', function () {
+        const filter = this.value.toLowerCase();
+        const rows = document.querySelectorAll('.data-table tbody tr');
+        rows.forEach(row => {
+            if (row.classList.contains('empty-state')) return;
+            row.style.display = row.textContent.toLowerCase().includes(filter) ? '' : 'none';
+        });
+    });
+</script>
+
+{% endblock %}

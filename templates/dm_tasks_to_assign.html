@@ -159,6 +159,219 @@
         padding: 40px;
         color: #64748b;
     }
+
+
+
+
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 9999;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 40px 0;
+        overflow-y: auto;
+
+    }
+
+    .modal-content-custom {
+        background: #1e1e2d;
+        width: 420px;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+        animation: modalFadeIn 0.3s ease-out;
+    }
+
+
+
+    .modal-header-custom {
+        padding: 18px 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-title-custom {
+        color: #ffffff;
+        font-size: 16px;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .close-modal-btn {
+        background: #f1416c;
+        color: #ffffff;
+        border: none;
+        width: 22px;
+        height: 22px;
+        border-radius: 4px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .close-modal-btn:hover {
+        background: #d9214e;
+        transform: scale(1.05);
+    }
+
+    .modal-body-custom {
+        padding: 0 25px 30px 25px;
+    }
+
+    .modal-field-group {
+        margin-bottom: 20px;
+    }
+
+    .modal-field-label {
+        color: #ffffff;
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 10px;
+        display: block;
+    }
+
+    .modal-field-value-box {
+        background: #2b2b40;
+        border: 1px solid #323248;
+        border-radius: 4px;
+        padding: 10px 15px;
+        color: #ffffff;
+        font-size: 13px;
+        min-height: 40px;
+    }
+
+    .modal-task-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .modal-task-item {
+        position: relative;
+        padding-left: 15px;
+        color: #ffffff;
+        font-size: 13px;
+        margin-bottom: 5px;
+    }
+
+    .modal-task-item::before {
+        content: "•";
+        position: absolute;
+        left: 0;
+        color: #ffffff;
+    }
+
+    .modal-subtask-list {
+        list-style: none;
+        padding-left: 20px;
+        margin-top: 5px;
+    }
+
+    .modal-subtask-item {
+        position: relative;
+        padding-left: 15px;
+        color: #94a3b8;
+        font-size: 12px;
+        margin-bottom: 3px;
+    }
+
+    .modal-subtask-item::before {
+        content: "○";
+        position: absolute;
+        left: 0;
+        color: #64748b;
+    }
+
+    .assign-modal-content {
+        background: #1e1e2d;
+        border: none;
+        border-radius: 8px;
+        color: #fff;
+    }
+
+    .assign-modal-header {
+        border-bottom: 1px solid #323248;
+        padding: 15px 25px;
+    }
+
+    .assign-modal-body {
+        padding: 25px;
+    }
+
+    .assign-form-label {
+        font-size: 13px;
+        font-weight: 500;
+        color: #94a3b8;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .assign-form-control {
+        background: #2b2b40 !important;
+        border: 1px solid #323248 !important;
+        color: #fff !important;
+        border-radius: 4px;
+        padding: 10px 15px;
+        font-size: 13px;
+        width: 100%;
+        margin-bottom: 20px;
+    }
+
+    .employee-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+
+    .employee-checkbox-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+    }
+
+    .employee-checkbox-item input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+        accent-color: #3699ff;
+    }
+
+    .employee-name {
+        font-size: 12px;
+        color: #ffffff;
+        text-transform: uppercase;
+    }
+
+    .modal-footer-custom {
+        padding: 0 25px 25px;
+        text-align: center;
+    }
+
+    .submit-assign-btn {
+        background: #3699ff;
+        color: #fff;
+        border: none;
+        padding: 10px 35px;
+        border-radius: 4px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+    .submit-assign-btn:hover {
+        background: #187de4;
+    }
 </style>
 
 <nav aria-label="breadcrumb">
@@ -216,7 +429,11 @@
                             <span style="font-weight: 500;">{{ alloc.team_lead.name }}</span>
                         </td>
                         <td>
-                            <a href="#" class="view-btn">View</a>
+                            <a href="javascript:void(0)" class="view-btn" data-client="{{ work.clientId.client_name }}"
+                                data-task-name="Lead Collection"
+                                data-sub-task="{{ alloc.lead_collection.collection_head }}"
+                                data-target="{{ alloc.target }}" data-date="{{ alloc.allocated_date|date:'F d, Y' }}"
+                                data-desc="{{ alloc.description|default:'' }}">View</a>
                         </td>
                         <td>
                             <ul class="task-list" style="list-style: disc; padding-left: 12px;">
@@ -232,7 +449,12 @@
                             </ul>
                         </td>
                         <td>
-                            <a href="#" class="assign-btn-sm">Assign</a>
+                            <a href="javascript:void(0)" class="assign-btn-sm" data-work-id="{{ work.id }}"
+                                data-task-id="{{ alloc.task.id }}" data-task-name="{{ alloc.task.task_name }}"
+                                data-cat-id="{{ alloc.lead_collection.id }}"
+                                data-all-categories='[{% for lc in work.leadcollection_set.all %}{"id":"{{ lc.id }}","name":"{{ lc.collection_head|escapejs }}"}{% if not forloop.last %},{% endif %}{% endfor %}]'
+                                data-start="{{ alloc.start_date|date:'Y-m-d' }}"
+                                data-end="{{ alloc.end_date|date:'Y-m-d' }}" onclick="openAssignModal(this)">Assign</a>
                         </td>
                     </tr>
                     {% endfor %}
@@ -249,25 +471,251 @@
     </div>
 </div>
 
+
+<div id="assignModal" class="modal-overlay">
+    <div class="modal-content-custom" style="width: 500px;">
+        <form action="" method="POST" enctype="multipart/form-data" id="assignForm">
+            {% csrf_token %}
+            <div class="assign-modal-header d-flex justify-content-between align-items-center">
+                <h5 class="modal-title-custom">Assign To Employees</h5>
+                <button type="button" class="close-modal-btn" id="closeAssignModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="assign-modal-body">
+                <div class="modal-field-group">
+                    <label class="assign-form-label">Tasks</label>
+                    <select name="task" class="assign-form-control" id="modalSelectTask">
+
+                    </select>
+                </div>
+
+                <div class="modal-field-group">
+                    <label class="assign-form-label">Lead Category</label>
+                    <select name="lead_collection" class="assign-form-control" id="modalSelectCategory"
+                        style="pointer-events: none; background-color: rgba(255,255,255,0.05); color: #94a3b8;"
+                        tabindex="-1">
+
+                    </select>
+                </div>
+
+                <div class="modal-field-group">
+                    <label class="assign-form-label">Select Employees</label>
+                    <div class="employee-grid">
+                        {% for exec in executives %}
+                        <label class="employee-checkbox-item">
+                            <input type="checkbox" name="team_lead" value="{{ exec.id }}">
+                            <span class="employee-name">{{ exec.name }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="modal-field-group">
+                            <label class="assign-form-label">Start Date</label>
+                            <input type="date" name="start_date" class="assign-form-control" id="modalStartDate">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="modal-field-group">
+                            <label class="assign-form-label">Due Date</label>
+                            <input type="date" name="end_date" class="assign-form-control" id="modalDueDate">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-field-group">
+                    <label class="assign-form-label">Target</label>
+                    <input type="number" name="target" class="assign-form-control" placeholder="Enter target">
+                </div>
+
+                <div class="modal-field-group">
+                    <label class="assign-form-label">More about work</label>
+                    <textarea name="description" class="assign-form-control" style="min-height: 80px;"
+                        placeholder="Add description..."></textarea>
+                </div>
+
+                <div class="modal-field-group">
+                    <label class="assign-form-label">File</label>
+                    <input type="file" name="file" class="assign-form-control">
+                </div>
+            </div>
+            <div class="modal-footer-custom">
+                <button type="submit" class="submit-assign-btn">Assign</button>
+            </div>
+        </form>
+    </div>
+</div>
+<div id="taskModal" class="modal-overlay">
+    <div class="modal-content-custom">
+        <div class="modal-header-custom">
+            <h5 class="modal-title-custom">Task Details</h5>
+            <button type="button" class="close-modal-btn" id="closeModal">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body-custom">
+            <div class="modal-field-group">
+                <label class="modal-field-label">Client Name</label>
+                <div class="modal-field-value-box" id="modalClientName"></div>
+            </div>
+
+            <div class="modal-field-group">
+                <label class="modal-field-label">Tasks</label>
+                <ul class="modal-task-list">
+                    <li class="modal-task-item">
+                        <span id="modalTaskName"></span>
+                        <ul class="modal-subtask-list">
+                            <li class="modal-subtask-item">
+                                <span id="modalSubTaskName"></span>
+                                <span id="modalTarget"></span>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="modal-field-group">
+                <label class="modal-field-label">Allocated Date</label>
+                <div class="modal-field-value-box" id="modalAllocatedDate"></div>
+            </div>
+
+            <div class="modal-field-group">
+                <label class="modal-field-label">Task Description</label>
+                <div class="modal-field-value-box" id="modalTaskDescription" style="min-height: 80px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const searchInput = document.getElementById('taskSearch');
         const table = document.getElementById('assignmentTable');
         const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
 
-        searchInput.addEventListener('keyup', function () {
-            const filter = searchInput.value.toLowerCase();
+        if (searchInput) {
+            searchInput.addEventListener('keyup', function () {
+                const filter = searchInput.value.toLowerCase();
 
-            for (let i = 0; i < rows.length; i++) {
-                const row = rows[i];
-                if (row.classList.contains('empty-state')) continue;
+                for (let i = 0; i < rows.length; i++) {
+                    const row = rows[i];
+                    if (row.classList.contains('empty-state')) continue;
 
-                const text = row.textContent.toLowerCase();
-                if (text.includes(filter)) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
+                    const text = row.textContent.toLowerCase();
+                    if (text.includes(filter)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
                 }
+            });
+        }
+
+
+        const modal = document.getElementById('taskModal');
+        const viewBtns = document.querySelectorAll('.view-btn');
+        const closeBtn = document.getElementById('closeModal');
+
+        const modalClientName = document.getElementById('modalClientName');
+        const modalTaskName = document.getElementById('modalTaskName');
+        const modalSubTaskName = document.getElementById('modalSubTaskName');
+        const modalTarget = document.getElementById('modalTarget');
+        const modalAllocatedDate = document.getElementById('modalAllocatedDate');
+        const modalTaskDescription = document.getElementById('modalTaskDescription');
+
+        viewBtns.forEach(btn => {
+            btn.addEventListener('click', function () {
+                const client = this.getAttribute('data-client');
+                const taskName = this.getAttribute('data-task-name');
+                const subTask = this.getAttribute('data-sub-task');
+                const target = this.getAttribute('data-target');
+                const date = this.getAttribute('data-date');
+                const desc = this.getAttribute('data-desc');
+
+                modalClientName.textContent = client;
+                modalTaskName.textContent = taskName;
+                modalSubTaskName.textContent = subTask || 'No tasks';
+                modalTarget.textContent = target ? ` (Target : ${target})` : '';
+                modalAllocatedDate.textContent = date || 'N/A';
+                modalTaskDescription.textContent = desc;
+
+                modal.style.display = 'flex';
+            });
+        });
+
+        if (closeBtn) {
+            closeBtn.addEventListener('click', function () {
+                modal.style.display = 'none';
+            });
+        }
+
+        window.addEventListener('click', function (event) {
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        });
+
+        const assignModal = document.getElementById('assignModal');
+        const closeAssignBtn = document.getElementById('closeAssignModal');
+        const modalSelectTask = document.getElementById('modalSelectTask');
+        const modalSelectCategory = document.getElementById('modalSelectCategory');
+        const modalAssignForm = document.getElementById('assignForm');
+
+        window.openAssignModal = function (btn) {
+            const workId = btn.getAttribute('data-work-id');
+            const taskId = btn.getAttribute('data-task-id');
+            const taskName = btn.getAttribute('data-task-name') || 'Lead Collection';
+            const catId = btn.getAttribute('data-cat-id');
+            const allCategoriesStr = btn.getAttribute('data-all-categories');
+            const startDate = btn.getAttribute('data-start');
+            const endDate = btn.getAttribute('data-end');
+
+
+            modalAssignForm.action = `/work-allocate/${workId}/`;
+
+
+            modalSelectTask.innerHTML = `<option value="${taskId}">${taskName}</option>`;
+
+
+            let catOptions = '';
+            try {
+                const categories = JSON.parse(allCategoriesStr);
+                categories.forEach(cat => {
+                    // Only show the assigned category to make it read-only
+                    if (cat.id == catId) {
+                        catOptions += `<option value="${cat.id}" selected>${cat.name}</option>`;
+                    }
+                });
+
+                // Fallback if catId doesn't match anything
+                if (!catOptions && catId) {
+                    catOptions = `<option value="${catId}" selected>Selected Category</option>`;
+                }
+            } catch (e) {
+                console.error("Error parsing categories:", e);
+                catOptions = `<option value="">No Categories Available</option>`;
+            }
+            modalSelectCategory.innerHTML = catOptions;
+
+
+            document.getElementById('modalStartDate').value = startDate;
+            document.getElementById('modalDueDate').value = endDate;
+
+            assignModal.style.display = 'flex';
+        };
+
+        if (closeAssignBtn) {
+            closeAssignBtn.addEventListener('click', function () {
+                assignModal.style.display = 'none';
+            });
+        }
+
+        window.addEventListener('click', function (event) {
+            if (event.target == assignModal) {
+                assignModal.style.display = 'none';
             }
         });
     });
